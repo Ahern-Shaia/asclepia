@@ -1,0 +1,648 @@
+/* 07 日系無印 — a quiet store of used things, each one carrying a kraft paper tag.
+   kinari #F2EFE9 · ink #3C3A36 · muted #66625A · line #D6D0C4 · kraft #CDB892 · maroon #7F0019 */
+.root {
+  --bg: #f2efe9;
+  --ink: #3c3a36;
+  --muted: #66625a;
+  --line: #d6d0c4;
+  --kraft: #cdb892;
+  --kraftInk: #3a2e1c;
+  --maroon: #7f0019;
+  --sans: "Noto Sans TC", "PingFang TC", sans-serif;
+  --serif: "Noto Serif TC", "Songti TC", serif;
+  background: var(--bg);
+  color: var(--ink);
+  font: 300 15px/1.9 var(--sans);
+  letter-spacing: 0.04em;
+}
+.root a {
+  color: inherit;
+  text-decoration: none;
+}
+.root a:focus-visible,
+.root button:focus-visible,
+.root input:focus-visible {
+  outline: 1px solid var(--maroon);
+  outline-offset: 4px;
+}
+:where(.root) h1,
+:where(.root) h2,
+:where(.root) h3,
+:where(.root) p,
+:where(.root) ul,
+:where(.root) ol,
+:where(.root) dl,
+:where(.root) dd {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 400;
+}
+:where(.root) img {
+  display: block;
+  max-width: 100%;
+  mix-blend-mode: multiply;
+}
+.header,
+.root main,
+.footer {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-inline: 48px;
+}
+
+/* header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding-block: 22px;
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-weight: 500;
+  font-size: 17px;
+  letter-spacing: 0.16em;
+}
+.brand span {
+  font-weight: 300;
+  font-size: 12px;
+  color: var(--muted);
+}
+.nav {
+  display: flex;
+  gap: 32px;
+  margin-left: auto;
+  font-size: 13px;
+}
+.nav a,
+.more {
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.4s;
+}
+.nav a:hover,
+.more:hover {
+  border-color: currentColor;
+}
+.phone {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  padding-left: 32px;
+  border-left: 1px solid var(--line);
+}
+
+/* hero: read right to left — the vertical line first, then the note, then the object */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) auto;
+  gap: 56px;
+  align-items: start;
+  padding-block: 88px 96px;
+}
+.h1 {
+  grid-column: 3;
+  grid-row: 1;
+  writing-mode: vertical-rl;
+  font-family: var(--serif);
+  font-size: 54px;
+  line-height: 1.5;
+  letter-spacing: 0.24em;
+  color: var(--ink);
+  height: 6.4em;
+}
+.h1 span {
+  display: block;
+}
+.h1 span + span {
+  padding-top: 1.4em;
+}
+.heroText {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-top: 64px;
+  border-top: 1px solid var(--ink);
+}
+.eyebrow {
+  font-size: 12px;
+  color: var(--maroon);
+  letter-spacing: 0.2em;
+}
+.lead {
+  font-size: 16px;
+  line-height: 2.1;
+}
+.search {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--ink);
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: 300 15px/1 var(--sans);
+  color: var(--ink);
+  padding: 12px 0;
+  letter-spacing: 0.06em;
+}
+.search input::placeholder {
+  color: var(--muted);
+}
+.search button {
+  border: 0;
+  background: transparent;
+  font: 400 14px/1 var(--sans);
+  letter-spacing: 0.3em;
+  color: var(--ink);
+  padding: 0 4px 0 16px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.search button:hover {
+  color: var(--maroon);
+}
+.heroItem {
+  grid-column: 1;
+  grid-row: 1;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.heroItem img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+}
+.heroItem .hang {
+  margin-top: -40px;
+  margin-right: 48px;
+}
+
+/* the kraft tag — signature element */
+.hang {
+  position: relative;
+  display: block;
+  padding-top: 26px;
+  width: 210px;
+  transform: rotate(-3deg);
+  transform-origin: 50% 0;
+}
+.hang::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  height: 36px;
+  border-left: 1px solid #8a7d68;
+}
+.tag {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 26px 18px 16px;
+  background: var(--kraft);
+  color: var(--kraftInk);
+  clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%, 0 16px);
+  box-shadow: inset 0 -1px 0 #0000001a;
+}
+.tag::before {
+  content: "";
+  position: absolute;
+  left: calc(50% - 5px);
+  top: 8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px #8a7d68;
+}
+.tagModel {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+.tagName {
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.tagMeta {
+  font-size: 11px;
+  line-height: 1.6;
+}
+.tagPrice {
+  padding-top: 8px;
+  margin-top: 6px;
+  border-top: 1px dashed #3a2e1c66;
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+}
+.stamp {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--maroon);
+  border-radius: 50%;
+  color: var(--maroon);
+  font: 600 12px/1 var(--serif);
+  letter-spacing: 0.05em;
+  transform: rotate(-14deg);
+  background: #cdb892cc;
+}
+
+/* promises */
+.promises {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-block: 1px solid var(--line);
+}
+.root .promises li {
+  padding: 28px 32px;
+}
+.root .promises li + li {
+  border-left: 1px solid var(--line);
+}
+.promises h2 {
+  font-size: 15px;
+  font-weight: 500;
+}
+.promises p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* sections */
+.section {
+  padding-top: 112px;
+}
+.section:last-child {
+  padding-bottom: 112px;
+}
+.h2 {
+  font-family: var(--serif);
+  font-size: 22px;
+  letter-spacing: 0.2em;
+  padding-bottom: 32px;
+}
+.secHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.more {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.cats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+.cats li {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.cats a {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  padding: 16px 24px 22px;
+  transition: background 0.4s;
+}
+.cats a:hover {
+  background: #e9e4da;
+}
+.cats img {
+  grid-column: 1 / -1;
+  width: 72%;
+  justify-self: center;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+}
+.catName {
+  font-size: 16px;
+  font-weight: 400;
+}
+.catCount {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.items {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 32px;
+}
+.items a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.items img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  border-bottom: 1px solid var(--line);
+}
+.items .hang {
+  margin-top: -6px;
+  width: 92%;
+}
+.items li:nth-child(even) .hang {
+  transform: rotate(2.5deg);
+}
+.isSold img {
+  opacity: 0.45;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 48px;
+}
+.steps li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ink);
+}
+.kanji {
+  grid-row: span 2;
+  font: 400 36px/1 var(--serif);
+  color: var(--maroon);
+}
+.steps h3 {
+  font-weight: 500;
+  font-size: 16px;
+}
+.steps p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.services {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 48px;
+}
+.services li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: start;
+}
+.services h3 {
+  grid-column: 2;
+  grid-row: 1;
+  writing-mode: vertical-rl;
+  font: 400 24px/1 var(--serif);
+  letter-spacing: 0.3em;
+  padding-left: 18px;
+  border-left: 1px solid var(--line);
+}
+.services p {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 14px;
+  color: var(--muted);
+  padding-top: 4px;
+}
+.call {
+  display: inline-block;
+  margin-top: 56px;
+  padding: 14px 40px;
+  border: 1px solid var(--maroon);
+  letter-spacing: 0.2em;
+  font-size: 14px;
+  transition:
+    background 0.4s,
+    color 0.4s;
+}
+.root .call {
+  color: var(--maroon);
+}
+.root .call:hover {
+  background: var(--maroon);
+  color: #fff;
+}
+
+/* footer */
+.footer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px 48px;
+  padding-block: 48px 40px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
+.footBrand {
+  font-weight: 500;
+}
+.footer dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 20px;
+}
+.footer dt {
+  color: var(--muted);
+}
+.footer small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* motion: the vertical line is written in slowly; tags sway when touched */
+@media (prefers-reduced-motion: no-preference) {
+  .h1 span {
+    animation: ink 1.6s ease both;
+  }
+  .h1 span + span {
+    animation-delay: 0.7s;
+  }
+  .heroText,
+  .heroItem {
+    animation: settle 1.2s 1.2s ease both;
+  }
+  .hang:hover,
+  a:focus-visible .hang {
+    animation: sway 1.4s ease-in-out;
+  }
+}
+@keyframes ink {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes settle {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes sway {
+  0% {
+    transform: rotate(-3deg);
+  }
+  25% {
+    transform: rotate(6deg);
+  }
+  50% {
+    transform: rotate(-4deg);
+  }
+  75% {
+    transform: rotate(2deg);
+  }
+  100% {
+    transform: rotate(-3deg);
+  }
+}
+
+@media (max-width: 960px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .heroItem {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .heroText {
+    grid-column: 1;
+  }
+  .h1 {
+    grid-column: 2;
+  }
+  .items {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 56px;
+  }
+}
+
+/* phone: vertical line stays on the right, the note to its left, like a tategaki page */
+@media (max-width: 640px) {
+  .header,
+  .root main,
+  .footer {
+    padding-inline: 20px;
+  }
+  .header {
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    padding-block: 16px 12px;
+  }
+  .brand {
+    flex-direction: column;
+    gap: 0;
+  }
+  .nav {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+    gap: 24px;
+  }
+  .phone {
+    margin-left: auto;
+    padding-left: 0;
+    border-left: 0;
+  }
+  .hero {
+    gap: 20px;
+    padding-block: 40px 56px;
+  }
+  .h1 {
+    font-size: 34px;
+    letter-spacing: 0.18em;
+  }
+  .heroText {
+    padding-top: 24px;
+    gap: 20px;
+  }
+  .lead {
+    font-size: 14px;
+    line-height: 2;
+  }
+  .heroItem .hang {
+    margin-right: 12px;
+  }
+  .promises {
+    grid-template-columns: 1fr;
+  }
+  .root .promises li {
+    padding: 18px 0;
+  }
+  .root .promises li + li {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .section {
+    padding-top: 72px;
+  }
+  .section:last-child {
+    padding-bottom: 72px;
+  }
+  .h2 {
+    font-size: 19px;
+    padding-bottom: 20px;
+  }
+  .cats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cats a {
+    padding: 10px 12px 14px;
+  }
+  .catName {
+    font-size: 14px;
+  }
+  .items {
+    gap: 40px 14px;
+  }
+  .items .hang {
+    width: 100%;
+  }
+  .tag {
+    padding: 24px 12px 12px;
+  }
+  .tagName {
+    font-size: 13px;
+  }
+  .stamp {
+    width: 44px;
+    height: 44px;
+    font-size: 10px;
+    right: 6px;
+    bottom: 34px;
+  }
+  .steps,
+  .services {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .call {
+    display: block;
+    text-align: center;
+    margin-top: 40px;
+  }
+  .footer {
+    grid-template-columns: 1fr;
+  }
+}

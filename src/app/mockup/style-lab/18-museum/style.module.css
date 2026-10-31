@@ -1,0 +1,700 @@
+/* 18 museum — the warehouse hung as a gallery: grey-white walls, white plinths, tombstone labels,
+   a floor plan for the rooms and the gallery red dot for sold pieces. One painted wall (services).
+   wall #EDEDEA · floor #DEDCD5 · plinth #FFFFFF · ink #1C1C1C · label #55554F · dot #C8102E
+   painted wall #1F4D4A */
+.root {
+  --wall: #ededea;
+  --floor: #dedcd5;
+  --plinth: #ffffff;
+  --ink: #1c1c1c;
+  --muted: #55554f;
+  --hair: #c9c7c0;
+  --dot: #c8102e;
+  --paint: #1f4d4a;
+  --song: "Chiron Sung HK", "Noto Serif TC", serif;
+  --sans: "Schibsted Grotesk", "Noto Sans TC", sans-serif;
+  --gutter: clamp(16px, 5vw, 88px);
+  min-height: 100vh;
+  background: var(--wall);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.root *,
+.root *::before,
+.root *::after {
+  box-sizing: border-box;
+}
+:where(.root) :where(h1, h2, p, ul, ol, dl, dd) {
+  margin: 0;
+  padding: 0;
+}
+:where(.root) :where(ul, ol) {
+  list-style: none;
+}
+.root a {
+  color: inherit;
+  text-decoration: none;
+}
+.root a:focus-visible,
+.root button:focus-visible,
+.root input:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
+/* header: quiet, like the entrance lettering */
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px var(--gutter);
+}
+.brand {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+}
+.brand span {
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  font-size: 13px;
+}
+.nav {
+  display: flex;
+  gap: 32px;
+  font-size: 14px;
+}
+.nav a {
+  color: var(--muted);
+  border-bottom: 1px solid transparent;
+  transition:
+    color 0.3s,
+    border-color 0.3s;
+}
+.nav a:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+/* hero: wall text left, one lit exhibit standing on the floor */
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(300px, 0.8fr) 1.2fr;
+  gap: var(--gutter);
+  align-items: end;
+  min-height: min(calc(100vh - 84px), 900px);
+  overflow: clip;
+  padding: 40px var(--gutter) 0;
+  background: linear-gradient(to bottom, var(--wall) 0 82%, var(--floor) 82% 100%);
+}
+.wallText {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  align-self: center;
+  padding-bottom: 12vh;
+}
+.eyebrow {
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+.h1 {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--song);
+  font-weight: 300;
+  font-size: clamp(30px, 2.9vw, 46px);
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+}
+.lead {
+  max-width: 26em;
+  color: var(--muted);
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 400px;
+  border-bottom: 1px solid var(--ink);
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 10px 0;
+  font: inherit;
+  color: var(--ink);
+  appearance: none;
+}
+.search input::placeholder {
+  color: var(--muted);
+}
+.search button {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--ink);
+  cursor: pointer;
+  padding: 10px 0 10px 8px;
+}
+.search button::after {
+  content: " →";
+  display: inline-block;
+  transition: transform 0.3s;
+}
+.search button:hover::after {
+  transform: translateX(4px);
+}
+
+/* exhibit */
+.exhibit {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.object {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 480 / var(--b, 300);
+  overflow: hidden;
+  mix-blend-mode: multiply;
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.object img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 0;
+}
+.plinth {
+  position: relative;
+  display: block;
+  width: 62%;
+  background: var(--plinth);
+  box-shadow:
+    inset -18px 0 24px -18px rgba(0, 0, 0, 0.12),
+    0 1px 0 var(--hair),
+    0 26px 22px -18px rgba(0, 0, 0, 0.22);
+}
+.exhibit:hover .object,
+.exhibit:focus-visible .object {
+  transform: translateY(-8px);
+}
+
+/* the featured exhibit in the hero */
+.feature {
+  display: grid;
+  grid-template-columns: 1fr 210px;
+  grid-template-rows: 1fr auto;
+  column-gap: 40px;
+  align-items: end;
+  padding-bottom: 7vh;
+}
+.feature .object {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  max-width: 520px;
+  justify-self: center;
+}
+.feature .plinth {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: center;
+  width: min(300px, 56%);
+  height: clamp(180px, 26vh, 260px);
+}
+.feature .label {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  padding: 18px;
+  background: var(--plinth);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.spot {
+  position: absolute;
+  left: -10%;
+  right: 20%;
+  top: -40vh;
+  bottom: 0;
+  background: radial-gradient(
+    ellipse 46% 62% at 50% 64%,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0) 72%
+  );
+  pointer-events: none;
+}
+
+/* tombstone label */
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  line-height: 1.55;
+  text-align: left;
+}
+.maker {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.title {
+  font-family: var(--song);
+  font-weight: 500;
+  font-size: 17px;
+  line-height: 1.4;
+  background: linear-gradient(var(--ink), var(--ink)) no-repeat 0 100% / 0 1px;
+  transition: background-size 0.5s;
+}
+.exhibit:hover .title,
+.exhibit:focus-visible .title {
+  background-size: 100% 1px;
+}
+.meta {
+  color: var(--muted);
+}
+.price {
+  padding-top: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 6px;
+}
+.price del {
+  font-weight: 400;
+  color: var(--muted);
+}
+.redDot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+/* promises: three placards with a lot of wall around them */
+.promises {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gutter);
+  padding: 120px var(--gutter) 40px;
+}
+.promises li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 18px;
+  border-top: 1px solid var(--ink);
+}
+.promises strong {
+  font-family: var(--song);
+  font-weight: 500;
+  font-size: 19px;
+}
+.promises span {
+  color: var(--muted);
+}
+
+/* sections */
+.section {
+  padding: 120px var(--gutter) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.h2 {
+  font-family: var(--song);
+  font-weight: 300;
+  font-size: clamp(28px, 2.6vw, 40px);
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+}
+.note {
+  font-size: 13px;
+  color: var(--muted);
+}
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+.more {
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--ink);
+}
+
+/* floor plan: room width follows item count */
+.plan {
+  display: flex;
+  flex-direction: column;
+  border: 3px solid var(--ink);
+  background: var(--plinth);
+  margin-top: 22px;
+}
+.wing {
+  display: flex;
+}
+.wing + .wing {
+  border-top: 1px solid var(--ink);
+}
+.wing li {
+  flex-basis: 0;
+  min-width: 0;
+}
+.wing li + li {
+  border-left: 1px solid var(--ink);
+}
+.room {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  min-height: 170px;
+  padding: 18px 20px;
+  transition: background-color 0.3s;
+}
+.roomName {
+  font-family: var(--song);
+  font-weight: 500;
+  font-size: 22px;
+}
+.roomCount {
+  align-self: flex-end;
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+.room:hover,
+.room:focus-visible {
+  background: #f4f3ef;
+}
+.room:hover .roomCount::after,
+.room:focus-visible .roomCount::after {
+  content: " →";
+}
+
+/* gallery: plinths of different heights, labels mounted on their fronts */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(24px, 4vw, 72px);
+  align-items: end;
+  padding-top: 48px;
+}
+.gallery .plinth {
+  width: 82%;
+  padding: 16px 16px 0;
+}
+.gallery li:nth-child(1) .plinth {
+  min-height: 250px;
+}
+.gallery li:nth-child(2) .plinth {
+  min-height: 300px;
+}
+.gallery li:nth-child(3) .plinth {
+  min-height: 230px;
+}
+.gallery li:nth-child(4) .plinth {
+  min-height: 280px;
+}
+.gallery .object {
+  width: 100%;
+}
+
+/* steps */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gutter);
+  padding-top: 24px;
+}
+.steps li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stepNo {
+  font-family: var(--song);
+  font-weight: 300;
+  font-size: 72px;
+  line-height: 1;
+  padding-bottom: 12px;
+}
+.steps strong {
+  font-family: var(--song);
+  font-weight: 500;
+  font-size: 19px;
+}
+.steps li span:last-child {
+  color: var(--muted);
+}
+
+/* the one painted wall */
+.services {
+  margin-top: 140px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 48px var(--gutter);
+  padding: 110px var(--gutter);
+  background: var(--paint);
+  color: #ffffff;
+}
+.svcList {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+.svcList li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.svcList strong {
+  font-family: var(--song);
+  font-weight: 500;
+  font-size: 22px;
+}
+.svcList span {
+  color: #d7e3e1;
+}
+.call.call {
+  grid-column: 2;
+  justify-self: start;
+  padding: 14px 28px;
+  border: 1px solid #ffffff;
+  letter-spacing: 0.1em;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}
+.call:hover {
+  background: #ffffff;
+  color: var(--paint);
+}
+.services a:focus-visible {
+  outline-color: #ffffff;
+}
+
+/* footer: the information desk */
+.footer {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 32px var(--gutter);
+  padding: 96px var(--gutter) 48px;
+}
+.footBrand {
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+.desk {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px 48px;
+}
+.desk dt {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+.desk dd {
+  font-size: 15px;
+}
+.desk a {
+  border-bottom: 1px solid var(--hair);
+}
+.copy {
+  grid-column: 2;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* motion: the lights come on, once */
+@media (prefers-reduced-motion: no-preference) {
+  .spot {
+    animation: lights 1.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+  }
+  .feature .object {
+    animation: lit 1.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+  }
+}
+@keyframes lights {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes lit {
+  from {
+    filter: brightness(0.82) contrast(0.9);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .root *,
+  .root *::before,
+  .root *::after {
+    transition: none !important;
+  }
+}
+
+@media (max-width: 1080px) {
+  .hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+    min-height: 0;
+    background: linear-gradient(to bottom, var(--wall) 0 88%, var(--floor) 88% 100%);
+  }
+  .wallText {
+    padding-bottom: 0;
+  }
+  .gallery {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 80px;
+  }
+  .services {
+    grid-template-columns: 1fr;
+  }
+  .call.call {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 720px) {
+  .root {
+    font-size: 14px;
+  }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding-top: 22px;
+    padding-bottom: 8px;
+  }
+  .nav {
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .hero {
+    padding-top: 28px;
+    gap: 48px;
+  }
+  .h1 {
+    font-size: 27px;
+  }
+  .feature {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    padding-bottom: 32px;
+  }
+  .feature .plinth {
+    height: 120px;
+  }
+  .feature .label {
+    grid-column: 1;
+    grid-row: 3;
+    justify-self: end;
+    width: 70%;
+    translate: 0 -40px;
+    padding: 12px 14px;
+  }
+  .feature .spot {
+    left: -20%;
+    right: -20%;
+    top: -10%;
+  }
+  .promises {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding-top: 40px;
+  }
+  .section {
+    padding-top: 88px;
+  }
+  .wing {
+    flex-direction: column;
+  }
+  .wing li + li {
+    border-left: 0;
+    border-top: 1px solid var(--ink);
+  }
+  .room {
+    min-height: calc(var(--n) * 7px + 28px);
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 16px;
+  }
+  .roomName {
+    font-size: 19px;
+  }
+  .roomCount {
+    align-self: center;
+  }
+  .gallery {
+    grid-template-columns: 1fr 1fr;
+    gap: 64px 16px;
+  }
+  .gallery .plinth {
+    width: 100%;
+    padding: 12px 10px 0;
+  }
+  .gallery li:nth-child(n) .plinth {
+    min-height: 190px;
+  }
+  .title {
+    font-size: 15px;
+  }
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .stepNo {
+    font-size: 52px;
+    padding-bottom: 4px;
+  }
+  .services {
+    margin-top: 96px;
+    padding: 64px var(--gutter);
+    gap: 32px;
+  }
+  .svcList {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .call.call {
+    justify-self: stretch;
+    text-align: center;
+  }
+  .footer {
+    grid-template-columns: 1fr;
+    padding-top: 64px;
+  }
+  .desk {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .copy {
+    grid-column: 1;
+  }
+}
