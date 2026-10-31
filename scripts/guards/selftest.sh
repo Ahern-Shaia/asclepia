@@ -9,7 +9,7 @@ TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 fixture() { # name -> "relative/path<TAB>violating line"
   case "$1" in
     no-checkout-path)  printf '%s\t%s' "app/checkout/page.tsx" 'export default function P() { return null; }' ;;
-    no-inline-margin)  printf '%s\t%s' "components/a.tsx" 'const a = <div style={{ marginTop: 8 }} />;' ;;
+    no-inline-margin)  printf '%s\t%s' "components/a.tsx" 'const a = <div style={{\n  padding: 4,\n  marginTop: 8,\n}} />;' ;;
     no-gradient)       printf '%s\t%s' "components/a.module.css" '.a { background: linear-gradient(red, blue); }' ;;
     no-google-font)    printf '%s\t%s' "app/layout.tsx" 'import { Inter } from "next/font/google";' ;;
     no-hardcoded-hex)  printf '%s\t%s' "components/b.tsx" 'const c = "#1D4E89";' ;;
@@ -30,7 +30,7 @@ for rule in "${RULES[@]}"; do
   # negative control: a clean tree must pass
   if ! bash "$HERE/run-all.sh" "$TMP/$name/clean" >/dev/null; then echo "✗ $name: fires on a clean tree (or errors)"; bad=1; fi
   # positive control: one violating line must make exactly this rule fire
-  target="$TMP/$name/dirty/$rel"; mkdir -p "$(dirname "$target")"; printf '%s\n' "$line" > "$target"
+  target="$TMP/$name/dirty/$rel"; mkdir -p "$(dirname "$target")"; printf '%b\n' "$line" > "$target"
   [[ -s "$target" ]] || { echo "✗ $name: fixture not written"; bad=1; continue; }
   out=$(bash "$HERE/run-all.sh" "$TMP/$name/dirty"); rc=$?
   if [[ $rc -eq 0 ]] || ! grep -q "✗ $name " <<<"$out" || grep -q "probe error" <<<"$out"; then
