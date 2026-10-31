@@ -1,0 +1,43 @@
+/* v5.1 deltas on top of ../home-v5/home-v5.module.css: one hero search replaces header search + finder. */
+.pushEnd {
+  margin-inline-start: auto;
+}
+
+.heroSearch {
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) minmax(0, 1fr) auto;
+  gap: 12px;
+  background: var(--white);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 12px 32px rgba(20, 54, 95, 0.35);
+}
+.heroSearch select,
+.heroSearch input {
+  height: 52px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding-inline: 14px;
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--white);
+}
+.heroSearch select {
+  background: var(--paper);
+}
+.heroSearch input:focus-visible,
+.heroSearch select:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 1px;
+}
+.heroSearch button {
+  height: 52px;
+}
+
+@media (max-width: 768px) {
+  .heroSearch {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px;
+  }
+}
