@@ -42,7 +42,8 @@ export const adminCopy = {
       pricing: "價格與狀況",
       source: "收購來源",
     },
-    imagesHint: "拖曳排序，第一張是主圖。支援 JPG、PNG、WebP，每張 15 MB 以內，最多 20 張。",
+    imagesHint:
+      "拖曳排序，第一張是主圖。主圖請用 4:3、淺色統一背景、設備 3/4 正面；其餘放面板、配件、序號牌等細節。支援 JPG、PNG、WebP，每張 15 MB 以內，最多 20 張。",
     mainImage: "主圖",
     upload: "上傳圖片",
     category: "分類",
