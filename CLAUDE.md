@@ -19,7 +19,7 @@
 - **語言**：TypeScript
 - **運行**：單一 Next.js 應用（前台和後台在同一個 repo）＋ PostgreSQL；部署平台未定（§2.4）
 - **授權**：proprietary（用戶未指明，先用預設）
-- **Git remote**：TBD（已 git init，本機 `main`）
+- **Git remote**：https://github.com/Ahern-Shaia/asclepia（private，2026-10-31 由用戶建立並推送 `main`）
 
 ### 0.1 定位 ≠ MVP（pre-dev #1 #3）
 
@@ -188,7 +188,8 @@
 | 部署平台（Vercel+Neon / Cloudflare / 自架） | 上線前一個 milestone |
 | 商品圖片儲存（object storage，與主網域分開） | 跟部署平台一起決定；開發期先放本機 |
 | 寄信服務（詢價通知） | MVP 先只寫進 DB、後台查看；要通知時再定 |
-| Git remote / CI 平台 | 現在（見 §0.2 #17） |
+| CI 平台 | remote 已建（GitHub private）；GitHub Actions 跑 `pnpm check` + `pnpm test:e2e` 待做（§0.2 #17） |
+| mockup 分享站 | 用戶 2026-10-31 要部署到 Render 給別人看（`ENABLE_MOCKUPS=1`）；部署由用戶操作（R10） |
 
 ---
 
