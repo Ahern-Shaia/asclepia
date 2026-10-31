@@ -1,0 +1,6 @@
+# Supply chain (security-baseline §7): skip dependency install scripts unless allow-listed,
+# and refuse versions published less than 7 days ago.
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver
+minimumReleaseAge: 10080

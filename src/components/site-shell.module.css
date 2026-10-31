@@ -1,0 +1,15 @@
+.inner {
+  max-width: 1200px;
+  margin-inline: auto;
+  width: 100%;
+  height: 100%;
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.content {
+  padding: 24px 16px;
+}

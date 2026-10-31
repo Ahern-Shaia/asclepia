@@ -1,3 +1,13 @@
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
+
 This file provides guidance to AI coding assistants when working with code in this repository.
 
 ## Project Architecture
@@ -110,9 +120,15 @@ psql "$DATABASE_URL"
 
 ## Miscellaneous
 
-> 把專案特有的「踩坑警告」放這裡。範例：
-> - The database JSONB columns store JSON marshalled by `protojson.Marshal` in Go code, which produces camelCase keys (`task_run` becomes `taskRun`)
-> - When modifying multiple files, run modifications in parallel whenever possible
+Project-specific traps (each one bit us during scaffold on 2026-10-31):
+
+- **antd compound components are `undefined` in Server Components** (`Typography.Title`, `Layout.Header`, `Form.Item` …) → React #130 in the browser while the server HTML looks fine. Import the parts from `src/components/ui/*` (client re-exports). Guard: `no-antd-compound-in-server`.
+- **`AntdRegistry` must stay inside `<Suspense>`** in `src/app/layout.tsx`: `@ant-design/cssinjs` `createCache()` calls `Math.random()`, which `cacheComponents` rejects during prerender.
+- **Don't size antd components with CSS-module classes** (`min-height`, `margin` on `Layout`/`Flex`): antd's own single-class rules are injected later and win. Use props / `style`, or put the class on a plain wrapper `div`.
+- **`pnpm build` green ≠ page works.** Both bugs above built cleanly; only the browser caught them. UI changes are done when `pnpm test:e2e` passes (R19).
+- **`prisma init` writes agent skill files** into `.claude/skills`, `.agents/`, `.windsurf/` (third-party instructions that would auto-load). They were removed; don't re-add them without review.
+- **Prisma 7 config file is `prisma7.config.ts`** (the CLI default in 7.10), not `prisma.config.ts`.
+- The shell is zsh and macOS ships bash 3.2: guard scripts must avoid associative arrays and unquoted globs (`set -f`).
 
 ---
 

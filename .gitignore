@@ -1,10 +1,29 @@
-node_modules/
-.next/
-.env
-.env.*
+# dependencies
+/node_modules
+# next.js
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+# env (commit only .env.example)
+.env*
 !.env.example
-.uploads/
-coverage/
-playwright-report/
-test-results/
+# app data
+/.uploads/
+# testing
+/coverage
+/playwright-report/
+/test-results/
+/reports/
+# misc
 .DS_Store
+*.pem
+npm-debug.log*
+.pnpm-debug.log*
+.vercel
+
+/src/generated/prisma
+
+# prisma generated client
+/src/generated/
