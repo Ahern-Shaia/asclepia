@@ -138,7 +138,7 @@ model AuditLog     { id BigInt @id @default(autoincrement()); actorId String; ac
 - 文案欄位有療效字詞守衛（R11 ②）：送出時警告，列出命中的詞，不硬擋（守衛會誤判），但會寫進 audit
 
 **前台商品頁**，區塊順序照 §2：分類標題 → 圖片（主圖＋縮圖列）→ 標題 → 設備銘牌（品牌、型號、年份、保固、狀況；有許可證字號才多一列）→ 〔詢價這件商品〕→ 產品訊息 → 規格表 → Main Features → 回列表。
-視覺依 `spec-catalog` profile。8 項細節在前端 M0 寫定後才開始做畫面（`frontend-design-principles.md` §B0）。
+視覺依 §B0 `inspect-catalog`「實機型錄」（用戶 2026-11-01 定案，`frontend-design-principles.md` §B0）。詢價按鈕的形式見 `docs/modules/inquiry.md`（多台合併詢價，DRAFT）。
 
 ---
 
@@ -202,6 +202,7 @@ model AuditLog     { id BigInt @id @default(autoincrement()); actorId String; ac
 
 | # | 議題 | 選項 | 建議 |
 |---|---|---|---|
+| **OQ-CAT-11** | 要不要加「商談中」商品狀態（Intex 有，`visual-synthesis.md` §4-2） | A. 不加，維持草稿／上架／下架／已售出 · B. 加 | **A ✅ 用戶 2026-11-01 裁定「不加」** |
 | **OQ-CAT-10** | 首頁倉庫實景照、看機區照、品牌 logo 從哪裡上傳（美工規範 A1／A7，`docs/research/2026-10-31-art-direction-analysis.md`） | A. 後台「站台設定」加照片欄位（走同一條圖片管線 A2） · B. 先寫死在程式碼裡，換照片要改版 | **A ✅ 用戶 2026-10-31 裁定「可以」** — 站台設定加首頁倉庫照、看機區照、品牌 logo 欄位，走同一條圖片管線；資料模型細節在 M1 實作前補進 §6 並送 review（R6） |
 
 ## 12. 失效場景反思（FMEA）
@@ -214,3 +215,4 @@ M5 收尾時填（R17）。目前還沒有實作，沒有路徑可以列。
 |---|---|---|---|
 | 2026-10-31 | v0.1 | 初版 DRAFT：參考頁逐區塊對照、資料模型草案、OQ-CAT-1..9 | Claude Code |
 | 2026-10-31 | v0.2 | OQ-CAT-2/3/6/9 由用戶裁定，1/4/5/7/8 採建議；DRAFT → APPROVED | Claude Code |
+| 2026-11-01 | v0.3 | OQ-CAT-11「商談中」不加；§4.3 視覺改指 `inspect-catalog`；詢價擴充成多台合併詢價，另開 `inquiry.md`（DRAFT） | Claude Code |
