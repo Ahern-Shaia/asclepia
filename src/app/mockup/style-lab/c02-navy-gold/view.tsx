@@ -1,0 +1,385 @@
+"use client";
+
+import {
+  CalendarOutlined,
+  CheckOutlined,
+  ClockCircleOutlined,
+  EnvironmentOutlined,
+  PhoneOutlined,
+  PlusOutlined,
+  ProfileOutlined,
+  RightOutlined,
+  SearchOutlined,
+  SwapOutlined,
+  ToolOutlined,
+} from "@ant-design/icons";
+import { useState } from "react";
+import { EquipIllus, MiniMap, StepIllus } from "@/components/home-v4/equip-illus";
+import { SITE, twd, v } from "../_v-content";
+import { Emblem, Rule } from "./emblem";
+import s from "./style.module.css";
+
+const c = v.copy;
+const tel = `tel:${v.company.phone}`;
+const roman = ["I", "II", "III"];
+const serviceIcon = { buy: <SwapOutlined />, repair: <ToolOutlined />, rent: <CalendarOutlined /> };
+
+function Head({ id, title, more }: { id: string; title: string; more?: boolean }) {
+  return (
+    <div className={s.head}>
+      <h2 id={id}>{title}</h2>
+      <Rule className={s.rule} />
+      {more && (
+        <a href={`${SITE}/products`} className={s.more}>
+          {c.latest.viewAll} <RightOutlined aria-hidden />
+        </a>
+      )}
+    </div>
+  );
+}
+
+export function View() {
+  const [list, setList] = useState<string[]>([]);
+  const toggle = (id: string) =>
+    setList((l) => (l.includes(id) ? l.filter((x) => x !== id) : [...l, id]));
+
+  return (
+    <div className={s.page}>
+      <div className={s.util}>
+        <div className={`${s.wrap} ${s.utilRow}`}>
+          <span>
+            <ClockCircleOutlined aria-hidden /> {c.util.hours(v.company.hours)}
+          </span>
+          <span className={s.desk}>{c.util.visit}</span>
+          <a href={tel} className={s.utilPhone}>
+            <PhoneOutlined aria-hidden /> {v.company.phone}
+          </a>
+        </div>
+      </div>
+
+      <header className={s.header}>
+        <div className={`${s.wrap} ${s.headerRow}`}>
+          <a href={SITE} className={s.brand} aria-label={`${v.brand.name} 首頁`}>
+            <span className={s.mark} aria-hidden>
+              A
+            </span>
+            <span className={s.brandText}>
+              <strong>{v.brand.name}</strong>
+              <span>{v.brand.tagline}</span>
+            </span>
+          </a>
+          <form className={s.search} role="search" action={`${SITE}/products`}>
+            <select name="cat" aria-label={c.header.allCategories} defaultValue="">
+              <option value="">{c.header.allCategories}</option>
+              {v.categories.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.name}
+                </option>
+              ))}
+            </select>
+            <input
+              name="q"
+              placeholder={c.header.searchPlaceholder}
+              aria-label={c.header.searchPlaceholder}
+            />
+            <button type="submit" aria-label={c.header.search}>
+              <SearchOutlined aria-hidden />
+            </button>
+          </form>
+          <div className={s.actions}>
+            <a
+              href="#inquiry-list"
+              className={s.listBtn}
+              aria-label={`${c.header.inquiryList} ${list.length} 件`}
+            >
+              <ProfileOutlined aria-hidden />
+              <span className={s.desk}>{c.header.inquiryList}</span>
+              <span className={`${s.badge} ${list.length ? s.badgeOn : ""}`} key={list.length}>
+                {list.length}
+              </span>
+            </a>
+            <a href={tel} className={`${s.bookBtn} ${s.desk}`}>
+              {c.header.book}
+            </a>
+          </div>
+        </div>
+        <nav className={s.catNav} aria-label="設備分類">
+          <div className={`${s.wrap} ${s.catNavRow}`}>
+            {v.categories.map((x) => (
+              <a key={x.id} href={x.href}>
+                {x.name}
+              </a>
+            ))}
+            <a href={`${SITE}/products`} className={s.catNavAll}>
+              {c.categories.all}
+            </a>
+          </div>
+        </nav>
+      </header>
+
+      <main>
+        <section className={s.hero} aria-labelledby="hero-title">
+          <div className={`${s.wrap} ${s.heroFrame}`}>
+            <span className={`${s.corner} ${s.cTL}`} aria-hidden />
+            <span className={`${s.corner} ${s.cTR}`} aria-hidden />
+            <span className={`${s.corner} ${s.cBL}`} aria-hidden />
+            <span className={`${s.corner} ${s.cBR}`} aria-hidden />
+            <div className={s.heroRow}>
+              <div className={s.heroText}>
+                <span className={s.eyebrow}>{v.hero.eyebrow}</span>
+                <h1 id="hero-title">
+                  {v.hero.heading.map((line) => (
+                    <span key={line}>{line}</span>
+                  ))}
+                </h1>
+                <ul className={s.points}>
+                  {c.hero.points.map((p) => (
+                    <li key={p}>{p}</li>
+                  ))}
+                </ul>
+                <form className={s.finder} action={`${SITE}/products`}>
+                  <span className={s.finderTitle}>{c.hero.finder.title}</span>
+                  <label>
+                    <span>{c.hero.finder.category}</span>
+                    <select name="cat" defaultValue="">
+                      <option value="">{c.hero.finder.any}</option>
+                      {v.categories.map((x) => (
+                        <option key={x.id} value={x.id}>
+                          {x.name}（{x.count}）
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    <span>{c.hero.finder.brand}</span>
+                    <select name="brand" defaultValue="">
+                      <option value="">{c.hero.finder.any}</option>
+                      {v.brands.map((b) => (
+                        <option key={b}>{b}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    <span>{c.hero.finder.year}</span>
+                    <select name="year" defaultValue="">
+                      <option value="">{c.hero.finder.any}</option>
+                      {c.hero.finder.yearOptions.map((y) => (
+                        <option key={y}>{y}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <button type="submit" className={s.finderBtn}>
+                    <SearchOutlined aria-hidden /> {c.hero.finder.submit(v.total)}
+                  </button>
+                </form>
+              </div>
+              <div className={s.scene} aria-hidden>
+                <Emblem className={s.emblem} />
+                <span className={s.disc} />
+                <EquipIllus kind="monitor" className={`${s.item} ${s.itemL}`} />
+                <EquipIllus kind="analyzer" className={`${s.item} ${s.itemR}`} />
+                <EquipIllus kind="ultrasound" className={`${s.item} ${s.itemM}`} />
+                <span className={s.plate}>
+                  <span className={s.platePrice}>{v.hero.scene.price}</span>
+                  <span className={s.plateVisit}>
+                    <EnvironmentOutlined /> {v.hero.scene.visit}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className={`${s.section} ${s.light}`} aria-labelledby="h-cat">
+          <Emblem className={s.watermark} />
+          <div className={s.wrap}>
+            <Head id="h-cat" title={c.categories.title} />
+            <ul className={s.cats}>
+              {v.categories.map((x) => (
+                <li key={x.id}>
+                  <a href={x.href} className={s.cat}>
+                    <span className={s.catArt}>
+                      <EquipIllus kind={x.id} />
+                    </span>
+                    <span className={s.catName}>{x.name}</span>
+                    <span className={s.catCount}>
+                      {x.count} {c.categories.unit}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className={`${s.section} ${s.dark}`} aria-labelledby="h-latest">
+          <div className={s.wrap}>
+            <Head id="h-latest" title={c.latest.title} more />
+            <ul className={s.cards}>
+              {v.latest.map((p) => {
+                const added = list.includes(p.id);
+                const meta = [
+                  p.year && c.latest.year(p.year),
+                  p.condition,
+                  p.warranty && c.latest.warranty(p.warranty),
+                ]
+                  .filter(Boolean)
+                  .join(" · ");
+                const price = p.priceTwd ? twd(p.priceTwd) : c.latest.askPrice;
+                return (
+                  <li key={p.id} className={`${s.card} ${p.sold ? s.sold : ""}`}>
+                    <a href={p.href} className={s.cardLink}>
+                      <span className={s.photo}>
+                        <EquipIllus kind={p.kind} className={s.photoArt} />
+                        {p.sold ? (
+                          <span className={`${s.tag} ${s.tagSold}`}>{c.latest.sold}</span>
+                        ) : (
+                          p.isNew && <span className={s.tag}>{c.latest.newTag}</span>
+                        )}
+                      </span>
+                      <span className={s.cardBody}>
+                        <span className={s.cardCat}>{p.categoryName}</span>
+                        <span className={s.cardTitle}>
+                          {p.brand} {p.model}
+                        </span>
+                        <span className={s.cardName}>{p.nameZh}</span>
+                        <span className={s.cardMeta}>{meta}</span>
+                        <span className={s.price}>{p.sold ? <s>{price}</s> : price}</span>
+                      </span>
+                    </a>
+                    {!p.sold && (
+                      <button
+                        type="button"
+                        className={s.addBtn}
+                        aria-pressed={added}
+                        onClick={() => toggle(p.id)}
+                      >
+                        {added ? <CheckOutlined aria-hidden /> : <PlusOutlined aria-hidden />}
+                        {added ? c.latest.added : c.latest.add}
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
+
+        <section className={s.section} aria-labelledby="h-brands">
+          <div className={s.wrap}>
+            <Head id="h-brands" title={c.brands.title} />
+            <ul className={s.brands}>
+              {v.brands.map((b) => (
+                <li key={b}>
+                  <a href={`${SITE}/products?brand=${encodeURIComponent(b)}`}>{b}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className={`${s.section} ${s.light}`} aria-labelledby="h-buy">
+          <div className={`${s.wrap} ${s.buyRow}`}>
+            <div>
+              <Head id="h-buy" title={c.buy.title} />
+              <ol className={s.steps}>
+                {c.buy.steps.map((st, i) => (
+                  <li key={st.title}>
+                    <span className={s.stepNo} aria-hidden>
+                      {roman[i]}
+                    </span>
+                    <span className={s.stepArt}>
+                      <StepIllus step={i as 0 | 1 | 2} />
+                    </span>
+                    <strong>{st.title}</strong>
+                    <span>{st.body}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <aside className={s.visit} aria-labelledby="h-visit">
+              <MiniMap />
+              <h2 id="h-visit">{c.visit.title}</h2>
+              <dl>
+                <div>
+                  <dt>
+                    <EnvironmentOutlined aria-hidden /> {c.visit.address}
+                  </dt>
+                  <dd>{v.company.address}</dd>
+                </div>
+                <div>
+                  <dt>
+                    <ClockCircleOutlined aria-hidden /> {c.visit.hours}
+                  </dt>
+                  <dd>{v.company.hours}</dd>
+                </div>
+              </dl>
+              <p>{c.visit.note}</p>
+              <a href={tel} className={s.visitBtn}>
+                <PhoneOutlined aria-hidden /> {c.visit.call} {v.company.phone}
+              </a>
+            </aside>
+          </div>
+        </section>
+
+        <section id="services" className={s.section} aria-labelledby="h-services">
+          <div className={s.wrap}>
+            <Head id="h-services" title={c.services.title} />
+            <ul className={s.services}>
+              {c.services.items.map((sv) => (
+                <li key={sv.id}>
+                  <span className={s.serviceIcon} aria-hidden>
+                    {serviceIcon[sv.id]}
+                  </span>
+                  <strong>{sv.title}</strong>
+                  <span>{sv.body}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      </main>
+
+      <footer id="contact" className={s.footer}>
+        <div className={`${s.wrap} ${s.shelf}`} aria-hidden>
+          {(
+            ["microscope", "monitor", "ultrasound", "analyzer", "centrifuge", "dental"] as const
+          ).map((k) => (
+            <EquipIllus key={k} kind={k} outline />
+          ))}
+        </div>
+        <div className={`${s.wrap} ${s.footRow}`}>
+          <div className={s.brand}>
+            <span className={s.mark} aria-hidden>
+              A
+            </span>
+            <span className={s.brandText}>
+              <strong>{v.company.name}</strong>
+              <span>{v.brand.tagline}</span>
+            </span>
+          </div>
+          <ul className={s.footContact}>
+            <li>
+              <PhoneOutlined aria-hidden /> <a href={tel}>{v.company.phone}</a>
+            </li>
+            <li>
+              <a href={`mailto:${v.company.email}`}>{v.company.email}</a>
+            </li>
+            <li>{v.company.address}</li>
+            <li>{v.company.hours}</li>
+          </ul>
+          <p className={s.copyright}>{v.copyright}</p>
+        </div>
+      </footer>
+
+      <div className={s.mobileBar}>
+        <a href={tel}>
+          <PhoneOutlined aria-hidden /> {c.mobileBar.call}
+        </a>
+        <a href="#inquiry-list" className={s.mobileBarMain}>
+          <ProfileOutlined aria-hidden /> {c.mobileBar.inquiry}（{list.length}）
+        </a>
+      </div>
+    </div>
+  );
+}
