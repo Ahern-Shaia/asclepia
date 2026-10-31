@@ -2,7 +2,7 @@ import { homeCopy } from "@/copy/home";
 import s from "./home-v2.module.css";
 
 // Hero signature: a drafting-sheet line drawing of an ultrasound cart with the shop's three
-// promises called out, and the inspection tag hanging off the console. Colours come from CSS
+// promises called out, and the yellow tag hanging off the console. Colours come from CSS
 // variables set by HomeV2View (tokens.ts). Labels are HTML so they stay readable and selectable.
 const CALLOUT_Y = { test: 108, warranty: 258, install: 408 } as const;
 const VIEW = { w: 760, h: 480 };
@@ -68,17 +68,16 @@ export function HeroDrawing() {
           <line x1="400" y1={CALLOUT_Y.install} x2="500" y2={CALLOUT_Y.install} />
         </g>
 
-        {/* inspection tag hanging from the console */}
+        {/* yellow tag hanging from the console */}
         <g className={s.swing}>
           <path className={s.string} d="M150 246 Q 122 250 104.5 278" />
           <g transform="translate(60 270) rotate(-8)">
             <path className={s.tagShape} d="M12 0 H74 L86 14 V112 H0 V14 Z" />
             <circle className={s.tagHole} cx="43" cy="14" r="5" />
-            <text className={s.tagTitle} x="43" y="58" textAnchor="middle">
+            <text className={s.tagTitle} x="43" y="62" textAnchor="middle">
               {t.tag.title}
             </text>
-            <path className={s.tagCheck} d="M30 76 L39 85 L57 67" />
-            <text className={s.tagSub} x="43" y="104" textAnchor="middle">
+            <text className={s.tagSub} x="43" y="88" textAnchor="middle">
               {t.tag.sub}
             </text>
           </g>

@@ -5,7 +5,7 @@ export const homeCopy = {
     heading: ["測過、整理好，", "再交到你手上。"],
     lead: "院所與檢驗設備的中古型錄。每件附照片與規格表，詢價後安排看機，確認了再成交。",
     quick: "常找的分類",
-    tag: { title: "已檢測", sub: "出貨前" },
+    tag: { title: "可看機", sub: "歡迎預約" },
     callouts: [
       { id: "test", title: "出貨前功能檢測", body: "開機、影像、配件逐項測過" },
       { id: "warranty", title: "保固期內免費維修", body: "非人為故障，不另收費" },

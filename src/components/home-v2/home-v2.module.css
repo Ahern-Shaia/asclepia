@@ -284,13 +284,6 @@
   font-size: 13px;
   letter-spacing: 0.1em;
 }
-.tagCheck {
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
 .callouts {
   position: absolute;
   inset: 0;
