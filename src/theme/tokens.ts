@@ -13,6 +13,13 @@ export const palette = {
   success: "#2F7D32",
   warning: "#9A5B00",
   error: "#B42318",
+  // home v2 (proposal, docs/mockups/README.md): drafting-sheet hero + inspection tag
+  navyInk: "#14365F",
+  onNavyMuted: "#C9D6E6",
+  draftLine: "#8FB0D6",
+  draftGrid: "#1E4775",
+  tag: "#F2C230",
+  tagEdge: "#C99A12",
 } as const;
 
 // Text/background pairs that must meet WCAG AA (4.5:1); enforced by tokens.test.ts.
@@ -27,7 +34,13 @@ export const contrastPairs: ReadonlyArray<readonly [fg: string, bg: string, labe
   [palette.success, palette.bg, "success text"],
   [palette.warning, palette.bg, "warning text"],
   [palette.error, palette.bg, "error text"],
+  [palette.bg, palette.navyInk, "text on navy band"],
+  [palette.onNavyMuted, palette.navyInk, "secondary text on navy band"],
+  [palette.text, palette.tag, "inspection tag label"],
 ];
+
+// Home v2 display sizes sit above the B0 type scale (30px max) — a proposal, not yet approved.
+export const display = { hero: 52, heroMobile: 34, section: 30 } as const;
 
 export const theme: ThemeConfig = {
   token: {

@@ -10,6 +10,7 @@ const groups = [
     title: "前台",
     items: [
       ["首頁", "/mockup/site"],
+      ["首頁 v2（美工加強版，待 review）", "/mockup/site-v2"],
       ["商品列表", "/mockup/site/products"],
       ["商品列表：分類＋品牌篩選", "/mockup/site/products?cat=ultrasound"],
       ["商品列表：搜尋無結果（空狀態）", "/mockup/site/products?q=MRI"],
