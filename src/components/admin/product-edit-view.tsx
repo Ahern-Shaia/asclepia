@@ -89,7 +89,6 @@ export function ProductEditView({
     .join(" ");
   const efficacy = findEfficacyWords((values.highlights ?? []).join("\n"));
   const checks = [
-    { ok: Boolean(values.licenseNo), label: e.checks.license },
     { ok: files.length > 0, label: e.checks.image },
     { ok: Boolean(values.nameZh), label: e.checks.nameZh },
     { ok: Boolean(values.categoryId), label: e.checks.category },
@@ -222,16 +221,6 @@ export function ProductEditView({
                 </Flex>
               </Card>
 
-              <Card title={e.sections.compliance} variant="outlined" styles={sectionStyle}>
-                <Form.Item label={e.licenseNo} name="licenseNo" extra={e.licenseHelp} required>
-                  <Input
-                    maxLength={40}
-                    placeholder="衛部醫器輸字第012345號"
-                    style={{ fontVariantNumeric: "tabular-nums" }}
-                  />
-                </Form.Item>
-              </Card>
-
               <Card title={e.sections.highlights} variant="outlined" styles={sectionStyle}>
                 <Flex vertical gap={12}>
                   <LineList
@@ -345,6 +334,16 @@ export function ProductEditView({
                 </Row>
               </Card>
 
+              <Card title={e.sections.license} variant="outlined" styles={sectionStyle}>
+                <Form.Item label={e.licenseNo} name="licenseNo" extra={e.licenseHelp}>
+                  <Input
+                    maxLength={40}
+                    placeholder="衛部醫器輸字第012345號"
+                    style={{ fontVariantNumeric: "tabular-nums" }}
+                  />
+                </Form.Item>
+              </Card>
+
               <Card
                 title={
                   <Flex gap={8} align="center">
@@ -365,7 +364,7 @@ export function ProductEditView({
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
-                    <Form.Item label={e.sourceLicense} name="sourceLicenseNo">
+                    <Form.Item label={e.sourceContact} name="sourceContact">
                       <Input maxLength={40} />
                     </Form.Item>
                   </Col>

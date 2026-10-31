@@ -51,10 +51,7 @@ export function ListView({
   const shown = products.filter(
     (p) =>
       (!cat || p.categoryId === cat) &&
-      (!q ||
-        `${p.brand} ${p.model} ${p.nameZh} ${p.licenseNo ?? ""}`
-          .toLowerCase()
-          .includes(q.toLowerCase())) &&
+      (!q || `${p.brand} ${p.model} ${p.nameZh}`.toLowerCase().includes(q.toLowerCase())) &&
       (checkedBrands.length === 0 || checkedBrands.includes(p.brand)),
   );
   const current = categories.find((x) => x.id === cat);

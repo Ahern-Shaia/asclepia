@@ -1,5 +1,6 @@
 // MOCKUP DATA — sample content for visual review only (docs/mockups/README.md).
-// Licence numbers are deliberately fake (000xxx) and every page carries the mockup banner.
+// Licence numbers are deliberately fake (000xxx) and optional: only items that are registered
+// medical devices carry one. Every page carries the mockup banner.
 
 export type ProductStatus = "DRAFT" | "PUBLISHED" | "HIDDEN" | "SOLD";
 
@@ -122,7 +123,6 @@ export const products: MockProduct[] = [
     model: "5424",
     nameEn: "Microcentrifuge",
     nameZh: "微量離心機",
-    licenseNo: "衛部醫器輸字第000452號",
     priceTwd: 45000,
     year: 2021,
     condition: "近新",
@@ -143,7 +143,6 @@ export const products: MockProduct[] = [
     brand: "Olympus",
     model: "CX23",
     nameZh: "雙眼生物顯微鏡",
-    licenseNo: "衛部醫器輸字第000588號",
     priceTwd: 32000,
     year: 2022,
     condition: "良好",
@@ -177,7 +176,7 @@ export const products: MockProduct[] = [
     status: "DRAFT",
     brand: "Mindray",
     model: "DP-30",
-    nameZh: "黑白超音波診斷系統",
+    nameZh: "",
     images: img("ultrasound").slice(0, 1),
     highlights: [],
     specs: [],
@@ -239,7 +238,7 @@ export const inquiries: MockInquiry[] = [
     name: "林先生",
     phone: "02-0000-2222",
     email: "lin@example.com",
-    org: "範例醫材有限公司",
+    org: "範例設備有限公司",
     productId: "p3",
     message: "想詢問含稅價與運送安裝費用。",
     status: "CONTACTED",
@@ -269,8 +268,7 @@ export const inquiries: MockInquiry[] = [
 ];
 
 export const company = {
-  name: "（範例）Asclepia 醫療器材有限公司",
-  licenseNo: "北市衛器販字第000000號（範例）",
+  name: "（範例）Asclepia 有限公司",
   phone: "02-0000-0000",
   email: "service@example.com",
   address: "台北市範例區範例路 1 號",

@@ -111,12 +111,14 @@ export function DetailView({
           <Nameplate
             ariaLabel="設備銘牌"
             rows={[
-              { label: d.nameplate.license, value: p.licenseNo, mono: true, wide: true },
               { label: d.nameplate.brand, value: p.brand },
               { label: d.nameplate.model, value: p.model, mono: true },
               { label: d.nameplate.year, value: p.year },
               { label: d.nameplate.warranty, value: p.warranty },
               { label: d.nameplate.condition, value: p.condition, wide: true },
+              ...(p.licenseNo
+                ? [{ label: d.nameplate.license, value: p.licenseNo, mono: true, wide: true }]
+                : []),
             ]}
           />
           <Typography.Text
@@ -192,9 +194,6 @@ export function DetailView({
             <li key={t}>{t}</li>
           ))}
         </ul>
-        <Typography.Text type="secondary" style={{ fontSize: token.fontSizeSM }}>
-          {d.readUsage}
-        </Typography.Text>
       </Section>
       {related.length > 0 && (
         <Section id="h-related" title={d.related}>

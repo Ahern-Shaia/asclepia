@@ -27,7 +27,7 @@ const groups = [
       ["商品管理", "/mockup/admin/products"],
       ["新增商品（空白表單，上架鈕鎖住）", "/mockup/admin/products/new"],
       ["編輯商品（已填好；在產品訊息打「改善」看療效字詞警告）", "/mockup/admin/products/p1"],
-      ["編輯草稿（缺許可證字號）", "/mockup/admin/products/p7"],
+      ["編輯草稿（缺中文品名，上架鈕鎖住）", "/mockup/admin/products/p7"],
       ["詢價紀錄（點一列開明細）", "/mockup/admin/inquiries"],
     ],
   },

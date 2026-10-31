@@ -3,11 +3,11 @@ export const catalogCopy = {
   nav: { products: "商品型錄", services: "服務項目", about: "關於我們", contact: "聯絡我們" },
   search: { placeholder: "搜尋品牌、型號或品名", button: "搜尋" },
   hero: {
-    heading: "中古院所與檢驗設備，每件附許可證字號",
-    trust: ["持照醫療器材商自營", "每件標示許可證字號", "看機確認後再成交"],
+    heading: "中古院所與檢驗設備",
+    trust: ["自有庫存，不是代售", "出貨前完成功能檢測", "看機確認後再成交"],
   },
   sections: { categories: "依分類瀏覽", latest: "最新上架", viewAll: "看全部商品" },
-  card: { askPrice: "歡迎詢價", sold: "已售出", license: "許可證" },
+  card: { askPrice: "歡迎詢價", sold: "已售出", year: (y: number) => `${y} 年` },
   list: {
     allCategories: "全部分類",
     brand: "品牌",
@@ -23,10 +23,10 @@ export const catalogCopy = {
     nameplate: {
       brand: "品牌",
       model: "型號",
-      license: "許可證字號",
       year: "年份",
       condition: "狀況",
       warranty: "保固",
+      license: "醫療器材許可證",
     },
     ask: "詢價這件商品",
     call: (phone: string) => `致電 ${phone}`,
@@ -43,7 +43,6 @@ export const catalogCopy = {
     ],
     related: "同分類商品",
     backToList: "回列表",
-    readUsage: "消費者使用前應詳閱醫療器材說明書",
   },
   inquiry: {
     title: "詢價",
@@ -64,5 +63,5 @@ export const catalogCopy = {
       consent: "需要你同意，我們才能聯絡你",
     },
   },
-  footer: { license: "醫療器材販賣業許可執照", hours: "服務時間" },
+  footer: { hours: "服務時間" },
 } as const;

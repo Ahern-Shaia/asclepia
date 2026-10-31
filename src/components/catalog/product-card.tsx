@@ -1,6 +1,5 @@
 "use client";
 
-import { CheckCircleFilled } from "@ant-design/icons";
 import { Card, Flex, Tag, theme, Typography } from "antd";
 import Link from "next/link";
 import { catalogCopy } from "@/copy/catalog";
@@ -12,7 +11,8 @@ export type CardProduct = {
   brand: string;
   model: string;
   nameZh: string;
-  licenseNo?: string;
+  year?: number;
+  condition?: string;
   priceTwd?: number;
   sold: boolean;
   image: string;
@@ -21,6 +21,9 @@ export type CardProduct = {
 export function ProductCard({ product, href }: { product: CardProduct; href: string }) {
   const { token } = theme.useToken();
   const title = `${product.brand} ${product.model} ${product.nameZh}`;
+  const meta = [product.year && catalogCopy.card.year(product.year), product.condition]
+    .filter(Boolean)
+    .join(" · ");
   return (
     <Link href={href} aria-label={title} style={{ color: "inherit" }}>
       <Card
@@ -52,21 +55,10 @@ export function ProductCard({ product, href }: { product: CardProduct; href: str
           <Typography.Text strong className={styles.clamp2}>
             {product.nameZh}
           </Typography.Text>
-          {product.licenseNo && (
-            <Flex
-              gap={4}
-              align="center"
-              style={{ fontSize: token.fontSizeSM, color: token.colorTextSecondary }}
-            >
-              <CheckCircleFilled aria-hidden style={{ color: token.colorSuccess, flexShrink: 0 }} />
-              <span style={{ flexShrink: 0 }}>{catalogCopy.card.license}</span>
-              <span
-                className={styles.mono}
-                style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-              >
-                {product.licenseNo}
-              </span>
-            </Flex>
+          {meta && (
+            <Typography.Text type="secondary" style={{ fontSize: token.fontSizeSM }}>
+              {meta}
+            </Typography.Text>
           )}
           <Flex justify="space-between" align="center" gap={8}>
             <Typography.Text

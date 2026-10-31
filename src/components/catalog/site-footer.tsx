@@ -5,7 +5,6 @@ import {
   EnvironmentOutlined,
   MailOutlined,
   PhoneOutlined,
-  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { Flex, theme, Typography } from "antd";
 import { catalogCopy } from "@/copy/catalog";
@@ -13,7 +12,6 @@ import styles from "./catalog.module.css";
 
 export type CompanyInfo = {
   name: string;
-  licenseNo: string;
   phone: string;
   email: string;
   address: string;
@@ -44,12 +42,6 @@ export function CatalogFooter({ company }: { company: CompanyInfo }) {
               <Typography.Text>{it.text}</Typography.Text>
             </Flex>
           ))}
-        </Flex>
-        <Flex gap={8} align="center">
-          <SafetyCertificateOutlined aria-hidden style={{ color: token.colorTextSecondary }} />
-          <Typography.Text type="secondary">
-            {catalogCopy.footer.license}：<span className={styles.mono}>{company.licenseNo}</span>
-          </Typography.Text>
         </Flex>
       </Flex>
     </footer>

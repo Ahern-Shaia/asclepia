@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import styles from "./catalog.module.css";
 
 // Signature element (profile spec-catalog): an equipment rating plate. Real devices carry one
-// with maker, model and approval number — here it puts the regulatory fields first.
+// with maker, model and year — here it puts the facts a used-equipment buyer checks first.
 export type NameplateRow = { label: string; value?: ReactNode; mono?: boolean; wide?: boolean };
 
 export function Nameplate({ rows, ariaLabel }: { rows: NameplateRow[]; ariaLabel: string }) {

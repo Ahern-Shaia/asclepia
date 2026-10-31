@@ -16,7 +16,6 @@ export default function Page() {
           model: p.model,
           nameZh: p.nameZh,
           category: categoryName(p.categoryId),
-          licenseNo: p.licenseNo,
           priceTwd: p.priceTwd,
           status: p.status,
           updatedAt: p.updatedAt,

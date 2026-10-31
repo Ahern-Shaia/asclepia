@@ -1,6 +1,6 @@
 "use client";
 
-import { DownOutlined, PlusOutlined, WarningOutlined } from "@ant-design/icons";
+import { DownOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
   Card,
@@ -26,7 +26,6 @@ export type AdminProductRow = {
   model: string;
   nameZh: string;
   category: string;
-  licenseNo?: string;
   priceTwd?: number;
   status: "DRAFT" | "PUBLISHED" | "HIDDEN" | "SOLD";
   updatedAt: string;
@@ -123,27 +122,11 @@ export function ProductsView({
                     <Link href={`${base}/products/${r.id}`}>
                       {r.brand} {r.model}
                     </Link>
-                    <Typography.Text type="secondary">{r.nameZh}</Typography.Text>
+                    <Typography.Text type="secondary">{r.nameZh || "—"}</Typography.Text>
                   </Flex>
                 ),
               },
               { title: p.columns.category, dataIndex: "category", width: 120 },
-              {
-                title: p.columns.license,
-                dataIndex: "licenseNo",
-                width: 220,
-                render: (v?: string) =>
-                  v ? (
-                    <Typography.Text style={{ fontVariantNumeric: "tabular-nums" }}>
-                      {v}
-                    </Typography.Text>
-                  ) : (
-                    <Flex gap={4} align="center" style={{ color: token.colorWarning }}>
-                      <WarningOutlined aria-hidden />
-                      <span>{p.missingLicense}</span>
-                    </Flex>
-                  ),
-              },
               {
                 title: p.columns.price,
                 dataIndex: "priceTwd",
@@ -178,7 +161,7 @@ export function ProductsView({
                         items: [
                           r.status === "PUBLISHED"
                             ? { key: "hide", label: p.more.hide }
-                            : { key: "publish", label: p.more.publish, disabled: !r.licenseNo },
+                            : { key: "publish", label: p.more.publish, disabled: !r.nameZh },
                           { key: "sold", label: p.more.sold, disabled: r.status === "SOLD" },
                           { key: "view", label: p.more.view },
                         ],

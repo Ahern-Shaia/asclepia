@@ -1,4 +1,5 @@
-// Words that tend to make a listing read as promoting medical efficacy (醫材法 §6 / §40).
+// Words that make a listing claim medical efficacy — the test 醫材法 §3 uses to define a medical
+// device, and what §6 calls a medical-device advertisement.
 // The admin form warns and records the hit in audit; it does not hard-block (catalog.md §4.3),
 // because a keyword list will have false positives.
 const WORDS = [
