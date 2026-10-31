@@ -4,10 +4,10 @@
 
 > 本文件是 Claude Code 在 Asclepia 中的最高指導原則。所有開發任務開始前，Claude Code 必須先讀完本文件。
 
-> 狀態：**Greenfield，開工前決策已過一輪（2026-10-31）**，目前沒有程式碼，也還沒 git init。
+> 狀態：**Scaffold 完成（2026-10-31）**：Next.js 16 + antd 6 骨架，`pnpm check` 和 `pnpm test:e2e` 全綠。下一步是 catalog M1。
 >
 > 本公司持有醫療器材販賣業許可執照，網站自營賣中古院所設備與檢驗設備：前台是型錄＋詢價，後台負責上架。
-> 下一步：scaffold Next.js → 同一天生成 `docs/stack-rules/nextjs-prisma-postgres.md`（R21）→ 寫商品資料模型的 M0 design doc。
+> 棧規則附件：`docs/stack-rules/nextjs-prisma-antd.md`（R21，待人 review）。商品模組設計：`docs/modules/catalog.md`（APPROVED）。
 > 🔴 這是受醫療器材管理法規範的業務：§0.1 不做清單、R11 合規不變量都來自法條，**法規解讀不屬於 Claude Code 可以自行裁定的研究**（R7）。
 
 ---
@@ -19,7 +19,7 @@
 - **語言**：TypeScript
 - **運行**：單一 Next.js 應用（前台和後台在同一個 repo）＋ PostgreSQL；部署平台未定（§2.4）
 - **授權**：proprietary（用戶未指明，先用預設）
-- **Git remote**：TBD（尚未 git init）
+- **Git remote**：TBD（已 git init，本機 `main`）
 
 ### 0.1 定位 ≠ MVP（pre-dev #1 #3）
 
@@ -63,13 +63,13 @@
 | 9 repo 形態 | 單一 Next.js app 的 modular monolith（`src/modules/<domain>`）。dependency-cruiser 進 CI，擋循環依賴和跨模組 deep import | ✅ |
 | 10bis 威脅／效能 | `security-baseline.md` §0 · `performance-baseline.md` §0 | ⏳ 草案已寫，請 review |
 | 10 測試分層 | Vitest（單元）· testcontainers Postgres（整合，走低權 app role）· Playwright（e2e）· junit reporter 寫在 config 裡 | ✅ |
-| 11 視覺權威 | `docs/frontend-design-principles.md` ＋ token 檔（scaffold 時建立 `src/styles/tokens.css`） | ✅ |
-| 12 母心智模型 | 醫材商腦中是原廠型錄和規格表；民眾腦中是拍賣網商品頁（參考站本身外連 Yahoo、露天賣場） | ⏳ 競品要實測截圖。目前只讀過參考站的文字，在第一個前端 M0 之前做 |
-| 13 可稽核視覺規則 | profile＝自訂 `spec-catalog`（R16）；字級白名單、圓角、AA 對比門檻在前端 M0 實測後寫定 | ⏳ |
+| 11 視覺權威 | `docs/frontend-design-principles.md` ＋ `src/theme/tokens.ts` | ✅ |
+| 12 母心智模型 | 醫材商腦中是原廠型錄和規格表；民眾腦中是拍賣網商品頁（參考站本身外連 Yahoo、露天賣場） | ✅ 參考站已用 Playwright 實測（research §1b） |
+| 13 可稽核視覺規則 | profile＝自訂 `spec-catalog`＋antd（R16）；8 項規則與執法點見 `frontend-design-principles.md` §B0 | ✅ |
 | 14 mockup | 放 `docs/mockups/`，檔頭標身分（提案／待落地／已落地／棄用／競品） | ✅ |
 | 15 / 22 | 沿用 `AGENTS.md` 通用鐵則 | ✅ |
 | 16 DoD | grep 呼叫端 ＋ FMEA（R17）＋ 使用手冊節（後台上架操作） | ✅ |
-| 17 CI | 建議用 GitHub Actions，一組跑 lint / type-check / test / build / e2e / audit / depcruise，這一組就是「出貨前會跑的那一組」 | ⏳ 等 git remote 決定 |
+| 17 CI | 「出貨前會跑的那一組」＝ `pnpm check`（lint、format、type-check、depcruise、guards 自我測試、guards、test、build）＋ `pnpm test:e2e`。CI 平台建議 GitHub Actions，跑同一組指令 | ✅ 清單；CI ⏳ 等 git remote |
 | 18 錯誤訊息 | 給使用者的句子和 API `code` 分開；fallback 回通用句，不回原文 | ✅ |
 | 19 語言 | 回覆用繁體中文；程式碼、識別字、commit 用英文 | ✅ |
 | 20 授權邊界 | 改 code、commit、本地實驗自己做；**每次 `git push` 都問**；prod 由人手動（R10）；真的對外寄信／通知之前先問 | ✅ |
@@ -123,7 +123,7 @@
 |---|---|
 | **R11** | **醫材合規不變量**（醫材法 §70-1-7、§40、通訊交易規定第五點）：①商品上架時**許可證字號或登錄字號必填**（草稿可以先空著），DB 層用 CHECK 約束「`status='PUBLISHED'` ⇒ `licenseNo` 非空」，前台商品頁一級顯示；②前台**沒有任何下單、付款、購物車路徑**，只能詢價；③後台文案欄位擋療效字詞（關鍵字守衛，送出時警告並寫 audit）。執法點：Prisma schema + migration CHECK + 一支 e2e 驗證「缺字號無法上架」+ grep 守衛擋 `checkout\|cart\|payment` 路由 |
 | **R12** | **單語 zh-TW，不上 i18n 框架**：買方都在台灣，法規要求的揭露文字是中文。UI 文案集中在 `src/copy/`，不散落在元件裡，以後要多語時才有遷移起點 |
-| **R13** | **Component spacing**：button group / form group 一律用 `gap-*`，禁止 `space-x-*` / `space-y-*` |
+| **R13** | **Component spacing**：button group / form group 一律用 antd `<Flex gap>` / `<Space>`，元件裡禁止用 inline `style` 的 margin 做間距。執法點：`scripts/guards/no-inline-margin.sh` |
 | **R14** | **新代碼框架**：一律放在同一個 Next.js App Router app 裡，Server Component 優先；不另外開 SPA 或獨立後端服務 |
 | **R15** | **出貨前清單**：solo 直接 commit，不走 PR（memory `feedback_no_pr_workflow`）。每個功能標「完成」前必須走過 `docs/pre-pr-checklist.md` |
 | **R16** | **前端設計鐵則**：所有前端產出必過 `docs/frontend-design-principles.md` **§A 普世核心**（token、a11y、全狀態、響應式、複用、文案）+ **§C 設計流程迴圈**。🔴 **§B 美學 profile 於開工時決定**（見 `docs/pre-dev-decisions.md` §二）——profile 的正確來源是**目標使用者的母心智模型與競品實測**，不是預設鎖一個名字（2026-09 更新：前一版鎖 `modern-SaaS-craft`，在一個 B2B 表單專案被實戰推翻 —— 那個 profile 與使用者要的「紙的形狀」全面相反）。定了之後 Claude Code 不得自行換；要換由人改本鐵則並說明理由。**本專案（2026-10-31）**：用戶說「前端視覺設計不限制」，授權 Claude 裁定，選自訂 profile **`spec-catalog`**：規格表優先、商品照片大、許可證字號等合規欄位一級顯示、中高密度、不走 SaaS 儀表板語言。8 項細節在第一個前端 M0 競品實測後寫進 `frontend-design-principles.md` §B0 |
@@ -174,12 +174,14 @@
 
 ### 2.2 前端
 - Next.js App Router（Server Component 優先）
-- Tailwind + 語意 token（`src/styles/tokens.css`）；元件庫等前端 M0 再定
+- **Ant Design 6**（用戶 2026-10-31 指定）＋ `@ant-design/nextjs-registry`（SSR 樣式）。**不使用 Tailwind**：antd 有自己的 token 與 CSS-in-JS，兩者並用時 preflight 會互相打架
+- token 的單一權威是 `src/theme/tokens.ts`（餵給 `ConfigProvider`），profile 見 `frontend-design-principles.md` §B0
 - 狀態：URL search params（篩選、分頁）＋ server state，不上全域 state 函式庫
 
 ### 2.3 工具
 - **pnpm**（不可混用 npm；理由：pnpm 預設不跑相依套件的 install script，對應 security-baseline 的供應鏈門檻）
 - ESLint + Prettier · `tsc --noEmit` · Vitest · testcontainers · Playwright · dependency-cruiser
+- 供應鏈：`pnpm-workspace.yaml` 設 `minimumReleaseAge: 10080`（拒裝發佈未滿 7 天的版本）＋ 相依套件的 install script 預設不跑
 
 ### 2.4 未決（何時回來）
 | 項目 | 何時回來 |
@@ -206,7 +208,9 @@ pnpm test:e2e     # Playwright
 pnpm build
 pnpm depcruise
 pnpm audit --prod
-pnpm prisma migrate dev   # 改 schema 後；generated client 不 commit
+pnpm guards               # grep 守衛（scripts/guards/rules.sh）；改守衛先跑 pnpm guards:selftest
+pnpm check                # 出貨前那一組（不含 e2e）
+pnpm prisma migrate dev   # 改 schema 後；generated client（src/generated/）不 commit
 ```
 
 每個 task 完成後（R8）：
@@ -232,13 +236,13 @@ Asclepia/
 │   │   └── admin/               ← 後台（全部經 requireAdmin）
 │   ├── modules/<domain>/        ← catalog / inquiry / admin-auth / audit（depcruise 擋跨模組 deep import）
 │   ├── copy/                    ← UI 文案（R12）
-│   └── styles/tokens.css
+│   └── theme/tokens.ts           ← antd token 單一權威
 ├── e2e/                         ← Playwright spec
 ├── docs/
 │   ├── research/                ← 法規與競品研究（附出處＋查證日）
 │   ├── modules/<module>.md      ← 模組設計（R6）
 │   ├── mockups/
-│   └── stack-rules/nextjs-prisma-postgres.md
+│   └── stack-rules/nextjs-prisma-antd.md
 ├── CLAUDE.md  AGENTS.md  README.md
 ```
 

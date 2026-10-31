@@ -99,7 +99,21 @@
 ### B0. ✅ 本專案 profile：`spec-catalog`（中古醫材型錄）
 
 - **方向**（2026-10-31 裁定）：規格表優先、商品照片大、許可證字號等合規欄位一級顯示、中高密度；母心智模型是原廠型錄、規格表，以及拍賣網商品頁（CLAUDE.md §0.2 #12）。
-- **8 項（密度／色彩／深度／填充／形狀／列表卡片／動效／avoid-list）**：⏳ 第一個前端 M0 依 §A5 競品實測後填寫。這一節沒填之前，不准產出正式前端畫面。
+- **元件庫**：Ant Design 6（用戶 2026-10-31 指定）。**token 的單一權威是 `src/theme/tokens.ts`**（傳給 antd `ConfigProvider`）；元件裡禁止硬編色碼。
+- **依據**：2026-10-31 以 Playwright 實測參考站 used-equip（1440 與 390 寬，首頁／列表／商品頁／服務頁），觀察記錄見 `docs/research/2026-10-31-reference-and-regulation.md` §1b。
+
+| 項目 | 規則 | 執法點 |
+|---|---|---|
+| 密度 | 中高。列表在桌機 4 欄、平板 3 欄、手機 2 欄（參考站是 3 欄／2 欄）；商品頁首屏放主圖、標題、許可證字號、詢價按鈕 | e2e 在 390 寬檢查首屏看得到「詢價」 |
+| 色彩 | 主色是海軍藍 `#1D4E89`（承接參考站的企業藍，但不照抄）；文字用 `#1F2937`，不用純黑；背景白，區塊底色 `#F4F6FA`；飽和色只用在主按鈕與 active 狀態 | `tokens.test.ts` 檢查所有文字／底色組合的 AA 對比 ≥ 4.5 |
+| 深度 | 平面為主：卡片用 1px hairline 邊框，hover 時才加輕陰影；不做層疊陰影 | token `boxShadow` 只定義一級 |
+| 填充 | 實色，**不用漸層**（參考站 banner 用的是漸層照片） | grep 守衛擋 `linear-gradient` |
+| 形狀 | 圓角 4px（`borderRadius: 4`），型錄、規格表的硬朗感；Tag 用 2px | token |
+| 列表卡片 | 圖片固定 4:3、白底 contain（參考站的圖片比例不一，第一張會變窄）；標題最多兩行截斷；下方一行「品牌 · 型號」；已售出用 Tag 標示 | 前端 M3 時 e2e 驗證 |
+| 規格呈現 | 用 antd `Descriptions` 呈現「標籤／值」表格，取代參考站的規格文字牆 | catalog.md OQ-CAT-2 |
+| 動效 | 只用 antd 預設的 motion；不做輪播 | 不引入輪播套件（depcruise／package.json review） |
+| 字體 | 系統字：`-apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif`；不從外部載入字型（建置時不外呼）；字級只用 antd token 的 12/14/16/20/24/30 | token `fontFamily`；grep 守衛擋 `next/font/google` |
+| **avoid-list** | ①佔首屏三分之一、沒有資訊量的 hero 輪播 ②中英雙語的小字導覽裝飾 ③規格文字牆 ④用灰色空條佔位（參考站列表底部有一條）⑤27 項全部展開、比內容還長的側欄（分類一多就改成可收合） | review |
 
 ### B0-ref. `modern-SaaS-craft`（模板原預設；⚠️ 非本專案 profile，僅供參考）
 適用：B2B / SaaS / dashboard / 數據密集工具。吸收 Linear / Stripe / Vercel-Geist / Radix / Raycast / Attio。
