@@ -67,6 +67,19 @@ DOTmed（403 擋自動化瀏覽器）、MedWOW（憑證無效）沒有截到圖�
 
 截圖備註：Playwright 的 `fullPage` 截圖會讓 hero 的 HTML 引線標籤消失（實際把視窗拉長就正常），所以 v2 全頁圖是把 viewport 拉到整頁高度後截的。
 
+## 首頁風格實驗室（20 款，2026-10-31，待選）
+
+用戶：「多設計 20 個『完全不同風格』的美學風格主頁，等我選定好再定案，也可以加入微動效」。
+
+- 路徑：`/mockup/style-lab`（索引）→ `/mockup/style-lab/<slug>`；方向清單 `src/app/mockup/style-lab/_styles.ts`
+- 20 款共用 `_content.ts` 同一份內容（不含檢測宣稱、不含療效字詞），比的只有風格
+- 截圖：`2026-10-31/style-lab/<slug>-{desk,mobile}.png`；一頁總覽 `style-lab/_contact-sheet.png`
+- 驗收：20 款 × 桌機／手機皆 OK（已 hydrate、無橫向捲動、單一 h1、console 零錯誤），主 session 獨立重跑確認
+- 例外：style-lab 可用任意色碼、漸層與瀏覽器端 Google Fonts（守衛豁免只限此資料夾；production 由 proxy 回 404）
+- agent 自行加的字（待確認）：14 拍賣行「請先來電預約」；18 博物館「展廳面積依件數比例」；12 便當格「43 件在庫」（六分類件數加總，來自範例資料）
+
+選定後：把該款寫成新的 §B0 profile，並更新 `tokens.ts` 與守衛，再套到列表頁、商品頁。
+
 ## 還不是真的
 
 這些按鈕只有畫面：存草稿、上架、上傳（不會真的存）、Google 登入、詢價送出（只切到成功畫面）、狀態更新。分類管理與站台設定沒有畫面（選單有項目但沒有連結）。
