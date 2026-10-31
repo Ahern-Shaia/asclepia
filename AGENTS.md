@@ -128,6 +128,11 @@ Project-specific traps (each one bit us during scaffold on 2026-10-31):
 - **`pnpm build` green ≠ page works.** Both bugs above built cleanly; only the browser caught them. UI changes are done when `pnpm test:e2e` passes (R19).
 - **`prisma init` writes agent skill files** into `.claude/skills`, `.agents/`, `.windsurf/` (third-party instructions that would auto-load). They were removed; don't re-add them without review.
 - **Prisma 7 config file is `prisma7.config.ts`** (the CLI default in 7.10), not `prisma.config.ts`.
+- **Probe the dev server via `localhost`, never `127.0.0.1`.** Next 16 blocks dev resources for other origins (`allowedDevOrigins`): the page renders server HTML but never hydrates, so screenshots look plausible while nothing works (forms don't update, responsive props stay at SSR defaults). Cost one full round of wrong screenshots.
+- **A render-time `notFound()` under the root `<Suspense>` answers 200** (soft 404): the shell has already streamed. Gate whole route trees in `src/proxy.ts` instead (that is how `/mockup` is hidden in production; `e2e/mockup-gate.spec.ts`).
+- **Layout classes on antd components lose to antd's own single-class rules** (`.ant-flex { display: flex }` beats a module `.mobileOnly { display: none }`). Our module CSS doubles those selectors (`.x.x`) on purpose; prefer putting the class on a plain wrapper.
+- **Heading margins are zero by token** (`Typography.titleMarginTop/Bottom`); spacing comes from `Flex gap` or `src/components/ui/section.tsx`. Don't reset margins inline (guard `no-inline-margin`, which also catches multi-line style objects).
+- **`pnpm fix` (Prettier) reflows files**: scripted string replacements written before a format run stop matching. Re-read the file after formatting.
 - The shell is zsh and macOS ships bash 3.2: guard scripts must avoid associative arrays and unquoted globs (`set -f`).
 
 ---

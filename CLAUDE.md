@@ -7,7 +7,7 @@
 > 狀態：**Scaffold 完成（2026-10-31）**：Next.js 16 + antd 6 骨架，`pnpm check` 和 `pnpm test:e2e` 全綠。下一步是 catalog M1。
 >
 > 本公司持有醫療器材販賣業許可執照，網站自營賣中古院所設備與檢驗設備：前台是型錄＋詢價，後台負責上架。
-> 棧規則附件：`docs/stack-rules/nextjs-prisma-antd.md`（R21，待人 review）。商品模組設計：`docs/modules/catalog.md`（APPROVED）。
+> 棧規則附件：`docs/stack-rules/nextjs-prisma-antd.md`（R21，⏳ 待人 review，執法點 W1–W10 尚未全部接線）。商品模組設計：`docs/modules/catalog.md`（APPROVED）。視覺 mockup：`docs/mockups/README.md`（提案）。
 > 🔴 這是受醫療器材管理法規範的業務：§0.1 不做清單、R11 合規不變量都來自法條，**法規解讀不屬於 Claude Code 可以自行裁定的研究**（R7）。
 
 ---
@@ -66,7 +66,7 @@
 | 11 視覺權威 | `docs/frontend-design-principles.md` ＋ `src/theme/tokens.ts` | ✅ |
 | 12 母心智模型 | 醫材商腦中是原廠型錄和規格表；民眾腦中是拍賣網商品頁（參考站本身外連 Yahoo、露天賣場） | ✅ 參考站已用 Playwright 實測（research §1b） |
 | 13 可稽核視覺規則 | profile＝自訂 `spec-catalog`＋antd（R16）；8 項規則與執法點見 `frontend-design-principles.md` §B0 | ✅ |
-| 14 mockup | 放 `docs/mockups/`，檔頭標身分（提案／待落地／已落地／棄用／競品） | ✅ |
+| 14 mockup | 放 `docs/mockups/`，檔頭標身分（提案／待落地／已落地／棄用／競品）。2026-10-31 前台與後台 mockup：身分＝提案，用 antd 實際渲染 | ✅ 制度；⏳ 等用戶確認視覺 |
 | 15 / 22 | 沿用 `AGENTS.md` 通用鐵則 | ✅ |
 | 16 DoD | grep 呼叫端 ＋ FMEA（R17）＋ 使用手冊節（後台上架操作） | ✅ |
 | 17 CI | 「出貨前會跑的那一組」＝ `pnpm check`（lint、format、type-check、depcruise、guards 自我測試、guards、test、build）＋ `pnpm test:e2e`。CI 平台建議 GitHub Actions，跑同一組指令 | ✅ 清單；CI ⏳ 等 git remote |
@@ -170,7 +170,7 @@
 - TypeScript，Next.js Route Handler / Server Action（後台 mutation 一律經過單一 authz 入口）
 - PostgreSQL；不上 cache 或 queue，等量到有需要再決定（R20 先量測）
 - Prisma（schema 在 `prisma/schema.prisma`，migration 在 `prisma/migrations/`）
-- Auth.js：只給後台員工登入，前台沒有會員
+- next-auth 4（stable；Auth.js v5 仍是 beta）：只給後台員工登入，前台沒有會員；Google provider＋email 白名單
 
 ### 2.2 前端
 - Next.js App Router（Server Component 優先）
