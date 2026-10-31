@@ -1,0 +1,27 @@
+// The 20 style directions. Each lives at /mockup/style-lab/<slug> (page.tsx + view + CSS module).
+export const styles = [
+  { slug: "01-swiss", name: "瑞士國際主義", brief: "嚴格網格、無襯線大字、紅黑白、不對稱留白" },
+  { slug: "02-editorial", name: "雜誌編輯風", brief: "襯線大標、欄位排版、大圖、導言與圖說" },
+  { slug: "03-brutalist", name: "原始粗獷", brief: "等寬字、粗黑框、零圓角、裸露結構" },
+  {
+    slug: "04-neo-brutal",
+    name: "新粗獷・貼紙",
+    brief: "高飽和色塊、硬陰影位移、貼紙感、按下會陷",
+  },
+  { slug: "05-clinical", name: "極簡潔淨", brief: "大量留白、柔灰、設備當主角、緩慢淡入" },
+  { slug: "06-dark-spec", name: "深色規格書", brief: "近黑底、冰藍細線、規格數據感、掃描線" },
+  { slug: "07-muji", name: "日系無印", brief: "暖白、細線、安靜、直排點綴、低彩" },
+  { slug: "08-retro-70s", name: "70 年代型錄", brief: "橘褐芥末色、圓潤粗字、條紋色帶" },
+  { slug: "09-warehouse", name: "倉庫標示", brief: "安全黃黑斜紋、模板字、貨架標籤、編號" },
+  { slug: "10-care", name: "親切粉彩", brief: "薄荷與蜜桃、大圓角、插畫感、給一般民眾" },
+  { slug: "11-glass", name: "霧面玻璃", brief: "色塊背景上的半透明卡片、模糊、層次" },
+  { slug: "12-bento", name: "便當格", brief: "大小不一的方塊拼貼、每格一件事" },
+  { slug: "13-lcd", name: "儀器面板", brief: "琥珀色 LCD、等寬字、指示燈、跑馬燈" },
+  { slug: "14-auction", name: "拍賣行", brief: "象牙黑金、襯線、Lot 編號、目錄式" },
+  { slug: "15-nordic", name: "北歐自然", brief: "米色木質、柔和綠、圓潤、溫暖" },
+  { slug: "16-classifieds", name: "報紙分類廣告", brief: "密集小欄、粗標題框、二手買賣廣告版" },
+  { slug: "17-signboard", name: "台式老招牌", brief: "紅綠大字、招牌框、霓虹、在地店家感" },
+  { slug: "18-museum", name: "博物館展品", brief: "白牆、展台、展品說明牌、極大留白" },
+  { slug: "19-kinetic", name: "動態字體", brief: "巨大文字跑馬、滾動視差、字即版面" },
+  { slug: "20-notebook", name: "實驗手札", brief: "方格紙、手寫字、便利貼、手繪圈註" },
+] as const;

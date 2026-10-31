@@ -38,5 +38,14 @@ for rule in "${RULES[@]}"; do
   fi
   checked=$((checked + 1))
 done
+# style-lab exemption: profile rules skip it, but the same lines elsewhere must still fire,
+# and a safety rule must still fire inside it.
+L="$TMP/lab"; mkdir -p "$L/app/mockup/style-lab/x" "$L/components"
+echo '.a { background: linear-gradient(red, blue); color: #1D4E89; }' > "$L/app/mockup/style-lab/x/a.module.css"
+if ! bash "$HERE/run-all.sh" "$L" >/dev/null; then echo "✗ style-lab exemption: profile rules fire inside style-lab"; bad=1; fi
+echo 'const d = <div dangerouslySetInnerHTML={{ __html: x }} />;' > "$L/app/mockup/style-lab/x/b.tsx"
+if bash "$HERE/run-all.sh" "$L" >/dev/null; then echo "✗ style-lab exemption: safety rule silenced inside style-lab"; bad=1; fi
+rm "$L/app/mockup/style-lab/x/b.tsx"; cp "$L/app/mockup/style-lab/x/a.module.css" "$L/components/a.module.css"
+if bash "$HERE/run-all.sh" "$L" >/dev/null; then echo "✗ style-lab exemption leaks outside style-lab"; bad=1; fi
 echo "guards selftest: $checked/${#RULES[@]} rules checked, $([[ $bad -eq 0 ]] && echo 'all fire on fixture and stay quiet on clean' || echo FAILED)"
 exit $bad

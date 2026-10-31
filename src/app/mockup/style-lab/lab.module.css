@@ -1,0 +1,42 @@
+.index {
+  max-width: 1080px;
+  margin-inline: auto;
+  padding: 40px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
+}
+.index h1,
+.index p {
+  margin: 0;
+}
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid #d9dee7;
+  border-radius: 4px;
+  color: #1f2937;
+  height: 100%;
+  box-sizing: border-box;
+}
+.card:hover {
+  border-color: #1d4e89;
+}
+.card span {
+  color: #4b5563;
+  font-size: 14px;
+}
+.no {
+  font-family: ui-monospace, Menlo, monospace;
+}

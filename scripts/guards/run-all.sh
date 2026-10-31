@@ -31,6 +31,9 @@ for rule in "${RULES[@]}"; do
     for g in $globs; do includes+=(--include="$g"); done
     excludes=(--exclude-dir=generated)
     if [[ "$name" == no-hardcoded-hex ]]; then excludes+=(--exclude-dir=theme); fi
+    # style-lab explores *other* aesthetic profiles (dev-only, 404 in production via src/proxy.ts),
+    # so the current profile's colour/gradient rules don't apply there. Safety rules still do.
+    if [[ "$name" == no-hardcoded-hex || "$name" == no-gradient ]]; then excludes+=(--exclude-dir=style-lab); fi
     hits=$(grep -rnE "${includes[@]}" "${excludes[@]}" -- "$pattern" "$ROOT")
     rc=$?
     if [[ $rc -le 1 && "$name" == no-public-secret && "$ROOT" == src && -f .env.example ]]; then
