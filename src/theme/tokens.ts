@@ -20,6 +20,9 @@ export const palette = {
   draftGrid: "#1E4775",
   tag: "#F2C230",
   tagEdge: "#C99A12",
+  // home v3 "實機型錄" (proposal): industry blue + orange accent for price and inquiry
+  accent: "#C2410C",
+  accentBg: "#FFF1EA",
 } as const;
 
 // Text/background pairs that must meet WCAG AA (4.5:1); enforced by tokens.test.ts.
@@ -37,6 +40,9 @@ export const contrastPairs: ReadonlyArray<readonly [fg: string, bg: string, labe
   [palette.bg, palette.navyInk, "text on navy band"],
   [palette.onNavyMuted, palette.navyInk, "secondary text on navy band"],
   [palette.text, palette.tag, "inspection tag label"],
+  [palette.bg, palette.accent, "accent button label"],
+  [palette.accent, palette.bg, "price on card"],
+  [palette.accent, palette.accentBg, "accent tag"],
 ];
 
 // Home v2 display sizes sit above the B0 type scale (30px max) — a proposal, not yet approved.

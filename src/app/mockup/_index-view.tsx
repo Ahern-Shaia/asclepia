@@ -11,6 +11,7 @@ const groups = [
     items: [
       ["首頁", "/mockup/site"],
       ["首頁 v2（美工加強版，待 review）", "/mockup/site-v2"],
+      ["首頁 v3「實機型錄」（參考站整合，待確認）", "/mockup/site-v3"],
       ["首頁風格實驗室（20 款，待選）", "/mockup/style-lab"],
       ["商品列表", "/mockup/site/products"],
       ["商品列表：分類＋品牌篩選", "/mockup/site/products?cat=ultrasound"],
