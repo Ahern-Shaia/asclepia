@@ -1,0 +1,24 @@
+/* Doubled classes beat antd's own single-class rules (see catalog.module.css). */
+.desktopOnly.desktopOnly {
+  display: block;
+}
+
+.mobileOnly.mobileOnly {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktopOnly.desktopOnly {
+    display: none;
+  }
+  .mobileOnly.mobileOnly {
+    display: inline-flex;
+  }
+  .content.content {
+    padding: 16px;
+  }
+}
+
+.content.content {
+  padding: 24px;
+}

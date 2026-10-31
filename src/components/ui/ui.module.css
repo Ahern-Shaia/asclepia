@@ -1,0 +1,12 @@
+/* Centered page column. Doubled class beats antd's single-class rules (see catalog.module.css). */
+.page.page {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.narrow.narrow {
+  max-width: 880px;
+}

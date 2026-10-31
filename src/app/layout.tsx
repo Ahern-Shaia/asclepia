@@ -2,7 +2,6 @@ import { AntdRegistry } from "@ant-design/nextjs-registry";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Providers } from "@/components/providers";
-import { SiteShell } from "@/components/site-shell";
 import { siteCopy } from "@/copy/site";
 import "./globals.css";
 
@@ -20,9 +19,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <Suspense>
           <AntdRegistry>
-            <Providers>
-              <SiteShell>{children}</SiteShell>
-            </Providers>
+            <Providers>{children}</Providers>
           </AntdRegistry>
         </Suspense>
       </body>

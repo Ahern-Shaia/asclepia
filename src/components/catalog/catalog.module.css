@@ -1,0 +1,157 @@
+/* Layout only. Colours come from antd tokens (inline via theme.useToken) — see guard no-hardcoded-hex.
+   Classes that land on antd components (Flex, Button) are doubled (.x.x) on purpose: antd injects
+   its own single-class rules (.ant-flex { display:flex }, …) later, so a single class loses. */
+.container.container {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.headerRow.headerRow {
+  height: 64px;
+}
+
+.headerSearch {
+  flex: 1;
+  max-width: 420px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cover {
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.coverImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.clamp2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.8em;
+}
+
+.listLayout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.detailTop {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.thumbs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.thumbButton {
+  padding: 0;
+  cursor: pointer;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: none;
+}
+
+.nameplate {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.nameplateCell {
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nameplateWide {
+  grid-column: 1 / -1;
+}
+
+.screw {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.mono {
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, "SFMono-Regular", "Menlo", monospace;
+  overflow-wrap: anywhere;
+}
+
+.sticky.sticky {
+  position: sticky;
+  top: 16px;
+}
+
+.desktopOnly.desktopOnly {
+  display: block;
+}
+
+.mobileOnly.mobileOnly {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .categoryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .categoryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .listLayout,
+  .detailTop {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .desktopOnly.desktopOnly {
+    display: none;
+  }
+  .mobileOnly.mobileOnly {
+    display: block;
+  }
+  .sticky.sticky {
+    position: static;
+  }
+}

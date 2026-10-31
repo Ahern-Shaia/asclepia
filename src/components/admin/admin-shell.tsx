@@ -1,0 +1,165 @@
+"use client";
+
+import {
+  AppstoreOutlined,
+  LogoutOutlined,
+  MenuOutlined,
+  MessageOutlined,
+  SettingOutlined,
+  TagsOutlined,
+} from "@ant-design/icons";
+import {
+  Avatar,
+  Badge,
+  Button,
+  ConfigProvider,
+  Drawer,
+  Flex,
+  Layout,
+  Menu,
+  theme,
+  Typography,
+} from "antd";
+import Link from "next/link";
+import { type ReactNode, useState } from "react";
+import { MockBanner } from "@/components/catalog/mock-banner";
+import { adminCopy } from "@/copy/admin";
+import { adminTheme } from "@/theme/tokens";
+import styles from "./admin.module.css";
+
+type Active = "products" | "categories" | "inquiries" | "settings";
+type ShellProps = {
+  base: string;
+  active: Active;
+  newInquiries: number;
+  user: string;
+  mock?: boolean;
+  children: ReactNode;
+};
+
+export function AdminShell(props: ShellProps) {
+  return (
+    <ConfigProvider theme={adminTheme}>
+      <AdminShellInner {...props} />
+    </ConfigProvider>
+  );
+}
+
+function AdminNav({
+  base,
+  active,
+  newInquiries,
+  onNavigate,
+}: {
+  base: string;
+  active: Active;
+  newInquiries: number;
+  onNavigate?: () => void;
+}) {
+  const m = adminCopy.menu;
+  return (
+    <Menu
+      mode="inline"
+      selectedKeys={[active]}
+      style={{ borderInlineEnd: "none" }}
+      onClick={onNavigate}
+      items={[
+        {
+          key: "products",
+          icon: <AppstoreOutlined />,
+          label: <Link href={`${base}/products`}>{m.products}</Link>,
+        },
+        { key: "categories", icon: <TagsOutlined />, label: m.categories },
+        {
+          key: "inquiries",
+          icon: <MessageOutlined />,
+          label: (
+            <Link href={`${base}/inquiries`}>
+              <Flex justify="space-between" align="center">
+                {m.inquiries}
+                {newInquiries > 0 && (
+                  <Badge count={newInquiries} title={`${newInquiries} 筆未處理`} />
+                )}
+              </Flex>
+            </Link>
+          ),
+        },
+        { key: "settings", icon: <SettingOutlined />, label: m.settings },
+      ]}
+    />
+  );
+}
+
+function AdminShellInner({ base, active, newInquiries, user, mock, children }: ShellProps) {
+  const { token } = theme.useToken();
+  const [navOpen, setNavOpen] = useState(false);
+  const brand = (
+    <Link
+      href={`${base}/products`}
+      style={{ fontWeight: 700, fontSize: token.fontSizeLG, color: token.colorPrimary }}
+    >
+      {adminCopy.appName}
+    </Link>
+  );
+  return (
+    <Layout style={{ minHeight: "100vh" }}>
+      {mock && <MockBanner />}
+      <Layout>
+        <Layout.Sider
+          width={220}
+          className={styles.desktopOnly}
+          style={{ borderInlineEnd: `1px solid ${token.colorBorder}` }}
+        >
+          <Flex vertical gap={8} style={{ paddingBlockStart: 18 }}>
+            <div style={{ paddingInline: 20 }}>{brand}</div>
+            <AdminNav base={base} active={active} newInquiries={newInquiries} />
+          </Flex>
+        </Layout.Sider>
+        <Layout>
+          <Layout.Header
+            style={{
+              borderBottom: `1px solid ${token.colorBorder}`,
+              paddingInline: 16,
+              height: 56,
+              lineHeight: "56px",
+            }}
+          >
+            <Flex align="center" gap={12} style={{ height: "100%" }}>
+              <Button
+                className={styles.mobileOnly}
+                type="text"
+                icon={<MenuOutlined />}
+                aria-label="開啟選單"
+                onClick={() => setNavOpen(true)}
+              />
+              <div className={styles.mobileOnly}>{brand}</div>
+              <div aria-hidden style={{ flex: 1 }} />
+              <Avatar size="small" style={{ background: token.colorPrimary }} aria-label={user}>
+                {user.slice(0, 1).toUpperCase()}
+              </Avatar>
+              <Typography.Text className={styles.desktopOnly}>{user}</Typography.Text>
+              <Button type="text" icon={<LogoutOutlined />} href={`${base}/login`}>
+                {adminCopy.logout}
+              </Button>
+            </Flex>
+          </Layout.Header>
+          <Layout.Content className={styles.content}>{children}</Layout.Content>
+        </Layout>
+      </Layout>
+      <Drawer
+        open={navOpen}
+        onClose={() => setNavOpen(false)}
+        placement="left"
+        size="default"
+        title={adminCopy.appName}
+      >
+        <AdminNav
+          base={base}
+          active={active}
+          newInquiries={newInquiries}
+          onNavigate={() => setNavOpen(false)}
+        />
+      </Drawer>
+    </Layout>
+  );
+}
