@@ -7,7 +7,7 @@
 > 狀態：**Scaffold 完成（2026-10-31）**：Next.js 16 + antd 6 骨架，`pnpm check` 和 `pnpm test:e2e` 全綠。下一步是 catalog M1。
 >
 > 網站定位是**中古設備買賣**（用戶 2026-10-31：「當作中古器材買賣就行，我賣的是設備，不是『醫療』器材」）：自營賣中古院所設備與檢驗設備，前台是型錄＋詢價，後台負責上架。
-> 棧規則附件：`docs/stack-rules/nextjs-prisma-antd.md`（R21，⏳ 待人 review，執法點 W1–W10 尚未全部接線）。商品模組設計：`docs/modules/catalog.md`（APPROVED；v0.2 定位修訂待用戶確認）。視覺 mockup：`docs/mockups/README.md`（提案）。
+> 棧規則附件：`docs/stack-rules/nextjs-prisma-antd.md`（R21，⏳ 待人 review，執法點 W1–W10 尚未全部接線）。商品模組設計：`docs/modules/catalog.md`（APPROVED；v0.2 定位修訂待用戶確認）。視覺：profile `inspect-catalog`「實機型錄」（用戶 2026-11-01 定案，基準稿 `/mockup/site-v5-1`，規則在 `frontend-design-principles.md` §B0）；mockup 清單 `docs/mockups/README.md`。
 > 🔴 法規邊界：一件設備算不算醫療器材，依醫材法 §3 看它的設計與用途（診斷、治療…），不看新舊或賣方怎麼稱呼（research §5）。哪些品項落在線內**不屬於 Claude Code 可以裁定的事**（R7），送律師或衛生局 🔒。
 
 ---
@@ -64,7 +64,7 @@
 | 10 測試分層 | Vitest（單元）· testcontainers Postgres（整合，走低權 app role）· Playwright（e2e）· junit reporter 寫在 config 裡 | ✅ |
 | 11 視覺權威 | `docs/frontend-design-principles.md` ＋ `src/theme/tokens.ts` | ✅ |
 | 12 母心智模型 | 醫材商腦中是原廠型錄和規格表；民眾腦中是拍賣網商品頁（參考站本身外連 Yahoo、露天賣場） | ✅ 參考站已用 Playwright 實測（research §1b） |
-| 13 可稽核視覺規則 | profile＝自訂 `spec-catalog`＋antd（R16）；8 項規則與執法點見 `frontend-design-principles.md` §B0 | ✅ |
+| 13 可稽核視覺規則 | profile＝自訂 `inspect-catalog`「實機型錄」＋antd（R16，用戶 2026-11-01 定案，基準稿 `/mockup/site-v5-1`）；規則與執法點見 `frontend-design-principles.md` §B0 | ✅ |
 | 14 mockup | 放 `docs/mockups/`，檔頭標身分（提案／待落地／已落地／棄用／競品）。2026-10-31 前台與後台 mockup：身分＝提案，用 antd 實際渲染 | ✅ 制度；⏳ 等用戶確認視覺 |
 | 15 / 22 | 沿用 `AGENTS.md` 通用鐵則 | ✅ |
 | 16 DoD | grep 呼叫端 ＋ FMEA（R17）＋ 使用手冊節（後台上架操作） | ✅ |
@@ -125,7 +125,7 @@
 | **R13** | **Component spacing**：button group / form group 一律用 antd `<Flex gap>` / `<Space>`，元件裡禁止用 inline `style` 的 margin 做間距。執法點：`scripts/guards/no-inline-margin.sh` |
 | **R14** | **新代碼框架**：一律放在同一個 Next.js App Router app 裡，Server Component 優先；不另外開 SPA 或獨立後端服務 |
 | **R15** | **出貨前清單**：solo 直接 commit，不走 PR（memory `feedback_no_pr_workflow`）。每個功能標「完成」前必須走過 `docs/pre-pr-checklist.md` |
-| **R16** | **前端設計鐵則**：所有前端產出必過 `docs/frontend-design-principles.md` **§A 普世核心**（token、a11y、全狀態、響應式、複用、文案）+ **§C 設計流程迴圈**。🔴 **§B 美學 profile 於開工時決定**（見 `docs/pre-dev-decisions.md` §二）——profile 的正確來源是**目標使用者的母心智模型與競品實測**，不是預設鎖一個名字（2026-09 更新：前一版鎖 `modern-SaaS-craft`，在一個 B2B 表單專案被實戰推翻 —— 那個 profile 與使用者要的「紙的形狀」全面相反）。定了之後 Claude Code 不得自行換；要換由人改本鐵則並說明理由。**本專案（2026-10-31）**：用戶說「前端視覺設計不限制」，授權 Claude 裁定，選自訂 profile **`spec-catalog`**：規格表優先、商品照片大、設備銘牌（品牌、型號、年份、狀況、保固）一級顯示、中高密度、不走 SaaS 儀表板語言。8 項細節在第一個前端 M0 競品實測後寫進 `frontend-design-principles.md` §B0 |
+| **R16** | **前端設計鐵則**：所有前端產出必過 `docs/frontend-design-principles.md` **§A 普世核心**（token、a11y、全狀態、響應式、複用、文案）+ **§C 設計流程迴圈**。🔴 **§B 美學 profile 於開工時決定**（見 `docs/pre-dev-decisions.md` §二）——profile 的正確來源是**目標使用者的母心智模型與競品實測**，不是預設鎖一個名字（2026-09 更新：前一版鎖 `modern-SaaS-craft`，在一個 B2B 表單專案被實戰推翻 —— 那個 profile 與使用者要的「紙的形狀」全面相反）。定了之後 Claude Code 不得自行換；要換由人改本鐵則並說明理由。**本專案**：2026-10-31 用戶說「前端視覺設計不限制」，Claude 先選了 `spec-catalog`；經 16 站版面量測、86 站美工分析和多輪 mockup，**用戶 2026-11-01 裁定「視覺設計風格採用 site-v5-1」**，profile 改為 **`inspect-catalog`「實機型錄」**：首屏實拍照片＋唯一一個搜尋、藍＋橘（橘只用在價格、主要行動、新到）、圓角 6px、商品卡欄位固定、設備銘牌＋規格表、插畫只用在小尺度。規則與執法點在 `frontend-design-principles.md` §B0 |
 
 ### 1.4 執行模式（autonomy level）
 
@@ -310,3 +310,4 @@ PR 內容必含：目的、變更內容、測試結果、影響範圍。
 |---|---|---|---|
 | 2026-10-31 | v1.0 | 初版：走過 pre-dev 25 格，填入定位、棧、合規不變量（R11）、profile（R16）、執行模式 | Claude Code（與用戶逐格裁定） |
 | 2026-10-31 | v1.1 | 用戶改定位：「當作中古器材買賣就行，我賣的是設備，不是『醫療』器材」。§0／§0.1／R11／R16 改寫；許可證字號改選填；法規邊界移到 research §5 | Claude Code（依用戶指示） |
+| 2026-11-01 | v1.2 | 用戶定案視覺：「視覺設計風格採用 site-v5-1」。R16 與 §0.2 #13 的 profile 由 `spec-catalog` 改為 `inspect-catalog`「實機型錄」 | Claude Code（依用戶指示） |

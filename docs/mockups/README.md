@@ -1,6 +1,6 @@
 # Mockups
 
-> **身分：提案（2026-10-31）**——等用戶確認視覺設計。同日依用戶指示改為「中古設備買賣」定位重拍（許可證字號改選填）。確認後改成「待落地」；元件接上真資料後改成「已落地」，並在這裡註明落地的 commit。
+> **身分**：首頁 v5.1 = **待落地**（用戶 2026-11-01 定案為視覺基準，見 `frontend-design-principles.md` §B0）；其他稿 = 提案或棄用的紀錄。2026-10-31 原註：同日依用戶指示改為「中古設備買賣」定位重拍（許可證字號改選填）。確認後改成「待落地」；元件接上真資料後改成「已落地」，並在這裡註明落地的 commit。
 > 稿是證據不是權威：視覺規則的權威是 `docs/frontend-design-principles.md` §B0 和 `src/theme/tokens.ts`。
 
 ## 怎麼看
@@ -21,7 +21,7 @@ open http://localhost:3200/mockup
 | 首頁 | `/mockup/site` | `home-desk.png` `home-mobile.png` |
 | **首頁 v2（美工加強版，待 review）** | `/mockup/site-v2` | `home-v2-desk*.png` `home-v2-mobile*.png` |
 | 首頁 v5「實機型錄・照片版」 | `/mockup/site-v5` | `home-v5-*.png` |
-| **首頁 v5.1（只留首屏一個搜尋，對照 v5）**：差異見 `home-v5-1-changes.md` | `/mockup/site-v5-1` | `home-v5-1-*.png` |
+| **首頁 v5.1 ✅ 定案基準稿（2026-11-01）**：與 v5 的差異見 `home-v5-1-changes.md` | `/mockup/site-v5-1` | `home-v5-1-*.png` |
 | 商品列表 | `/mockup/site/products` | `list-*.png` |
 | 列表：搜尋無結果 | `/mockup/site/products?q=MRI` | `list-empty-*.png` |
 | 列表：載入中 | `/mockup/site/products?state=loading` | `list-loading-*.png` |
@@ -91,7 +91,7 @@ DOTmed（403 擋自動化瀏覽器）、MedWOW（憑證無效）沒有截到圖�
 - agent 自加、待確認的字：r01 標題欄三個統計（6 分類／43 件／7 品牌，取自資料）；r03 圖號 AS-HOME-001；r07 料號 AS-xxxx、頁碼；r08 文件編號 AS-CAT-0001、版次 A、「現行版」章；r10 圖表說明文字；c07 新增人物插畫
 - 已知：c03、c09、r07 用 Chiron Hei HK（香港字形），若選中要換台灣字形字體
 
-選定後：把該款寫成新的 §B0 profile，並更新 `tokens.ts` 與守衛，再套到列表頁、商品頁。
+**2026-11-01 結果**：用戶選定首頁 v5.1（「視覺設計風格採用 site-v5-1」），不是 style-lab 的任何一款。v5.1 已寫成 §B0 `inspect-catalog`；style-lab 20＋20 款保留當紀錄，不再延伸。
 
 ## 還不是真的
 

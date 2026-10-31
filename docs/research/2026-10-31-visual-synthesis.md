@@ -1,6 +1,6 @@
 # 視覺分析與整合風格：「實機型錄」（提案，待用戶確認）
 
-> 查證日：2026-10-31｜身分：**提案**。用戶確認後才寫進 `frontend-design-principles.md` §B0（取代目前的 `spec-catalog`），並更新 `tokens.ts` 與守衛。
+> 查證日：2026-10-31｜身分：**已採用**。用戶 2026-11-01 定案首頁 v5.1（本檔 §3 的規則＋美工分析的照片規範），已寫進 `frontend-design-principles.md` §B0 `inspect-catalog`，取代 `spec-catalog`；`tokens.ts` 圓角改 6px。
 > 用戶：「分析後，整理一套設計風格，然後先做一個 mockup，我先確認你整合後分析的設計風格」。
 > Mockup：`/mockup/site-v3`（截圖 `docs/mockups/2026-10-31/home-v3-{desk,mobile}.png`）。
 > 網站清單與功能見 `2026-10-31-equipment-marketplaces.md`。
