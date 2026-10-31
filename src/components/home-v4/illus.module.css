@@ -1,0 +1,103 @@
+/* Illustration paint. Variables are set by HomeV4View from src/theme/tokens.ts. */
+.illus {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.illus :where(rect, path, circle, ellipse) {
+  stroke: var(--navy-ink);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.white {
+  fill: var(--white);
+}
+.surface {
+  fill: var(--illus-surface);
+}
+.shade {
+  fill: var(--illus-shade);
+}
+.navy {
+  fill: var(--navy);
+}
+.dark {
+  fill: var(--navy-ink);
+}
+.screen {
+  fill: var(--navy-ink);
+}
+.glow {
+  fill: var(--illus-glow);
+  stroke: none !important;
+}
+.accent {
+  fill: var(--accent);
+  stroke: none !important;
+}
+.line,
+.thin,
+.thick,
+.ecg,
+.trace {
+  fill: none;
+}
+.thin {
+  stroke-width: 1.5 !important;
+}
+.thick {
+  stroke-width: 4 !important;
+}
+.ecg {
+  stroke: var(--accent) !important;
+  stroke-width: 2.5;
+}
+.trace {
+  stroke: var(--illus-glow) !important;
+  stroke-width: 2;
+}
+.shadow {
+  fill: var(--navy-ink);
+  opacity: 0.14;
+  stroke: none !important;
+}
+
+/* outline variant: line drawing for dark backgrounds (footer shelf) */
+.outline :where(rect, path, circle, ellipse) {
+  fill: none !important;
+  stroke: var(--on-navy-muted) !important;
+  stroke-width: 2 !important;
+  opacity: 0.55;
+}
+.outline .shadow {
+  display: none;
+}
+
+/* mini map */
+.map :where(rect, path, circle) {
+  stroke: none;
+}
+.mapBg {
+  fill: var(--illus-surface);
+}
+.road {
+  fill: none;
+  stroke: var(--white) !important;
+  stroke-width: 10 !important;
+}
+.roadThin {
+  fill: none;
+  stroke: var(--white) !important;
+  stroke-width: 5 !important;
+}
+.block {
+  fill: var(--illus-shade);
+}
+.pin {
+  fill: var(--accent);
+}
+.map .white {
+  fill: var(--white);
+}

@@ -23,6 +23,10 @@ export const palette = {
   // home v3 "實機型錄" (proposal): industry blue + orange accent for price and inquiry
   accent: "#C2410C",
   accentBg: "#FFF1EA",
+  // home v4 illustration set (flat duotone equipment drawings)
+  illusSurface: "#E8F0F9",
+  illusShade: "#BFD3EA",
+  illusGlow: "#8EC5F0",
 } as const;
 
 // Text/background pairs that must meet WCAG AA (4.5:1); enforced by tokens.test.ts.
