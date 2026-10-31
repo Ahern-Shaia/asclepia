@@ -8,6 +8,7 @@
   font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
 }
 .index h1,
+.index h2,
 .index p {
   margin: 0;
 }
@@ -39,4 +40,10 @@
 }
 .no {
   font-family: ui-monospace, Menlo, monospace;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }

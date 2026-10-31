@@ -25,3 +25,127 @@ export const styles = [
   { slug: "19-kinetic", name: "動態字體", brief: "巨大文字跑馬、滾動視差、字即版面" },
   { slug: "20-notebook", name: "實驗手札", brief: "方格紙、手寫字、便利貼、手繪圈註" },
 ] as const;
+
+// 20 variants of the 實機型錄 structure (home v4): 10 corporate, 10 rigorous.
+export const variants = [
+  {
+    slug: "c01-corporate-blue",
+    group: "企業",
+    name: "藍白企業官網",
+    brief: "經典企業藍白、寬版首屏、分區清楚、背景淡色幾何色塊",
+  },
+  {
+    slug: "c02-navy-gold",
+    group: "企業",
+    name: "深藍金線",
+    brief: "深海軍藍＋細金線、沉穩高級、背景細線框與徽章紋",
+  },
+  {
+    slug: "c03-tech-wave",
+    group: "企業",
+    name: "現代科技企業",
+    brief: "亮藍紫、柔和陰影、背景流動波形與光暈",
+  },
+  {
+    slug: "c04-green-circular",
+    group: "企業",
+    name: "綠色循環企業",
+    brief: "二手再利用＝永續：深綠青綠、循環箭頭與葉形背景",
+  },
+  {
+    slug: "c05-japan-corporate",
+    group: "企業",
+    name: "日系企業",
+    brief: "白底紅點綴、細線、大留白、背景淡淡的斜線與圓點",
+  },
+  {
+    slug: "c06-german-industrial",
+    group: "企業",
+    name: "德系工業",
+    brief: "石油藍綠、嚴格版面、大字、背景斜切大色塊",
+  },
+  {
+    slug: "c07-healthcare",
+    group: "企業",
+    name: "醫療企業",
+    brief: "醫療品牌感：紫藍柔和、圓角、背景曲線波與人性溫度",
+  },
+  {
+    slug: "c08-taiwan-listed",
+    group: "企業",
+    name: "台灣上市公司",
+    brief: "台企官網：深藍＋青色、層疊幾何、背景城市天際線",
+  },
+  {
+    slug: "c09-charcoal-copper",
+    group: "企業",
+    name: "炭灰銅色",
+    brief: "炭灰＋銅橘、建築線條背景、穩重",
+  },
+  {
+    slug: "c10-vivid-brand",
+    group: "企業",
+    name: "活力品牌",
+    brief: "橘色主色、白底、大膽幾何背景形狀、年輕",
+  },
+  {
+    slug: "r01-datasheet",
+    group: "嚴謹",
+    name: "規格書",
+    brief: "技術規格書：編號章節、表格、等寬數據、背景方格紙",
+  },
+  {
+    slug: "r02-lab-report",
+    group: "嚴謹",
+    name: "檢驗報告",
+    brief: "報告格式：表單欄位、樣本編號、背景淡格線與條碼",
+  },
+  {
+    slug: "r03-whiteprint",
+    group: "嚴謹",
+    name: "工程製圖（白圖）",
+    brief: "白紙藍線、圖框標題欄、尺寸線（不可做成深藍藍圖）",
+  },
+  {
+    slug: "r04-swiss-grid",
+    group: "嚴謹",
+    name: "瑞士網格",
+    brief: "嚴格 12 欄網格可見、黑白＋一紅、背景網格線",
+  },
+  {
+    slug: "r05-official",
+    group: "嚴謹",
+    name: "公文正式",
+    brief: "正式公文感：朱紅印記、襯線、表格框、背景淡浮水印",
+  },
+  {
+    slug: "r06-device-ui",
+    group: "嚴謹",
+    name: "醫療儀器介面",
+    brief: "現代醫療儀器 UI：深灰面板、青綠讀數、背景細格與波形",
+  },
+  {
+    slug: "r07-print-catalog",
+    group: "嚴謹",
+    name: "印刷型錄",
+    brief: "紙本型錄：料號、側邊索引標籤、頁碼、背景網點",
+  },
+  {
+    slug: "r08-iso-document",
+    group: "嚴謹",
+    name: "品管文件",
+    brief: "文件管制表頭、版次框、檢核表、背景細斜紋",
+  },
+  {
+    slug: "r09-precision",
+    group: "嚴謹",
+    name: "精密量測",
+    brief: "尺規刻度、游標卡尺、精確數字、背景刻度線",
+  },
+  {
+    slug: "r10-journal",
+    group: "嚴謹",
+    name: "學術期刊",
+    brief: "期刊排版：襯線、雙欄、「圖 1」圖說、註腳",
+  },
+] as const;
