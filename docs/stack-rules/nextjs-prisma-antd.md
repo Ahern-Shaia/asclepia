@@ -132,7 +132,7 @@ next 16.4.3 · react / react-dom 19.3.0 · typescript 5.9.3 · antd 6.6.7 · @an
   · 執法點:`pnpm test:e2e`(spec `e2e/security/action-replay.spec.ts`)· 出處 [N1]
 - **S4-3 [P0]** next-auth `signIn` callback 只在 `account.provider === 'google' && profile.email_verified === true && allowlist.has(email.trim().toLowerCase())` 時放行;`requireAdmin()` 每次都重查一次 allowlist —— 沒有 adapter 時 session 是 JWT、maxAge 預設 30 天([NA1] init.js L45/L66),把人從 allowlist 拿掉**不會撤銷已簽出的 JWT**
   · 執法點:單元測試(未驗證 email、不在名單、大寫 email、非 google provider、名單移除後 `requireAdmin` 拒絕,五案)· 出處 [NA1]
-- **S4-4 [P0]** 公開 DAL 只回傳 `status IN (PUBLISHED, SOLD)` 的商品;DRAFT / HIDDEN 用 id 直接打也回 404。公開 DTO 用 `select` 常數,不含 `sourceName` / `sourceLicenseNo` —— 這是本專案的 object-level 授權:單一賣方沒有 tenant,但有「未上架」。草稿可能還沒填許可證字號,被前台看到就違反 R11(醫材法 §70-1-7「意圖販賣而陳列」)
+- **S4-4 [P0]** 公開 DAL 只回傳 `status IN (PUBLISHED, SOLD)` 的商品;DRAFT / HIDDEN 用 id 直接打也回 404。公開 DTO 用 `select` 常數,不含 `sourceName` / `sourceContact` —— 這是本專案的 object-level 授權:單一賣方沒有 tenant,但有「未上架」。草稿可能還沒填許可證字號,被前台看到就違反 R11(醫材法 §70-1-7「意圖販賣而陳列」)
   · 執法點:整合測試(建立 DRAFT / HIDDEN → 每個公開 DAL 函式都查不到;公開 DTO 的鍵 ⊆ 白名單)· e2e(草稿 URL → 404)· 出處 [N1](DTO)
 - **S4-5 [P0]** 會改資料的 Route Handler 要自己比對 `Origin` 與 `NEXTAUTH_URL` 的 origin —— Server Action 有內建的 Origin/Host 比對 [N3],Route Handler 沒有(查法:`grep -n -iE "origin|csrf" …/03-file-conventions/route.md …/01-getting-started/15-route-handlers.md` 只命中 CORS 範例)。另外 Action 對「**沒有 Origin header 的請求只發警告、照樣放行**」(逐字 [N3]:"A request that carries no `Origin` header at all is allowed through with a warning rather than rejected")
   · 執法點:整合測試(上傳 handler:沒有 Origin / 外站 Origin → 403)· 出處 [N3]

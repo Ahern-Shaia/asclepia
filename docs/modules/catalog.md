@@ -5,7 +5,9 @@
 > 前台商品頁照參考頁 [used-equip /product/22/67](https://www.used-equip.com.tw/product/22/67) 的內容結構；所有商品（圖片、資訊）都從後台上傳。這是 MVP 的核心模組，詢價（inquiry）是另一個模組，本檔只定義它的入口。
 >
 > 作者：Claude Code（草擬）
-> 版本：v0.1（2026-10-31）
+> 版本：v0.2（2026-10-31）
+>
+> **v0.2 修訂（用戶 2026-10-31：「當作中古器材買賣就行，我賣的是設備，不是『醫療』器材」）**：網站定位從醫療器材型錄改為中古設備買賣。`licenseNo` 改選填、拿掉「上架必填」的 DB CHECK；收購來源改成一般來歷紀錄（`sourceContact`）。資料模型變更依 R6 隨本次修訂一併送用戶確認。法規邊界見 research §5。
 
 ---
 
@@ -16,11 +18,11 @@
 1. 員工能在後台**新增商品**：上傳多張圖片（可排序、可指定主圖），填寫品牌、型號、品名、產品訊息、規格、特色，存成草稿或直接上架
 2. 員工能**編輯、下架、標記已售出**，每一筆寫入都留 audit（R5）
 3. 訪客能在前台**依分類瀏覽、搜尋**；商品頁的區塊順序跟參考頁一致（§4.3）
-4. **少了許可證字號或登錄字號的商品，上架會被系統擋下**（R11）
+4. 上架前檢查：至少 1 張圖片、中文品名、分類，缺一項不能上架。醫療器材許可證字號**選填**，有填才顯示（v0.2）
 
 ### 1.2 不做的事
 
-- ❌ 線上下單、購物車、付款（R11；通訊交易規定第四點）
+- ❌ 線上下單、購物車、付款（MVP 範圍，用戶 2026-10-31 裁定；R11）
 - ❌ 富文本編輯器（HTML 欄位等於 stored XSS 面，規格改用結構化欄位，見 OQ-CAT-2）
 - ❌ 外部賣場連結（參考頁有 Yahoo、露天連結；見 OQ-CAT-4）
 - ❌ 多語系（R12）
@@ -47,11 +49,11 @@
 | 11 | 「〔 回列表 〕」 | 回到分類列表（保留篩選條件） | — |
 | 12 | 頁尾電話、傳真、email、地址 | 站台設定（`SiteSetting`） | 後台設定頁 |
 | — | **參考頁沒有、本站要加的** | | |
-| A | 許可證字號／登錄字號 | `licenseNo`，上架時必填，商品頁一級顯示（R11） | 必填欄位＋格式提示 |
+| A | 醫療器材許可證字號（選填） | `licenseNo`，有值才在銘牌最後一列顯示（v0.2） | 選填欄位 |
 | B | 詢價入口 | 「詢價這件商品」按鈕（OQ-CAT-3） | — |
 | C | 價格、狀況、保固 | 選填（OQ-CAT-5） | 選填欄位 |
 | D | 商品狀態 | 草稿／上架／下架／已售出（OQ-CAT-8） | 狀態切換 |
-| E | 收購來源（§19 流向紀錄） | `sourceName` `sourceLicenseNo`，**只在後台可見** | 選填 |
+| E | 收購來源（來歷紀錄） | `sourceName` `sourceContact`，**只在後台可見** | 選填 |
 
 上游現況：repo 裡沒有程式碼（查法：`find . -name '*.ts*' -not -path './node_modules/*'` 回 0 筆），所以全部是新做。
 
@@ -61,7 +63,7 @@
 
 | 子題 | 內容 |
 |---|---|
-| **A1 資料模型＋後台商品 CRUD** | Prisma schema、migration（含 R11 CHECK）、後台列表與表單、狀態切換、audit |
+| **A1 資料模型＋後台商品 CRUD** | Prisma schema、migration、後台列表與表單、狀態切換、audit |
 | **A2 圖片上傳管線** | 驗證、重新編碼、去 EXIF、產生尺寸、排序、指定主圖 |
 | **A3 前台型錄** | 分類列表（cursor 分頁 ≤ 48 筆）、搜尋、商品頁（照 §2 區塊順序）、SEO meta |
 | **A4 後台登入** | Auth.js、只有白名單帳號能登入、`requireAdmin()` 單一入口 |
@@ -88,15 +90,15 @@ model Product {
   model           String        // ≤ 80
   nameEn          String?       // ≤ 160
   nameZh          String        // ≤ 160
-  licenseNo       String?       // R11：status=PUBLISHED 時必須有值（migration 手寫 CHECK）
+  licenseNo       String?       // 選填；只有醫療器材才有（v0.2 拿掉上架必填 CHECK）
   priceTwd        Decimal?      @db.Decimal(12, 0)  // null = 歡迎詢價
   condition       String?       // OQ-CAT-5
   warranty        String?       // OQ-CAT-5
   highlights      String[]      // 產品訊息，≤ 30 點
   features        String[]      // Main Features，≤ 50 點
   specNote        String?       // 純文字，≤ 5000 字
-  sourceName      String?       // 收購來源（§19），只在後台可見
-  sourceLicenseNo String?
+  sourceName      String?       // 收購來源，只在後台可見
+  sourceContact   String?
   publishedAt     DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -130,12 +132,12 @@ model AuditLog     { id BigInt @id @default(autoincrement()); actorId String; ac
 ### 4.3 UI
 
 **後台商品表單**，由上到下照前台的顯示順序排列，員工填完就知道前台長什麼樣：
-分類 → 圖片（拖曳上傳＋排序）→ 品牌／型號／英文品名／中文品名（旁邊即時預覽組好的標題）→ **許可證字號** → 產品訊息 → 規格（動態列＋「貼上原廠規格」按鈕）→ Main Features → 價格／狀況／保固 → 收購來源（標「僅後台可見」）→ 〔存草稿〕〔上架〕
+分類 → 圖片（拖曳上傳＋排序）→ 品牌／型號／英文品名／中文品名（旁邊即時預覽組好的標題）→ 產品訊息 → 規格（動態列＋「貼上原廠規格」按鈕）→ Main Features → 價格／狀況／保固 → 醫療器材許可證（選填）→ 收購來源（標「僅後台可見」）→ 〔存草稿〕〔上架〕
 
-- 「上架」時才檢查許可證字號，存草稿不檢查。缺字號時回：「上架前請填寫許可證字號或登錄字號」
-- 文案欄位有療效字詞守衛（R11 ③）：送出時警告，列出命中的詞，不硬擋（守衛會誤判），但會寫進 audit
+- 「上架」時才檢查圖片、中文品名、分類，存草稿不檢查
+- 文案欄位有療效字詞守衛（R11 ②）：送出時警告，列出命中的詞，不硬擋（守衛會誤判），但會寫進 audit
 
-**前台商品頁**，區塊順序照 §2：分類標題 → 圖片（主圖＋縮圖列）→ 標題 → 品牌型號區塊 → **許可證字號** → 〔詢價這件商品〕→ 產品訊息 → 規格表 → Main Features → 回列表。
+**前台商品頁**，區塊順序照 §2：分類標題 → 圖片（主圖＋縮圖列）→ 標題 → 設備銘牌（品牌、型號、年份、保固、狀況；有許可證字號才多一列）→ 〔詢價這件商品〕→ 產品訊息 → 規格表 → Main Features → 回列表。
 視覺依 `spec-catalog` profile。8 項細節在前端 M0 寫定後才開始做畫面（`frontend-design-principles.md` §B0）。
 
 ---
@@ -149,7 +151,7 @@ model AuditLog     { id BigInt @id @default(autoincrement()); actorId String; ac
 | **容量** | 預估商品百到千件、每件 ≤ 20 張圖。列表查詢走 `(status, categoryId, publishedAt)` index＋cursor 分頁 |
 | **失效** | 圖片轉檔逾時 30s 就失敗，並回人看得懂的句子；storage 寫入失敗時不寫 DB 列（先寫檔、後寫列，留下的孤兒檔由定期清理處理） |
 | **觀測** | audit log 本身就是後台操作紀錄；轉檔失敗用結構化 log 記下 productId 與原因，不記檔案內容 |
-| **資料生命週期** | 本模組沒有 PII；收購來源只在後台可見。下架或已售出的商品不硬刪（要保留 §19 流向紀錄） |
+| **資料生命週期** | 本模組沒有 PII；收購來源只在後台可見。下架或已售出的商品不硬刪（保留成交與來歷紀錄） |
 | **兼容** | 全新表，沒有遷移負擔 |
 | **成本** | 圖片儲存：1000 件 × 20 張 × 約 400KB ≈ 8GB，等 §2.4 部署決定後再估月費 |
 
@@ -158,8 +160,8 @@ model AuditLog     { id BigInt @id @default(autoincrement()); actorId String; ac
 | 層級 | 覆蓋 |
 |---|---|
 | Unit | 標題組合、規格貼上解析（陽性：參考頁那段規格文字；陰性：空字串、沒有冒號的行）、療效字詞守衛 |
-| Integration（testcontainers，低權 app role） | 「PUBLISHED 但沒有 licenseNo」會被 DB CHECK 擋下；audit 的 UPDATE、DELETE 會被拒 |
-| E2E（Playwright） | 後台上架完整流程（上傳 3 張圖 → 排序 → 上架 → 前台看得到）；缺字號無法上架；未登入打不到後台 |
+| Integration（testcontainers，低權 app role） | 缺圖片／中文品名／分類的商品無法上架；audit 的 UPDATE、DELETE 會被拒 |
+| E2E（Playwright） | 後台上架完整流程（上傳 3 張圖 → 排序 → 上架 → 前台看得到）；缺中文品名無法上架；未登入打不到後台 |
 
 ## 9. 里程碑
 
@@ -189,7 +191,7 @@ model AuditLog     { id BigInt @id @default(autoincrement()); actorId String; ac
 | **OQ-CAT-1** | 標題怎麼來 | A. 由品牌＋型號＋英文品名＋中文品名自動組合 · B. 另外一欄自由輸入 | **A** — 參考頁的標題就是這四個欄位的組合；分開輸入會出現標題和欄位不一致（參考頁的「HDMI2.0+HDCP2.2」就重複了兩次） |
 | **OQ-CAT-2** | 規格怎麼輸入 | A. 結構化「標籤／值」列＋貼上原廠規格自動拆列 · B. 一個富文本框 | **A** — 前台版面能保持一致，以後可以依規格篩選，也沒有 HTML 注入面；貼上解析讓輸入速度跟富文本差不多 |
 | **OQ-CAT-3** | 詢價入口 | A. 商品頁有詢價表單（自動帶入商品）＋電話 · B. 只放電話、email（同參考頁） · C. 加 LINE | **A** — 後台看得到每筆詢價問的是哪件商品；B 最簡單，但詢價來源無從追蹤 |
-| **OQ-CAT-4** | 要不要外部賣場連結（Yahoo、露天） | A. 不做 · B. 做 | **A** — 拍賣網本身就是「通訊交易通路」，第二、三等級器材在上面賣違反通訊交易規定第四點，連過去等於導流到違規通路 |
+| **OQ-CAT-4** | 要不要外部賣場連結（Yahoo、露天） | A. 不做 · B. 做 | **A** — MVP 先不做。（v0.1 的理由是通訊交易規定第四點；v0.2 改定位為設備買賣後，這個理由只對醫療器材品項成立。要連拍賣網時再重開這題） |
 | **OQ-CAT-5** | 價格、狀況、保固 | A. 都選填，價格空白時顯示「歡迎詢價」 · B. 都不顯示（同參考頁） | **A** — 選填就涵蓋了 B 的情況；參考站在服務頁寫了「一律提供三個月保固」，可以做成站台預設值 |
 | **OQ-CAT-6** | 後台登入方式 | A. Google 登入＋email 白名單 · B. 帳號密碼（Argon2id） | 公司用 Google Workspace 選 **A**（不必自己保管密碼）；沒有的話選 B |
 | **OQ-CAT-7** | 後台角色 | A. 單一 admin · B. admin＋editor | **A** — MVP 人數少；`requireAdmin()` 單一入口，以後要拆角色也很容易 |

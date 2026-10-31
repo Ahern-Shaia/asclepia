@@ -16,7 +16,7 @@ This file provides guidance to AI coding assistants when working with code in th
 - Database schema is defined in `prisma/schema.prisma`
 - Migration files are in `prisma/migrations/`
 - Domain code lives in `src/modules/<domain>`; cross-module deep imports are blocked by dependency-cruiser
-- Regulatory invariants (license number required, no checkout path, no efficacy claims) — `CLAUDE.md` R11
+- Catalog invariants (no checkout path, no efficacy claims; medical-device licence number is optional) — `CLAUDE.md` R11
 
 ## Baselines (read before writing code)
 
@@ -44,7 +44,7 @@ This file provides guidance to AI coding assistants when working with code in th
 ### Prisma Schema Changes
 
 1. Edit `prisma/schema.prisma`, then `pnpm prisma migrate dev --name <change>`
-2. Read the generated SQL in `prisma/migrations/` — CHECK constraints for R11 are hand-written there
+2. Read the generated SQL in `prisma/migrations/` — hand-written CHECK constraints live there
 3. Commit schema + migration together; the generated client is not committed
 
 ## Build/Test Commands
