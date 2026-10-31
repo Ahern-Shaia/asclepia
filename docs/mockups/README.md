@@ -78,6 +78,17 @@ DOTmed（403 擋自動化瀏覽器）、MedWOW（憑證無效）沒有截到圖�
 - 例外：style-lab 可用任意色碼、漸層與瀏覽器端 Google Fonts（守衛豁免只限此資料夾；production 由 proxy 回 404）
 - agent 自行加的字（待確認）：14 拍賣行「請先來電預約」；18 博物館「展廳面積依件數比例」；12 便當格「43 件在庫」（六分類件數加總，來自範例資料）
 
+### 實機型錄 20 變體（企業 10、嚴謹 10）
+
+用戶：「設計 20 個變體（包含美工設計，也可以加入背景的美工設計），也加入企業風格、嚴謹風格各 10 個」。解讀為 20＝企業 10＋嚴謹 10（未確認）。
+
+- 路徑：`/mockup/style-lab/c01…c10`、`/mockup/style-lab/r01…r10`；共用 `_v-content.ts`（與 site-v4 同結構同文案）
+- 截圖總覽：`style-lab/_contact-sheet-variants.png`；個別截圖 `style-lab/<slug>-{desk,mobile}.png`
+- 驗收：40/40 OK（主 session 重跑），每款「加入詢價清單」點擊後頁首件數會變（agent 以 Playwright 驗）
+- style-lab 所有頁面由 `style-lab/layout.tsx` 統一加 MOCKUP 橫幅（逐頁驗證恰好 1 個）
+- agent 自加、待確認的字：r01 標題欄三個統計（6 分類／43 件／7 品牌，取自資料）；r03 圖號 AS-HOME-001；r07 料號 AS-xxxx、頁碼；r08 文件編號 AS-CAT-0001、版次 A、「現行版」章；r10 圖表說明文字；c07 新增人物插畫
+- 已知：c03、c09、r07 用 Chiron Hei HK（香港字形），若選中要換台灣字形字體
+
 選定後：把該款寫成新的 §B0 profile，並更新 `tokens.ts` 與守衛，再套到列表頁、商品頁。
 
 ## 還不是真的
