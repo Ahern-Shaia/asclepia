@@ -20,6 +20,8 @@ open http://localhost:3200/mockup
 |---|---|---|
 | 首頁 | `/mockup/site` | `home-desk.png` `home-mobile.png` |
 | **首頁 v2（美工加強版，待 review）** | `/mockup/site-v2` | `home-v2-desk*.png` `home-v2-mobile*.png` |
+| 首頁 v5「實機型錄・照片版」 | `/mockup/site-v5` | `home-v5-*.png` |
+| **首頁 v5.1（只留首屏一個搜尋，對照 v5）**：差異見 `home-v5-1-changes.md` | `/mockup/site-v5-1` | `home-v5-1-*.png` |
 | 商品列表 | `/mockup/site/products` | `list-*.png` |
 | 列表：搜尋無結果 | `/mockup/site/products?q=MRI` | `list-empty-*.png` |
 | 列表：載入中 | `/mockup/site/products?state=loading` | `list-loading-*.png` |
