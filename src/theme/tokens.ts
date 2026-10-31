@@ -1,6 +1,7 @@
 import type { ThemeConfig } from "antd";
 
-// Single source of truth for visual tokens (frontend-design-principles.md §B0 `spec-catalog`).
+// Single source of truth for visual tokens (frontend-design-principles.md §B0 `inspect-catalog`,
+// approved 2026-11-01; reference mockup /mockup/site-v5-1).
 // Components must not hard-code colours; read from here or from antd's theme.useToken().
 export const palette = {
   primary: "#1D4E89",
@@ -13,17 +14,17 @@ export const palette = {
   success: "#2F7D32",
   warning: "#9A5B00",
   error: "#B42318",
-  // home v2 (proposal, docs/mockups/README.md): drafting-sheet hero + inspection tag
+  // home v2 only (drafting-sheet hero + yellow tag); not part of the profile
   navyInk: "#14365F",
   onNavyMuted: "#C9D6E6",
   draftLine: "#8FB0D6",
   draftGrid: "#1E4775",
   tag: "#F2C230",
   tagEdge: "#C99A12",
-  // home v3 "實機型錄" (proposal): industry blue + orange accent for price and inquiry
+  // accent: price, primary actions (search, book a viewing, inquiry list, call), "新到" tag — nothing else
   accent: "#C2410C",
   accentBg: "#FFF1EA",
-  // home v4 illustration set (flat duotone equipment drawings)
+  // small-scale illustrations only: category icons, buying steps, empty states
   illusSurface: "#E8F0F9",
   illusShade: "#BFD3EA",
   illusGlow: "#8EC5F0",
@@ -49,8 +50,8 @@ export const contrastPairs: ReadonlyArray<readonly [fg: string, bg: string, labe
   [palette.accent, palette.accentBg, "accent tag"],
 ];
 
-// Home v2 display sizes sit above the B0 type scale (30px max) — a proposal, not yet approved.
-export const display = { hero: 52, heroMobile: 34, section: 30 } as const;
+// Display sizes above the 30px heading scale (§B0): hero title and section headings.
+export const display = { hero: 46, heroMobile: 30, section: 26, sectionMobile: 22 } as const;
 
 export const theme: ThemeConfig = {
   token: {
@@ -65,8 +66,8 @@ export const theme: ThemeConfig = {
     colorSuccess: palette.success,
     colorWarning: palette.warning,
     colorError: palette.error,
-    borderRadius: 4,
-    borderRadiusSM: 2,
+    borderRadius: 6,
+    borderRadiusSM: 4,
     fontFamily:
       '-apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif',
     boxShadow: "0 1px 4px rgba(31, 41, 55, 0.08)",

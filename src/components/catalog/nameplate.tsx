@@ -4,7 +4,7 @@ import { theme, Typography } from "antd";
 import type { ReactNode } from "react";
 import styles from "./catalog.module.css";
 
-// Signature element (profile spec-catalog): an equipment rating plate. Real devices carry one
+// Signature element (profile §B0, kept from spec-catalog): an equipment rating plate. Real devices carry one
 // with maker, model and year — here it puts the facts a used-equipment buyer checks first.
 export type NameplateRow = { label: string; value?: ReactNode; mono?: boolean; wide?: boolean };
 

@@ -14,7 +14,7 @@ const groups = [
       ["首頁 v3「實機型錄」（參考站整合，待確認）", "/mockup/site-v3"],
       ["首頁 v4「實機型錄＋美工插畫」（待確認）", "/mockup/site-v4"],
       ["首頁 v5「實機型錄・照片版」（依美工規範，待確認）", "/mockup/site-v5"],
-      ["首頁 v5.1：只留首屏一個搜尋（對照 v5）", "/mockup/site-v5-1"],
+      ["首頁 v5.1「實機型錄」✅ 定案基準稿（2026-11-01）", "/mockup/site-v5-1"],
       ["首頁風格實驗室（20 款，待選）", "/mockup/style-lab"],
       ["商品列表", "/mockup/site/products"],
       ["商品列表：分類＋品牌篩選", "/mockup/site/products?cat=ultrasound"],
@@ -47,7 +47,7 @@ export function MockupIndex() {
         <Typography.Title level={1}>Asclepia 視覺設計 mockup</Typography.Title>
         <Typography.Paragraph type="secondary">
           以 Ant Design 實際渲染、範例資料。視覺依據見 docs/frontend-design-principles.md
-          §B0（spec-catalog）。
+          §B0（實機型錄，基準稿是首頁 v5.1）。
         </Typography.Paragraph>
         {groups.map((g) => (
           <Card key={g.title} title={g.title} variant="outlined">
