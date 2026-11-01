@@ -72,7 +72,12 @@ export async function saveProduct(
     const existing = id
       ? await tx.product.findUnique({
           where: { id },
-          select: { status: true, updatedAt: true, _count: { select: { images: true } } },
+          select: {
+            status: true,
+            updatedAt: true,
+            attributes: true,
+            _count: { select: { images: true } },
+          },
         })
       : null;
     if (id && !existing) throw new DomainError("NOT_FOUND");
@@ -100,10 +105,18 @@ export async function saveProduct(
       if (missing.length) throw new DomainError("PUBLISH_INCOMPLETE", { detail: missing });
     }
 
+    // Values for keys the (new) category doesn't use are kept but not shown, so switching category
+    // back restores them (site-config.md §4.1). The form can't add such keys: unknown input is rejected.
+    const rules = await loadRules(tx, input.categoryId);
+    const hidden = Object.fromEntries(
+      Object.entries((existing?.attributes ?? {}) as Record<string, unknown>).filter(
+        ([k]) => !rules.some((r) => r.key === k),
+      ),
+    );
     const data = {
       categoryId: input.categoryId,
       name: input.name,
-      attributes: attributes as Prisma.InputJsonObject,
+      attributes: { ...hidden, ...attributes } as Prisma.InputJsonObject,
       priceTwd: input.priceTwd,
       highlights: input.highlights,
       features: input.features,
@@ -178,6 +191,10 @@ export async function changeStatus(
       },
     });
     if (n.count !== 1) throw new DomainError("CONFLICT");
+    const saved = await tx.product.findUniqueOrThrow({
+      where: { id: args.id },
+      select: { updatedAt: true },
+    });
     await audit(
       {
         actorId: actor,
@@ -189,7 +206,7 @@ export async function changeStatus(
       },
       tx,
     );
-    return { id: args.id, status: args.to };
+    return { id: args.id, status: args.to, updatedAt: saved.updatedAt.toISOString() };
   });
 }
 
@@ -202,7 +219,9 @@ export async function deleteDraft(id: string, actor: string, client: Db = db()) 
       select: { status: true, name: true, _count: { select: { inquiryItems: true } } },
     });
     if (!p) throw new DomainError("NOT_FOUND");
-    if (p.status !== "DRAFT" || p._count.inquiryItems > 0) throw new DomainError("BAD_TRANSITION");
+    if (p._count.inquiryItems > 0)
+      throw new DomainError("IN_USE", { detail: ["這件商品已經有人詢價，不能刪除；可以改成下架"] });
+    if (p.status !== "DRAFT") throw new DomainError("BAD_TRANSITION");
     await tx.product.delete({ where: { id } });
     await audit(
       {

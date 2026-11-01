@@ -141,6 +141,29 @@ describe("product drafts and publishing (catalog.md §4.3)", () => {
   });
 });
 
+describe("switching category (site-config.md §4.1)", () => {
+  it("keeps values the new category doesn't use, hidden, and restores them on switching back", async () => {
+    const other = (await saveCategory({ name: `其他-${tag()}` }, ADMIN, db)).id;
+    const { id } = await saveProduct(
+      { input: input({ attributes: { [brandKey]: "GE", [modelKey]: "X1" } }) },
+      ADMIN,
+      db,
+    );
+    await saveProduct({ id, input: input({ categoryId: other, attributes: {} }) }, ADMIN, db);
+    const stored = (await db.product.findUniqueOrThrow({ where: { id } })).attributes;
+    expect(stored).toEqual({ [brandKey]: "GE", [modelKey]: "X1" });
+    // the new category still can't receive keys it doesn't define
+    const { failure } = await rejects(
+      saveProduct(
+        { id, input: input({ categoryId: other, attributes: { [brandKey]: "Philips" } }) },
+        ADMIN,
+        db,
+      ),
+    );
+    expect(failure.code).toBe("INVALID");
+  });
+});
+
 describe("concurrency and audit", () => {
   it("rejects a save based on a stale version", async () => {
     const first = await saveProduct({ input: input() }, ADMIN, db);
