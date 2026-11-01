@@ -9,6 +9,7 @@ import { adminAction } from "@/server/action";
 import {
   attributeDefSchema,
   categoryConfigSchema,
+  categoryIconSchema,
   categorySchema,
   changeStatusSchema,
   idSchema,
@@ -17,7 +18,12 @@ import {
   saveProductSchema,
 } from "./admin-input";
 import { deleteAttributeDef, saveAttributeDef, saveCategoryConfig } from "./server/attributes";
-import { deleteCategory, reorderCategories, saveCategory } from "./server/categories";
+import {
+  deleteCategory,
+  reorderCategories,
+  saveCategory,
+  setCategoryIconKey,
+} from "./server/categories";
 import { deleteImage, reorderImages } from "./server/images";
 import { changeStatus, deleteDraft, saveProduct } from "./server/products";
 
@@ -135,6 +141,16 @@ export const reorderImagesAction = adminAction(
   async ({ productId, ids }, admin) => {
     const r = await reorderImages(productId, ids, admin.email);
     invalidate(productId);
+    return { data: r };
+  },
+);
+
+export const setCategoryIconAction = adminAction(
+  "category.icon",
+  categoryIconSchema,
+  async (input, admin) => {
+    const r = await setCategoryIconKey(input, admin.email);
+    invalidate();
     return { data: r };
   },
 );

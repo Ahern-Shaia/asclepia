@@ -27,6 +27,22 @@ export const reorderImagesSchema = z.object({ productId: id, ids: z.array(id).mi
 export const categorySchema = z.object({ id: id.optional(), name: label("分類名稱", 30) });
 export const reorderSchema = z.object({ ids: z.array(id).min(1).max(200) });
 
+// Category icon (site-config.md C4): one of the built-in drawings, or none (an uploaded image is a
+// separate route). The keys match the drawings in src/components/home-v4/equip-illus.tsx
+// (checked by equip-illus.test.ts).
+export const CATEGORY_ICON_KEYS = [
+  "ultrasound",
+  "monitor",
+  "analyzer",
+  "centrifuge",
+  "microscope",
+  "dental",
+] as const;
+export const categoryIconSchema = z.object({
+  id,
+  iconKey: z.enum(CATEGORY_ICON_KEYS).nullable(),
+});
+
 export const ATTRIBUTE_KEY = /^[a-z][a-z0-9_]{0,31}$/;
 export const attributeTypes = ["TEXT", "NUMBER", "YEAR", "SELECT"] as const;
 

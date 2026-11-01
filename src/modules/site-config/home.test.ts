@@ -48,3 +48,14 @@ describe("theme read", () => {
     expect(readTheme(yellow).primary).not.toBe(palette.tag);
   });
 });
+
+describe("profile read", () => {
+  it("keeps an https map link and drops anything else", async () => {
+    const { profileSchema } = await import("./profile");
+    expect(profileSchema.parse({ map: "https://maps.app.goo.gl/abc" }).map).toBe(
+      "https://maps.app.goo.gl/abc",
+    );
+    expect(profileSchema.parse({ map: "javascript:alert(1)" }).map).toBe("");
+    expect(profileSchema.parse({ map: "http://example.com" }).map).toBe("");
+  });
+});

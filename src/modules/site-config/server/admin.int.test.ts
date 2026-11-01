@@ -82,11 +82,11 @@ describe("site settings", () => {
   it("keeps keys it doesn't own, and restore puts back the value before the last write", async () => {
     await db.siteConfig.update({
       where: { section: "PROFILE" },
-      data: { value: { ...profile("02-3333-4444"), map: "https://maps.example/x" } },
+      data: { value: { ...profile("02-3333-4444"), futureKey: "kept" } },
     });
     await saveSection("PROFILE", profile("02-5555"), 2, actor, {}, db);
     const raw = await db.siteConfig.findUniqueOrThrow({ where: { section: "PROFILE" } });
-    expect(raw.value).toMatchObject({ phone: "02-5555", map: "https://maps.example/x" });
+    expect(raw.value).toMatchObject({ phone: "02-5555", futureKey: "kept" });
 
     await restoreSection("PROFILE", 3, actor, db);
     expect((await getSettings(db)).profile.value.phone).toBe("02-3333-4444");

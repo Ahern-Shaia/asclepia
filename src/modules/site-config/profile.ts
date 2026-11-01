@@ -11,6 +11,13 @@ export const profileSchema = z.object({
   email: z.string().catch(""),
   address: z.string().catch(""),
   hours: z.string().catch(""),
+  // a map share link (opened in a new tab; never embedded, so no CSP change) and the search
+  // result description. Anything that isn't an https link reads as none.
+  map: z
+    .string()
+    .regex(/^https:\/\/\S+$/)
+    .catch(""),
+  seo: z.string().catch(""),
 });
 export type SiteProfile = z.infer<typeof profileSchema>;
 export const PROFILE_LIMITS = {
@@ -20,4 +27,6 @@ export const PROFILE_LIMITS = {
   email: 80,
   address: 80,
   hours: 40,
+  map: 300,
+  seo: 160,
 };

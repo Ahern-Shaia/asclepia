@@ -8,6 +8,9 @@ import { sniffFormat } from "./formats";
 export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // catalog.md §4.2
 export const MAX_INPUT_PIXELS = 50_000_000;
 export const SIZES = [1600, 400] as const;
+// Browser tab icon: square PNG (the one format every browser takes for a favicon), plus the
+// 180 px Apple touch icon and a 512 px master.
+export const ICON_SIZES = [512, 180, 32] as const;
 const CONCURRENCY = 2;
 
 let running = 0;
@@ -59,6 +62,40 @@ export async function processImage(input: Buffer): Promise<Processed> {
     } catch (e) {
       if (e instanceof DomainError) throw e;
       throw new DomainError("IMAGE_UNREADABLE"); // never sharp's own message (catalog.md §4.2)
+    }
+  });
+}
+
+export type ProcessedIcon = {
+  width: number;
+  height: number;
+  files: Record<(typeof ICON_SIZES)[number], Buffer>;
+};
+
+// Same gate as processImage (sniffed format, pixel cap, timeout, two at a time); the output is a
+// centre-cropped square PNG at each icon size.
+export async function processIcon(input: Buffer): Promise<ProcessedIcon> {
+  if (input.length > MAX_UPLOAD_BYTES) throw new DomainError("IMAGE_TOO_LARGE");
+  const format = sniffFormat(input);
+  if (!format) throw new DomainError("IMAGE_UNSUPPORTED");
+  return withSlot(async () => {
+    try {
+      const base = sharp(input, { limitInputPixels: MAX_INPUT_PIXELS, failOn: "error" })
+        .timeout({ seconds: 30 })
+        .rotate();
+      const meta = await base.metadata();
+      if (meta.format !== format) throw new DomainError("IMAGE_UNSUPPORTED");
+      const files = {} as ProcessedIcon["files"];
+      for (const size of ICON_SIZES)
+        files[size] = await base
+          .clone()
+          .resize({ width: size, height: size, fit: "cover" })
+          .png()
+          .toBuffer();
+      return { width: ICON_SIZES[0], height: ICON_SIZES[0], files };
+    } catch (e) {
+      if (e instanceof DomainError) throw e;
+      throw new DomainError("IMAGE_UNREADABLE");
     }
   });
 }

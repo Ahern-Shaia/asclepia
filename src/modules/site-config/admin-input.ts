@@ -22,6 +22,14 @@ export const profileInputSchema = z.object({
   email: z.union([z.literal(""), z.email(v.email).max(P.email, v.tooLong("Email", P.email))]),
   address: text("地址", P.address),
   hours: text("營業時間", P.hours),
+  // optional fields added after the first release: absent means empty
+  map: z
+    .union([
+      z.literal(""),
+      text("地圖連結", P.map).regex(/^https:\/\/\S+$/, adminCopy.settings.profile.mapInvalid),
+    ])
+    .default(""),
+  seo: text("搜尋結果的網站描述", P.seo).default(""),
 });
 
 export const notesInputSchema = z.object({

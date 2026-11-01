@@ -4,7 +4,14 @@ import { join } from "node:path";
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, inject, it, vi } from "vitest";
 import { createDb } from "@/server/db";
-import { listSiteImages, removeSiteImage, setSiteImage } from "./images";
+import {
+  listSiteImages,
+  removeBrandLogo,
+  removeSiteImage,
+  reorderBrandLogos,
+  setBrandLogo,
+  setSiteImage,
+} from "./images";
 
 // Store logo / hero photo (site-config.md §4.2 SiteAsset) on the low-privilege app role. Only this
 // file writes SiteAsset LOGO/HERO.
@@ -62,5 +69,45 @@ describe("site images", () => {
     expect((await listSiteImages(db)).HERO).toBeUndefined();
     expect((await readdir(dir)).length).toBe(2); // the logo stays
     expect(await removeSiteImage("HERO", actor, db)).toEqual({ removed: 0 });
+  });
+});
+
+describe("favicon, visit photo and brand logos", () => {
+  it("makes the favicon a set of square PNGs and serves the 512 master", async () => {
+    const before = (await readdir(dir)).length;
+    const r = await setSiteImage("FAVICON", await png(800, 500), actor, db);
+    expect(r.src).toMatch(/^\/media\/img_[0-9a-f]{32}-512\.png$/);
+    const pngs = (await readdir(dir)).filter((f) => f.endsWith(".png"));
+    expect(pngs).toHaveLength(3);
+    expect((await readdir(dir)).length).toBe(before + 3);
+    const meta = await sharp(
+      join(
+        dir,
+        pngs.find((f) => f.endsWith("-32.png"))!,
+      ),
+    ).metadata();
+    expect([meta.width, meta.height, meta.format]).toEqual([32, 32, "png"]);
+    await removeSiteImage("FAVICON", actor, db);
+    expect((await readdir(dir)).filter((f) => f.endsWith(".png"))).toEqual([]);
+  });
+
+  it("keeps one logo per brand, in the order set, and removes one brand's logo only", async () => {
+    await setBrandLogo("GE", await png(400, 200), actor, db);
+    await setBrandLogo("Philips", await png(400, 200), actor, db);
+    await setBrandLogo("GE", await png(300, 100), actor, db); // replaced, keeps its place
+    expect((await listSiteImages(db)).brands?.map((b) => b.brand)).toEqual(["GE", "Philips"]);
+
+    await reorderBrandLogos(["Philips", "GE"], actor, db);
+    const { siteConfigValues } = await import("./public/values");
+    expect((await siteConfigValues()).images.brands?.map((b) => b.brand)).toEqual([
+      "Philips",
+      "GE",
+    ]);
+    // a list that isn't exactly the brands with logos is refused
+    await expect(reorderBrandLogos(["GE"], actor, db)).rejects.toMatchObject({ code: "CONFLICT" });
+
+    expect(await removeBrandLogo("GE", actor, db)).toEqual({ removed: 1 });
+    expect((await listSiteImages(db)).brands?.map((b) => b.brand)).toEqual(["Philips"]);
+    await removeBrandLogo("Philips", actor, db);
   });
 });

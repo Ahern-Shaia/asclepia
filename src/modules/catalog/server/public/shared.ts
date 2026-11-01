@@ -1,4 +1,5 @@
 import "server-only";
+import { fileName } from "@/server/images/storage";
 import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/server/db";
 import { hasDatabase } from "@/server/env";
@@ -44,6 +45,7 @@ export async function publicCategories() {
       id: true,
       name: true,
       iconKey: true,
+      iconAsset: { select: { storageKey: true } },
       _count: { select: { products: { where: { status: { in: [...VISIBLE] } } } } },
     },
   });
@@ -51,6 +53,8 @@ export async function publicCategories() {
     id: r.id,
     name: r.name,
     iconKey: r.iconKey,
+    // an uploaded icon wins over a built-in drawing (only one is ever set)
+    iconSrc: r.iconAsset ? `/media/${fileName(r.iconAsset.storageKey, 400)}` : null,
     count: r._count.products,
   }));
 }

@@ -16,9 +16,9 @@ import {
   saveProfileSchema,
   saveThemeSchema,
 } from "./admin-input";
-import { siteImageKindSchema } from "./images";
+import { brandNameSchema, siteImageKindSchema } from "./images";
 import { restoreSection, saveSection } from "./server/admin";
-import { removeSiteImage } from "./server/images";
+import { removeBrandLogo, removeSiteImage, reorderBrandLogos } from "./server/images";
 
 // Public reads of settings are tagged "site-config" (server/public/*.ts).
 const invalidate = () => updateTag("site-config");
@@ -109,6 +109,26 @@ export const removeSiteImageAction = adminAction(
   z.object({ kind: siteImageKindSchema }),
   async ({ kind }, admin) => {
     const r = await removeSiteImage(kind, admin.email);
+    invalidate();
+    return { data: r };
+  },
+);
+
+export const removeBrandLogoAction = adminAction(
+  "site-config.brand-logo.remove",
+  z.object({ brand: brandNameSchema }),
+  async ({ brand }, admin) => {
+    const r = await removeBrandLogo(brand, admin.email);
+    invalidate();
+    return { data: r };
+  },
+);
+
+export const reorderBrandLogosAction = adminAction(
+  "site-config.brand-logo.reorder",
+  z.object({ brands: z.array(brandNameSchema).max(200) }),
+  async ({ brands }, admin) => {
+    const r = await reorderBrandLogos(brands, admin.email);
     invalidate();
     return { data: r };
   },
