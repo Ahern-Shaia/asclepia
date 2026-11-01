@@ -23,6 +23,7 @@ export default defineConfig({
           name: "integration",
           include: ["src/**/*.int.test.ts"],
           globalSetup: ["src/test/global-setup.ts"],
+          setupFiles: ["src/test/integration-setup.ts"],
           testTimeout: 120_000,
           hookTimeout: 180_000,
         },

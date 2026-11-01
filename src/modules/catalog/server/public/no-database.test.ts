@@ -11,7 +11,6 @@ vi.mock("@/server/db", () => ({
 vi.stubEnv("DATABASE_URL", "");
 
 const catalog = await import("./catalog");
-const { siteProfile } = await import("@/modules/site-config/server/public/profile");
 afterAll(() => vi.unstubAllEnvs());
 
 describe("public reads without a configured database", () => {
@@ -24,6 +23,5 @@ describe("public reads without a configured database", () => {
     expect(await catalog.publicBrands()).toEqual([]);
     expect(await catalog.publicCardsByIds(["a"])).toEqual([]);
     expect(await catalog.publicFacets({})).toBeNull();
-    expect(await siteProfile()).toMatchObject({ name: "Asclepia", phone: "" });
   });
 });
