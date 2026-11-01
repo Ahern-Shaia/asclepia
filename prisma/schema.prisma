@@ -38,7 +38,7 @@ model Product {
   categoryId    String
   category      Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   status        ProductStatus  @default(DRAFT)
-  name          String // ≤ 160
+  name          String // ≤ 160; may be empty while DRAFT (CHECK in migration)
   // Admin-defined attributes (brand, model, year, condition…), validated against the category's
   // AttributeDef set on every write (site-config.md §4.1).
   attributes    Json           @default("{}")
