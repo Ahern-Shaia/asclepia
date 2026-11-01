@@ -185,6 +185,7 @@ test("admin pages have no horizontal page scroll", async ({ page }) => {
     "/admin/categories",
     "/admin/attributes",
     "/admin/inquiries",
+    "/admin/settings",
   ]) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -206,5 +207,8 @@ test("the real admin menu links only to built sections", async ({ page }) => {
     "href",
     "/admin/inquiries",
   );
-  await expect(menu.getByText("站台設定")).toHaveCount(0);
+  await expect(menu.getByRole("link", { name: "站台設定" })).toHaveAttribute(
+    "href",
+    "/admin/settings",
+  );
 });

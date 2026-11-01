@@ -11,6 +11,8 @@ export const E2E_AUTH = {
   secret: "e2e-only-secret-not-used-anywhere-else-0123456789",
   admin: "admin@example.com",
 };
+const SITE_WIDE = /site-settings\.spec\.ts/;
+
 export const e2eDatabaseUrl = (process.env.DATABASE_URL ?? "").replace(
   /\/asclepia$/,
   "/asclepia_e2e",
@@ -31,9 +33,22 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
+      testIgnore: SITE_WIDE,
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
-    { name: "mobile", use: { ...devices["Pixel 7"], viewport: { width: 390, height: 844 } } },
+    {
+      name: "mobile",
+      testIgnore: SITE_WIDE,
+      use: { ...devices["Pixel 7"], viewport: { width: 390, height: 844 } },
+    },
+    // Site settings are one document for the whole site: changing them while other specs run would
+    // change what those specs see. They run alone, after everything else.
+    {
+      name: "site-wide",
+      testMatch: SITE_WIDE,
+      dependencies: ["desktop", "mobile"],
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+    },
   ],
   // Always our own production server on a dedicated port; never reuse whatever is on :3000.
   webServer: {

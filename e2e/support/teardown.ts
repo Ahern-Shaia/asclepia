@@ -24,6 +24,8 @@ export default async function teardown() {
       `delete from "CategoryAttribute" where "attributeId" in (select id from "AttributeDef" where key like 'e2e\\_%')`,
     );
     await db.query(`delete from "AttributeDef" where key like 'e2e\\_%'`);
+    // site settings: the next run starts on the defaults (e2e/site-settings.spec.ts)
+    await db.query(`delete from "SiteConfig"`);
     await db.query("commit");
   } finally {
     await db.end();

@@ -77,3 +77,14 @@
   flex: 1 1 220px;
   min-width: 0;
 }
+
+/* One row of a settings list (site-settings.tsx): the field takes the row, the move/remove buttons
+   wrap under it on narrow screens. Form items drop their bottom margin so those buttons sit next to
+   their own field; rows are spaced by the list's gap instead. */
+.listField {
+  flex: 1 1 240px;
+  min-inline-size: 0;
+}
+.listField :global(.ant-form-item) {
+  margin-bottom: 0;
+}
