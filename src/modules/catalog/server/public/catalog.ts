@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/server/db";
+import { hasDatabase } from "@/server/env";
 import { newestIds, publicCategories, publicConfigs } from "./shared";
 import { type PublicAttr, type PublicCard, PUBLIC_PAGE, VISIBLE } from "../../public-types";
 
@@ -99,6 +100,7 @@ export async function publicProducts(query: PublicQuery) {
   "use cache";
   cacheLife("hours");
   cacheTag("catalog");
+  if (!hasDatabase()) return { total: 0, items: [], nextCursor: null };
   const [configs, categories, newest] = await Promise.all([
     publicConfigs(),
     publicCategories(),
@@ -146,6 +148,7 @@ export async function publicFacets(query: Pick<PublicQuery, "cat" | "q">): Promi
   "use cache";
   cacheLife("hours");
   cacheTag("catalog");
+  if (!hasDatabase()) return null;
   const configs = await publicConfigs();
   const read = (where: Prisma.ProductWhereInput) =>
     db().product.findMany({
@@ -181,6 +184,7 @@ export async function publicProduct(id: string) {
   "use cache";
   cacheLife("hours");
   cacheTag("catalog", `product:${id}`);
+  if (!hasDatabase()) return null;
   const [p, configs, newest, categories] = await Promise.all([
     db().product.findFirst({
       where: { id, status: { in: [...VISIBLE] } },
@@ -219,6 +223,7 @@ export async function publicBrands() {
   "use cache";
   cacheLife("hours");
   cacheTag("catalog");
+  if (!hasDatabase()) return [];
   // Only categories that actually use a `brand` attribute count, so values hidden by a category
   // switch never surface here.
   const rows = await db().$queryRaw<{ v: string }[]>`
@@ -241,6 +246,7 @@ export async function publicCardsByIds(ids: string[]) {
   "use cache";
   cacheLife("hours");
   cacheTag("catalog");
+  if (!hasDatabase()) return [];
   const wanted = [...new Set(ids)].slice(0, 10);
   if (!wanted.length) return [];
   const [rows, configs, categories, newest] = await Promise.all([

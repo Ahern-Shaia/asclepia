@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { z } from "zod";
 import { siteCopy } from "@/copy/site";
 import { db } from "@/server/db";
+import { hasDatabase } from "@/server/env";
 
 // Store details shown on every public page (site-config.md G1). The back-office editor comes with
 // site-config C2; until then — and whenever a key is missing or malformed — defaults apply, so a
@@ -21,6 +22,7 @@ export async function siteProfile(): Promise<SiteProfile> {
   "use cache";
   cacheLife("hours");
   cacheTag("site-config");
+  if (!hasDatabase()) return profileSchema.parse({});
   const row = await db().siteConfig.findUnique({
     where: { section: "PROFILE" },
     select: { value: true },

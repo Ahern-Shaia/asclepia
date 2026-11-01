@@ -69,6 +69,10 @@ export const parseAuthEnv = (source: Record<string, string | undefined>) =>
   parse(authSchema, source);
 
 export const dbEnv = () => parseDbEnv(process.env);
+// No DATABASE_URL at all means "catalog not configured" (the mockup share site, a build without a
+// database): public reads answer empty instead of failing the build. A configured but unreachable
+// database still fails loudly, so production never bakes an empty catalog into its pages.
+export const hasDatabase = () => !!process.env.DATABASE_URL;
 export const authEnv = () => parseAuthEnv(process.env);
 export const storageEnv = () => parse(storageSchema, process.env);
 export const requestEnv = () => parse(requestSchema, process.env);

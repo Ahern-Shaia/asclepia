@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/server/db";
+import { hasDatabase } from "@/server/env";
 import { listCategoryConfigs } from "../attributes";
 import { type PublicAttr, VISIBLE } from "../../public-types";
 
@@ -10,6 +11,7 @@ export async function publicConfigs(): Promise<Record<string, PublicAttr[]>> {
   "use cache";
   cacheLife("hours");
   cacheTag("catalog");
+  if (!hasDatabase()) return {};
   const all = await listCategoryConfigs();
   return Object.fromEntries(
     Object.entries(all).map(([id, rows]) => [
@@ -34,6 +36,7 @@ export async function publicCategories() {
   "use cache";
   cacheLife("hours");
   cacheTag("catalog");
+  if (!hasDatabase()) return [];
   const rows = await db().category.findMany({
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     take: 200,
@@ -57,6 +60,7 @@ export async function newestIds() {
   "use cache";
   cacheLife("hours");
   cacheTag("catalog");
+  if (!hasDatabase()) return [];
   const rows = await db().product.findMany({
     where: { status: "PUBLISHED" },
     orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
