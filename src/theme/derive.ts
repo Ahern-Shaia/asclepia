@@ -28,17 +28,35 @@ function mix(hex: string, target: string, weight: number): string {
 export function deriveTheme({ primary, accent, radius }: ThemeInput) {
   return {
     primary: primary.toUpperCase(),
-    primaryDeep: mix(primary, BLACK, 0.3),
+    primaryDeep: mix(primary, BLACK, 0.3), // hero band, link hover
     primaryBg: mix(primary, WHITE, 0.9),
+    onDeepMuted: mix(primary, WHITE, 0.8), // secondary text on the hero band
     link: primary.toUpperCase(),
     accent: accent.toUpperCase(),
     accentBg: mix(accent, WHITE, 0.92),
+    // small illustrations follow the primary hue (§B0: illustrations only at small scale)
+    illusSurface: mix(primary, WHITE, 0.9),
+    illusShade: mix(primary, WHITE, 0.7),
+    illusGlow: mix(primary, WHITE, 0.5),
     radius: radiusSteps[radius].base,
     radiusSM: radiusSteps[radius].sm,
   };
 }
+export type DerivedTheme = ReturnType<typeof deriveTheme>;
+export const DEFAULT_THEME: ThemeInput = {
+  primary: palette.primary,
+  accent: palette.accent,
+  radius: "medium",
+};
 
-export type ContrastCheckId = "onPrimary" | "primaryOnWhite" | "onAccent" | "accentOnWhite";
+export type ContrastCheckId =
+  | "onPrimary"
+  | "primaryOnWhite"
+  | "onAccent"
+  | "accentOnWhite"
+  | "primaryOnTint"
+  | "accentOnTint"
+  | "mutedOnDeep";
 export type ContrastCheck = {
   id: ContrastCheckId;
   fg: string;
@@ -47,13 +65,19 @@ export type ContrastCheck = {
   pass: boolean;
 };
 
-// The four pairs a save is gated on. A failing list is the save's error: it names the pair and ratio.
+// The pairs a save is gated on: the two chosen colours on white and under white text, and the
+// derived tints and hero band they end up on (site-config.md §4.3 "M2 要補": selected menu item,
+// 「已在清單」 button, secondary text on the hero). A failing list is the save's error.
 export function checkTheme({ primary, accent }: Pick<ThemeInput, "primary" | "accent">) {
+  const d = deriveTheme({ primary, accent, radius: "medium" });
   const pairs: [ContrastCheckId, string, string][] = [
     ["onPrimary", WHITE, primary],
     ["primaryOnWhite", primary, WHITE],
     ["onAccent", WHITE, accent],
     ["accentOnWhite", accent, WHITE],
+    ["primaryOnTint", primary, d.primaryBg],
+    ["accentOnTint", accent, d.accentBg],
+    ["mutedOnDeep", d.onDeepMuted, d.primaryDeep],
   ];
   return pairs.map(([id, fg, bg]): ContrastCheck => {
     const ratio = contrastRatio(fg, bg);

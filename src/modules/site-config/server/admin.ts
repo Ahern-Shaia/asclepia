@@ -4,8 +4,10 @@ import { audit } from "@/server/audit";
 import { type Db, db } from "@/server/db";
 import { DomainError } from "@/server/errors";
 import type { SettingsSection } from "../admin-input";
+import { readHome } from "../home";
 import { siteNotesSchema } from "../notes";
 import { profileSchema } from "../profile";
+import { readTheme } from "../theme";
 
 // 站台設定 writes (site-config.md §4.2, OQ-CFG-6). Each section is one JSON document with a version
 // for the optimistic lock. Every save and restore is audited with the whole value before and after:
@@ -17,34 +19,36 @@ type Json = Prisma.InputJsonValue;
 const asObject = (v: unknown): Record<string, unknown> =>
   v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
 
+const SECTIONS = ["PROFILE", "COPY", "THEME", "HOME"] as const satisfies readonly SettingsSection[];
+
 export async function getSettings(client: Db = db()) {
-  const [rows, ...last] = await Promise.all([
-    client.siteConfig.findMany({ where: { section: { in: ["PROFILE", "COPY"] } } }),
-    ...(["PROFILE", "COPY"] as const).map((s) =>
-      client.auditLog.findFirst({
-        where: { targetType: TARGET, targetId: s, action: { in: WRITES } },
-        orderBy: [{ at: "desc" }, { id: "desc" }],
-        select: { id: true },
-      }),
-    ),
+  // two queries for every tab: the rows, and which sections have a write to restore from
+  const [rows, written] = await Promise.all([
+    client.siteConfig.findMany({ where: { section: { in: [...SECTIONS] } } }),
+    client.auditLog.groupBy({
+      by: ["targetId"],
+      where: { targetType: TARGET, targetId: { in: [...SECTIONS] }, action: { in: WRITES } },
+    }),
   ]);
-  const meta = (section: SettingsSection, i: number) => {
+  const of = (section: SettingsSection) => {
     const row = rows.find((r) => r.section === section);
     return {
       version: row?.version ?? 0,
       savedAt: row?.updatedAt ?? null,
       savedBy: row?.updatedBy ?? null,
-      canRestore: last[i] !== null,
+      canRestore: written.some((w) => w.targetId === section),
+      raw: asObject(row?.value),
     };
   };
-  const value = (section: SettingsSection) =>
-    asObject(rows.find((r) => r.section === section)?.value);
+  const section = <T>(id: SettingsSection, read: (raw: Record<string, unknown>) => T) => {
+    const { raw, ...meta } = of(id);
+    return { ...meta, value: read(raw) };
+  };
   return {
-    profile: {
-      ...meta("PROFILE", 0),
-      value: profileSchema.parse({ ...profileSchema.parse({}), ...value("PROFILE") }),
-    },
-    notes: { ...meta("COPY", 1), value: siteNotesSchema.parse(value("COPY")) },
+    profile: section("PROFILE", (v) => profileSchema.parse({ ...profileSchema.parse({}), ...v })),
+    notes: section("COPY", (v) => siteNotesSchema.parse(v)),
+    theme: section("THEME", readTheme),
+    home: section("HOME", readHome),
   };
 }
 

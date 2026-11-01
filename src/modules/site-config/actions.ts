@@ -7,7 +7,13 @@ import { updateTag } from "next/cache";
 import { adminCopy } from "@/copy/admin";
 import { findEfficacyWords } from "@/modules/catalog";
 import { adminAction } from "@/server/action";
-import { restoreSettingsSchema, saveNotesSchema, saveProfileSchema } from "./admin-input";
+import {
+  restoreSettingsSchema,
+  saveHomeSchema,
+  saveNotesSchema,
+  saveProfileSchema,
+  saveThemeSchema,
+} from "./admin-input";
 import { restoreSection, saveSection } from "./server/admin";
 
 // Public reads of settings are tagged "site-config" (server/public/*.ts).
@@ -47,6 +53,27 @@ export const saveNotesAction = adminAction(
       data: r,
       warnings: words.length ? [adminCopy.settings.notes.efficacyWarning(words.join("、"))] : [],
     };
+  },
+);
+
+// The contrast gate is in saveThemeSchema: a failing pair never reaches the database.
+export const saveThemeAction = adminAction(
+  "site-config.theme",
+  saveThemeSchema,
+  async ({ value, expectedVersion }, admin) => {
+    const r = await saveSection("THEME", value, expectedVersion, admin.email);
+    invalidate();
+    return { data: r };
+  },
+);
+
+export const saveHomeAction = adminAction(
+  "site-config.home",
+  saveHomeSchema,
+  async ({ value, expectedVersion }, admin) => {
+    const r = await saveSection("HOME", value, expectedVersion, admin.email);
+    invalidate();
+    return { data: r };
   },
 );
 

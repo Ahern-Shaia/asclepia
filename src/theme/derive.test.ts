@@ -4,13 +4,16 @@ import { checkTheme, deriveTheme } from "./derive";
 import { palette, themePresets } from "./tokens";
 
 describe("checkTheme", () => {
-  it.each(themePresets)("preset $id passes all four pairs", (p) => {
+  it.each(themePresets)("preset $id passes every pair", (p) => {
     const checks = checkTheme(p);
     expect(checks.map((c) => c.id)).toEqual([
       "onPrimary",
       "primaryOnWhite",
       "onAccent",
       "accentOnWhite",
+      "primaryOnTint",
+      "accentOnTint",
+      "mutedOnDeep",
     ]);
     expect(checks.filter((c) => !c.pass)).toEqual([]);
   });
@@ -19,7 +22,12 @@ describe("checkTheme", () => {
     const failing = checkTheme({ primary: "#FFF59D", accent: palette.accent }).filter(
       (c) => !c.pass,
     );
-    expect(failing.map((c) => c.id)).toEqual(["onPrimary", "primaryOnWhite"]);
+    expect(failing.map((c) => c.id)).toEqual([
+      "onPrimary",
+      "primaryOnWhite",
+      "primaryOnTint",
+      "mutedOnDeep",
+    ]);
     expect(failing[0].ratio).toBeLessThan(1.5);
   });
 
@@ -47,6 +55,14 @@ describe("deriveTheme", () => {
     );
     expect(contrastRatio(d.primary, d.primaryBg)).toBeGreaterThanOrEqual(4.5);
     expect(contrastRatio(d.accent, d.accentBg)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("catches a colour that passes on white but not on its own tint", () => {
+    // #767676: 4.54:1 on white (just passes), 4.02:1 on its own 90 % tint
+    const checks = checkTheme({ primary: "#767676", accent: palette.accent });
+    const by = (id: string) => checks.find((c) => c.id === id)!;
+    expect(by("primaryOnWhite").pass).toBe(true);
+    expect(by("primaryOnTint").pass).toBe(false);
   });
 
   it("rejects a colour that is not #RRGGBB", () => {

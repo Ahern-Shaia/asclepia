@@ -1,7 +1,10 @@
 import { z } from "zod";
 import { adminCopy } from "@/copy/admin";
+import { checkTheme, isHex } from "@/theme/derive";
+import { homeInputSchema } from "./home";
 import { NOTE_LIMITS as N, SERVICE_KINDS } from "./notes";
 import { PROFILE_LIMITS as P } from "./profile";
+import { RADIUS_STEPS } from "./theme";
 
 // Back-office input for 站台設定 (site-config.md §4.2, §4.5-bis). Strict, unlike the public
 // readers: a value that would be cut or dropped on the public side is refused here with a sentence.
@@ -38,11 +41,35 @@ export const notesInputSchema = z.object({
     .max(N.services.count, v.tooMany("服務", N.services.count)),
 });
 
+// The contrast gate runs here, on the server (site-config.md §4.3): the editor shows the same
+// checks live, but a crafted request must not get an unreadable theme in.
+const t = adminCopy.settings.theme;
+export const themeInputSchema = z
+  .object({
+    primary: z.string().refine(isHex, t.hexInvalid),
+    accent: z.string().refine(isHex, t.hexInvalid),
+    radius: z.enum(RADIUS_STEPS),
+  })
+  .transform((v) => ({ ...v, primary: v.primary.toUpperCase(), accent: v.accent.toUpperCase() }))
+  .superRefine((v, ctx) => {
+    for (const c of checkTheme(v).filter((x) => !x.pass))
+      ctx.addIssue({
+        code: "custom",
+        path: [],
+        message: t.blocked(t.pairs[c.id], t.ratio(c.ratio)),
+      });
+  });
+
 // Optimistic lock: the version the editor was opened with (0 = never saved).
 const version = z.number().int().min(0);
 export const saveProfileSchema = z.object({ value: profileInputSchema, expectedVersion: version });
 export const saveNotesSchema = z.object({ value: notesInputSchema, expectedVersion: version });
-export const SETTINGS_SECTIONS = ["PROFILE", "COPY"] as const;
+export const saveThemeSchema = z.object({ value: themeInputSchema, expectedVersion: version });
+export const saveHomeSchema = z.object({
+  value: z.object({ blocks: homeInputSchema }),
+  expectedVersion: version,
+});
+export const SETTINGS_SECTIONS = ["PROFILE", "COPY", "THEME", "HOME"] as const;
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
 export const restoreSettingsSchema = z.object({
   section: z.enum(SETTINGS_SECTIONS),
@@ -50,3 +77,4 @@ export const restoreSettingsSchema = z.object({
 });
 export type ProfileInput = z.output<typeof profileInputSchema>;
 export type NotesInput = z.output<typeof notesInputSchema>;
+export type ThemeValue = z.output<typeof themeInputSchema>;
