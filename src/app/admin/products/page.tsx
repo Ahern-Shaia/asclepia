@@ -14,6 +14,11 @@ import { listCategoryConfigs } from "@/modules/catalog/server/attributes";
 import { LIST_MAX, listProducts } from "@/modules/catalog/server/products";
 import { requireAdmin } from "@/server/auth";
 
+// Every back-office page reads the session, which can't be in the static shell; it blocks on the
+// server by design (next docs: authentication-with-cache-components; `use cache: private` is
+// banned by stack-rules P7-1).
+export const instant = false;
+
 const param = (v: string | string[] | undefined, max: number) =>
   typeof v === "string" && v.trim() && v.length <= max ? v.trim() : undefined;
 
