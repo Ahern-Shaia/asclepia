@@ -80,7 +80,7 @@
   place-items: center;
   background: var(--navy);
   color: var(--white);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   font-weight: 800;
   font-size: 20px;
 }
@@ -107,7 +107,7 @@
   display: flex;
   height: 44px;
   border: 2px solid var(--navy);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   overflow: hidden;
   max-width: 640px;
 }
@@ -158,7 +158,7 @@
   font-size: 15px;
   font-weight: 600;
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
 }
 .listBtn:hover {
   background: var(--paper);
@@ -167,7 +167,7 @@
   min-width: 20px;
   height: 20px;
   padding-inline: 6px;
-  border-radius: 10px;
+  border-radius: calc(var(--radius, 6px) + 4px);
   display: grid;
   place-items: center;
   font-size: 12px;
@@ -186,7 +186,7 @@
   display: flex;
   align-items: center;
   padding-inline: 18px;
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   background: var(--accent);
   color: var(--white) !important;
   font-weight: 700;
@@ -328,7 +328,7 @@
   background: var(--illus-surface);
   color: var(--ink-2);
   border: 2px dashed var(--illus-shade);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   text-align: center;
   overflow: hidden;
 }
@@ -368,7 +368,7 @@
   margin: 20px 24px 0 0;
   padding: 10px 14px;
   border: 1px dashed var(--on-navy-muted);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   text-align: left;
 }
 .slotCorner .slotIcon {
@@ -386,7 +386,7 @@
   align-items: end;
   background: var(--white);
   color: var(--ink);
-  border-radius: 8px;
+  border-radius: calc(var(--radius, 6px) + 2px);
   padding: 18px 20px;
   box-shadow: 0 12px 32px rgba(20, 54, 95, 0.35);
 }
@@ -401,7 +401,7 @@
 .finder select {
   height: 46px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   padding-inline: 10px;
   font-size: 15px;
   color: var(--ink);
@@ -411,7 +411,7 @@
   height: 46px;
   padding-inline: 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   background: var(--accent);
   color: var(--white);
   font-size: 17px;
@@ -473,7 +473,7 @@
   gap: 2px;
   padding: 16px 12px 14px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: calc(var(--radius, 6px) + 2px);
   background: var(--white);
   text-align: center;
   transition:
@@ -518,7 +518,7 @@
   display: flex;
   flex-direction: column;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   overflow: hidden;
   background: var(--white);
   transition:
@@ -547,7 +547,7 @@
 .photoSlot {
   position: absolute !important;
   inset: 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
 }
 .cardSold .photoSlot {
   opacity: 0.55;
@@ -559,7 +559,7 @@
   font-size: 13px;
   font-weight: 700;
   padding: 2px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
 }
 .tagNew {
   background: var(--accent);
@@ -643,7 +643,7 @@
   display: block;
   padding: 10px 22px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   font-weight: 700;
   font-size: 17px;
   letter-spacing: 0.02em;
@@ -672,7 +672,7 @@
   gap: 12px;
   background: var(--white);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: calc(var(--radius, 6px) + 2px);
   padding: 20px;
 }
 .stepArt {
@@ -714,7 +714,7 @@
 .visit {
   background: var(--white);
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -745,7 +745,7 @@
 }
 .visitBtn {
   height: 48px;
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   background: var(--accent);
   color: var(--white) !important;
   font-weight: 700;
@@ -766,7 +766,7 @@
   gap: 14px;
   padding: 20px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
 }
 .services li > span:last-child {
   display: flex;
@@ -785,7 +785,7 @@
   height: 44px;
   display: grid;
   place-items: center;
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   background: var(--navy-bg);
   color: var(--navy);
   font-size: 20px;
@@ -833,12 +833,12 @@
   height: 44px;
   border: 2px solid var(--navy);
   border-inline-end: none;
-  border-radius: 6px 0 0 6px;
+  border-radius: var(--radius, 6px) 0 0 var(--radius, 6px);
 }
 .mobileSearch button {
   width: 52px;
   border: none;
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 var(--radius, 6px) var(--radius, 6px) 0;
   background: var(--navy);
   color: var(--white);
   font-size: 18px;
@@ -859,7 +859,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   border: 1px solid var(--navy);
   color: var(--navy) !important;
   font-weight: 700;

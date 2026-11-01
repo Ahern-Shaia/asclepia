@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { themePresets } from "../src/theme/tokens";
 import { btn, signIn } from "./support/admin";
 import { asClient, noHorizontalScroll, publishAll, seedShop, sql } from "./support/shop";
 
@@ -10,7 +11,7 @@ test.beforeEach(({ page }) => asClient(page));
 const PHONE = "02-2345-6789";
 const SAVE = /儲 ?存$/; // the button has an icon: its name is "save 儲存"
 
-async function openTab(page: Page, tab: "店家資料" | "說明選項") {
+async function openTab(page: Page, tab: "店家資料" | "說明選項" | "主題" | "首頁區塊") {
   await page.goto("/admin/settings");
   await expect(page.getByRole("heading", { level: 1, name: "站台設定" })).toBeVisible();
   await page.getByRole("tab", { name: tab }).click();
@@ -110,6 +111,78 @@ test("statements: none until set, then shown where they belong, warned on effica
   await expect(page.getByRole("heading", { name: "也可以找我們" })).toHaveCount(0);
   await page.goto(product);
   await expect(page.getByRole("heading", { name: "保固與交易說明" })).toHaveCount(0);
+});
+
+const pageVar = (page: Page, name: string) =>
+  page.evaluate(
+    (n) => getComputedStyle(document.querySelector("[class*=page]")!).getPropertyValue(n),
+    name,
+  );
+
+async function restore(page: Page, tab: "主題" | "首頁區塊") {
+  const panel = await openTab(page, tab);
+  await panel.getByRole("button", { name: /還原上一版/ }).click();
+  await page
+    .getByRole("dialog", { name: "還原上一版？" })
+    .getByRole("button", { name: btn("還原") })
+    .click();
+  await expect(page.getByText("已還原上一版，前台已更新。")).toBeVisible();
+}
+
+test("theme: a preset is applied to the public site; an unreadable colour can't be saved", async ({
+  page,
+  context,
+}) => {
+  await signIn(context);
+  const forest = themePresets.find((p) => p.id === "forest")!;
+  const panel = await openTab(page, "主題");
+  await noHorizontalScroll(page);
+
+  // a light yellow primary: the gate names the pair and save stays off
+  await panel.getByRole("textbox", { name: /^主色/ }).fill("#FFF59D");
+  await expect(panel.getByRole("alert").first()).toContainText("主色上的白字");
+  await expect(panel.getByRole("button", { name: SAVE })).toBeDisabled();
+
+  await panel.getByRole("radio", { name: /森林綠＋磚紅/ }).check();
+  await panel.getByText("大（10px）").click();
+  await expect(panel.getByRole("button", { name: SAVE })).toBeEnabled();
+  await panel.getByRole("button", { name: SAVE }).click();
+  await expect(page.getByText("已儲存，前台已更新。")).toBeVisible();
+
+  await page.goto("/");
+  expect((await pageVar(page, "--navy")).trim()).toBe(forest.primary);
+  expect((await pageVar(page, "--accent")).trim()).toBe(forest.accent);
+  expect((await pageVar(page, "--radius")).trim()).toBe("10px");
+
+  await restore(page, "主題");
+  await page.goto("/");
+  expect((await pageVar(page, "--navy")).trim()).toBe(themePresets[0].primary);
+});
+
+test("home blocks: switched off and reordered on the public home page", async ({
+  page,
+  context,
+}) => {
+  const seeded = await seedShop([{ name: "e2e-首頁", brand: "Alpha", model: "H-1" }]);
+  await publishAll(page, context, seeded);
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "最新上架" })).toBeVisible();
+
+  const panel = await openTab(page, "首頁區塊");
+  await panel.getByRole("switch", { name: "最新上架" }).click();
+  for (let i = 0; i < 3; i++)
+    await panel.getByRole("button", { name: "怎麼買＋看機地點 往上移" }).click();
+  await panel.getByRole("button", { name: SAVE }).click();
+  await expect(page.getByText("已儲存，前台已更新。")).toBeVisible();
+
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "最新上架" })).toHaveCount(0);
+  const order = await page.getByRole("main").getByRole("heading", { level: 2 }).allTextContents();
+  expect(order[0]).toBe("怎麼買");
+
+  await restore(page, "首頁區塊");
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "最新上架" })).toBeVisible();
 });
 
 test("two people saving the same tab: the second is told to reload, nothing is overwritten", async ({

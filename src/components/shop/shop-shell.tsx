@@ -7,7 +7,7 @@ import {
   ProfileOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { ConfigProvider, Drawer } from "antd";
+import { ConfigProvider, Drawer, type ThemeConfig } from "antd";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -25,6 +25,7 @@ import s from "@/components/home-v5/home-v5.module.css";
 import t from "@/components/home-v5-1/home-v5-1.module.css";
 import { homeV3Copy as c } from "@/copy/home-v3";
 import { siteCopy } from "@/copy/site";
+import { DEFAULT_THEME, type DerivedTheme, deriveTheme } from "@/theme/derive";
 import { palette } from "@/theme/tokens";
 import { useInquiryList } from "./inquiry-store";
 
@@ -39,27 +40,42 @@ export const useShopMock = () => useContext(MockContext);
 // `base` is "" on the real site and "/mockup/site-v5-1" on the mockup.
 export const homeOf = (base: string) => base || "/";
 
-const vars = {
-  "--navy": palette.primary,
-  "--navy-ink": palette.navyInk,
-  "--navy-bg": palette.primaryBg,
-  "--accent": palette.accent,
-  "--accent-bg": palette.accentBg,
-  "--ink": palette.text,
-  "--ink-2": palette.textSecondary,
-  "--paper": palette.bgSection,
-  "--line": palette.border,
-  "--white": palette.bg,
-  "--on-navy-muted": palette.onNavyMuted,
-  "--illus-surface": palette.illusSurface,
-  "--illus-shade": palette.illusShade,
-  "--illus-glow": palette.illusGlow,
-} as CSSProperties;
+// CSS variables for the shop's module CSS. Colours and radius come from the back-office theme
+// (site-config.md §4.3, derived in src/theme/derive.ts); text, surfaces and lines stay fixed (§B0).
+export function shopVars(d: DerivedTheme) {
+  return {
+    "--navy": d.primary,
+    "--navy-ink": d.primaryDeep,
+    "--navy-bg": d.primaryBg,
+    "--accent": d.accent,
+    "--accent-bg": d.accentBg,
+    "--ink": palette.text,
+    "--ink-2": palette.textSecondary,
+    "--paper": palette.bgSection,
+    "--line": palette.border,
+    "--white": palette.bg,
+    "--on-navy-muted": d.onDeepMuted,
+    "--illus-surface": d.illusSurface,
+    "--illus-shade": d.illusShade,
+    "--illus-glow": d.illusGlow,
+    "--radius": `${d.radius}px`,
+    "--radius-sm": `${d.radiusSM}px`,
+  } as CSSProperties;
+}
+const DEFAULT_DERIVED = deriveTheme(DEFAULT_THEME);
 
-// antd renders Modal and Drawer into document.body, outside `.page`: without the same variables
-// there, every var(--line)/var(--accent) in a dialog resolves to nothing (borderless inputs,
-// transparent buttons).
-const portalVars = { styles: { root: vars } };
+// The same colours for antd components on the public pages.
+const antdTheme = (d: DerivedTheme): ThemeConfig => ({
+  token: {
+    colorPrimary: d.primary,
+    colorLink: d.link,
+    colorLinkHover: d.primaryDeep,
+    colorInfo: d.primary,
+    colorInfoBg: d.primaryBg,
+    borderRadius: d.radius,
+    borderRadiusSM: d.radiusSM,
+  },
+});
 
 export function useShopSearch(base: string) {
   const router = useRouter();
@@ -162,6 +178,7 @@ export function ShopShell({
   brand = { name: siteCopy.name, tagline: siteCopy.tagline },
   search = true,
   mock = false,
+  theme = DEFAULT_DERIVED,
   children,
 }: {
   base: string;
@@ -170,16 +187,24 @@ export function ShopShell({
   brand?: ShopBrand;
   search?: boolean;
   mock?: boolean;
+  theme?: DerivedTheme;
   children: ReactNode;
 }) {
   const [menu, setMenu] = useState(false);
   const { ids } = useInquiryList();
   const listHref = `${base}/inquiry`;
   const { phone, email, address, hours } = company;
+  const vars = shopVars(theme);
 
   return (
     <MockContext.Provider value={mock}>
-      <ConfigProvider modal={portalVars} drawer={portalVars}>
+      {/* antd renders Modal and Drawer into document.body, outside `.page`: they get the same
+          variables, or every var(--line)/var(--accent) in a dialog resolves to nothing */}
+      <ConfigProvider
+        theme={antdTheme(theme)}
+        modal={{ styles: { root: vars } }}
+        drawer={{ styles: { root: vars } }}
+      >
         <div className={s.page} style={vars}>
           {mock && <MockBanner />}
 

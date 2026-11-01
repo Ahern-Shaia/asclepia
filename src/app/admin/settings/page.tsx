@@ -17,7 +17,14 @@ export default async function Page() {
   });
   return (
     <AdminShell base="/admin" active="settings" user={admin.email} newInquiries={newCount}>
-      <SiteSettings data={{ profile: stamp(settings.profile), notes: stamp(settings.notes) }} />
+      <SiteSettings
+        data={{
+          profile: stamp(settings.profile),
+          notes: stamp(settings.notes),
+          theme: stamp(settings.theme),
+          home: stamp(settings.home),
+        }}
+      />
     </AdminShell>
   );
 }

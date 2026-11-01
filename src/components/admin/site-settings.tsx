@@ -30,15 +30,21 @@ import { type ReactNode, useState } from "react";
 import { adminCopy } from "@/copy/admin";
 import {
   restoreSettingsAction,
+  saveHomeAction,
   saveNotesAction,
   saveProfileAction,
+  saveThemeAction,
 } from "@/modules/site-config/actions";
+import type { HomeLayout } from "@/modules/site-config/home";
 import type { NotesInput, ProfileInput, SettingsSection } from "@/modules/site-config/admin-input";
 import { NOTE_LIMITS as N, SERVICE_KINDS, type SiteNotes } from "@/modules/site-config/notes";
 import { PROFILE_LIMITS as P } from "@/modules/site-config/profile";
 import type { Result } from "@/server/action";
+import type { ThemeInput } from "@/theme/derive";
 import { call, type Failure, FailureAlert, fieldErrorsFor } from "./action-result";
 import styles from "./admin.module.css";
+import { useHomeTab } from "./settings-home";
+import { useThemeTab } from "./settings-theme";
 
 const s = adminCopy.settings;
 const live = s.live;
@@ -54,6 +60,8 @@ type Meta = {
 export type SettingsData = {
   profile: Meta & { value: ProfileInput };
   notes: Meta & { value: SiteNotes };
+  theme: Meta & { value: ThemeInput };
+  home: Meta & { value: HomeLayout };
 };
 
 // 站台設定 (site-config.md §4.2, §4.5-bis): one tab per SiteConfig section, each saved on its own
@@ -71,6 +79,16 @@ export function SiteSettings({ data }: { data: SettingsData }) {
       key: "notes",
       label: live.tabs.notes,
       body: <NotesTab key={data.notes.version} meta={data.notes} onSaved={setWarnings} />,
+    },
+    {
+      key: "theme",
+      label: live.tabs.theme,
+      body: <ThemeTab key={data.theme.version} meta={data.theme} onSaved={setWarnings} />,
+    },
+    {
+      key: "home",
+      label: live.tabs.home,
+      body: <HomeTab key={data.home.version} meta={data.home} onSaved={setWarnings} />,
     },
   ];
   return (
@@ -114,12 +132,14 @@ export function SiteSettings({ data }: { data: SettingsData }) {
 
 // Save + restore for one section. `save` returns the action's Result; field errors go back onto the
 // form, everything else is one sentence above the buttons.
+// Tabs without an antd Form (theme, home) pass no form, a `blocked` reason, and an `onSave` click.
 function useSection<V>(
   section: SettingsSection,
   tab: string,
   meta: Meta,
-  form: FormInstance,
+  form: FormInstance | null,
   onSaved: (warnings: string[]) => void,
+  opts: { onSave?: () => void; blocked?: string; changed?: boolean } = {},
 ) {
   const { token } = theme.useToken();
   const router = useRouter();
@@ -133,10 +153,10 @@ function useSection<V>(
     if (!r.ok) {
       const { fields, rest } = fieldErrorsFor(
         r.fieldErrors,
-        (name) => form.getFieldInstance(name) != null,
+        (name) => form?.getFieldInstance(name) != null,
         "value.",
       );
-      form.setFields(fields);
+      form?.setFields(fields);
       setFailure(
         fields.length && !rest.length ? null : { ...r, detail: [...(r.detail ?? []), ...rest] },
       );
@@ -183,9 +203,17 @@ function useSection<V>(
       style={{ borderBlockStart: `1px solid ${token.colorBorder}`, paddingBlockStart: 16 }}
     >
       {modalHolder}
+      {opts.blocked && <Alert type="error" showIcon title={opts.blocked} role="alert" />}
       {failure && <FailureAlert failure={failure} />}
       <Flex gap={12} align="center" wrap>
-        <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={busy}>
+        <Button
+          type="primary"
+          htmlType={opts.onSave ? "button" : "submit"}
+          onClick={opts.onSave}
+          disabled={Boolean(opts.blocked)}
+          icon={<SaveOutlined />}
+          loading={busy}
+        >
           {s.footer.save}
         </Button>
         {meta.canRestore && (
@@ -194,7 +222,7 @@ function useSection<V>(
           </Button>
         )}
         <Typography.Text type="secondary">
-          {dirty
+          {dirty || opts.changed
             ? live.unsaved
             : meta.savedAt
               ? s.footer.lastSaved(meta.savedAt, meta.savedBy ?? "")
@@ -454,5 +482,50 @@ function NotesTab({
         {bar}
       </Flex>
     </Form>
+  );
+}
+
+function ThemeTab({
+  meta,
+  onSaved,
+}: {
+  meta: SettingsData["theme"];
+  onSaved: (w: string[]) => void;
+}) {
+  const t = useThemeTab(meta.value);
+  const { save, bar } = useSection<ThemeInput>("THEME", live.tabs.theme, meta, null, onSaved, {
+    blocked: t.blocked,
+    changed: t.changed,
+    onSave: () => save(t.value, saveThemeAction),
+  });
+  return (
+    <Flex vertical gap={24}>
+      {t.body}
+      {bar}
+    </Flex>
+  );
+}
+
+function HomeTab({
+  meta,
+  onSaved,
+}: {
+  meta: SettingsData["home"];
+  onSaved: (w: string[]) => void;
+}) {
+  const h = useHomeTab(meta.value);
+  const { save, bar } = useSection<{ blocks: HomeLayout }>(
+    "HOME",
+    live.tabs.home,
+    meta,
+    null,
+    onSaved,
+    { changed: h.changed, onSave: () => save({ blocks: h.value }, saveHomeAction) },
+  );
+  return (
+    <Flex vertical gap={24}>
+      {h.body}
+      {bar}
+    </Flex>
   );
 }

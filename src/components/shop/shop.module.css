@@ -25,7 +25,7 @@
 .filterBtn {
   height: 48px;
   padding-inline: 20px;
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   font-size: 16px;
   font-weight: 700;
   display: inline-flex;
@@ -136,7 +136,7 @@
 .sort select {
   height: 44px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   padding-inline: 10px;
   font-size: 16px;
   color: var(--ink);
@@ -184,7 +184,7 @@
   align-items: center;
   min-height: 40px;
   padding-inline: 10px;
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   font-size: 16px;
   color: var(--ink);
 }
@@ -220,7 +220,7 @@
 }
 .empty {
   border: 1px dashed var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   padding: 40px 24px;
   display: flex;
   flex-direction: column;
@@ -318,7 +318,7 @@
 }
 .soldTag {
   padding: 2px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
   background: var(--navy-ink);
   color: var(--white);
   font-size: 14px;
@@ -326,7 +326,7 @@
 }
 .nameplate {
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   overflow: hidden;
 }
 .nameplate h2 {
@@ -377,7 +377,7 @@
 }
 .soldBox {
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   padding: 14px 16px;
   background: var(--paper);
   font-size: 16px;
@@ -414,7 +414,7 @@
 .specTable {
   margin: 0;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
 }
 .specTable div:first-child {
   border-top: none;
@@ -425,7 +425,7 @@
 .terms {
   list-style: none;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   padding: 16px 20px;
   background: var(--paper);
 }
@@ -460,7 +460,7 @@
   padding: 0;
   margin: 0;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
 }
 .item {
   display: grid;
@@ -512,7 +512,7 @@
   height: 40px;
   padding-inline: 14px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   background: var(--white);
   color: var(--ink);
   font-size: 14px;
@@ -524,7 +524,7 @@
 }
 .form {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: calc(var(--radius, 6px) + 2px);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -547,7 +547,7 @@
 .field textarea {
   min-height: 48px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   padding: 10px 12px;
   font-size: 16px;
   font-family: inherit;
@@ -587,7 +587,7 @@
 }
 .alert {
   border: 1px solid var(--accent);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   padding: 12px 14px;
   background: var(--accent-bg);
   color: var(--ink);
@@ -595,7 +595,7 @@
 }
 .success {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: calc(var(--radius, 6px) + 2px);
   padding: 32px 24px;
   display: flex;
   flex-direction: column;
@@ -724,7 +724,7 @@
 .mainFrame {
   aspect-ratio: 4 / 3;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   background: var(--white);
   overflow: hidden;
 }
@@ -740,7 +740,7 @@
   height: 100%;
   padding: 0;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius, 6px);
   background: var(--white);
   overflow: hidden;
   cursor: pointer;
@@ -772,7 +772,7 @@
   display: block;
   aspect-ratio: 4 / 3;
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
   background: var(--white);
   overflow: hidden;
 }

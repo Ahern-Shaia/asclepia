@@ -4,19 +4,24 @@ import { ArrowDownOutlined, ArrowUpOutlined, LockOutlined } from "@ant-design/ic
 import { Button, Flex, Switch, Tag, theme, Typography } from "antd";
 import { useState } from "react";
 import { adminCopy } from "@/copy/admin";
+import { DEFAULT_HOME, type HomeLayout } from "@/modules/site-config/home";
 
 const h = adminCopy.settings.home;
 type SectionId = keyof typeof h.sections;
 type Row = { id: SectionId; on: boolean };
 
 // Hero is always first and footer always last (site-config.md §4.4); the rest toggle and reorder.
-const initial: Row[] = (
-  ["hero", "categories", "latest", "brands", "buy", "services", "footer"] as const
-).map((id) => ({ id, on: true }));
+const rowsOf = (layout: HomeLayout): Row[] => [
+  { id: "hero", on: true },
+  ...layout,
+  { id: "footer", on: true },
+];
 const isLocked = (id: SectionId) => id === "hero" || id === "footer";
 
-export function useHomeTab() {
+// `start` is the saved layout (the mockup passes nothing: the default).
+export function useHomeTab(start: HomeLayout = DEFAULT_HOME) {
   const { token } = theme.useToken();
+  const [initial] = useState(() => rowsOf(start));
   const [rows, setRows] = useState(initial);
   const last = rows.length - 2; // index of the last movable section
   const move = (i: number, d: -1 | 1) =>
@@ -94,5 +99,7 @@ export function useHomeTab() {
       </Flex>
     </Flex>
   );
-  return { body, reset: () => setRows(initial) };
+  const value = rows.filter((r) => !isLocked(r.id)) as HomeLayout;
+  const changed = JSON.stringify(rows) !== JSON.stringify(initial);
+  return { body, value, changed, reset: () => setRows(initial) };
 }

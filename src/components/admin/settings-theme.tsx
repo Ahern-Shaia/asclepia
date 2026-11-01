@@ -18,18 +18,23 @@ import {
 } from "antd";
 import { useState } from "react";
 import { adminCopy } from "@/copy/admin";
-import { checkTheme, deriveTheme, isHex, type RadiusStep } from "@/theme/derive";
+import {
+  checkTheme,
+  DEFAULT_THEME,
+  deriveTheme,
+  isHex,
+  type RadiusStep,
+  type ThemeInput,
+} from "@/theme/derive";
 import { palette, themePresets } from "@/theme/tokens";
 
 const t = adminCopy.settings.theme;
 const CUSTOM = "custom";
 type Choice = { mode: string; primary: string; accent: string; radius: RadiusStep };
-const initial: Choice = {
-  mode: themePresets[0].id,
-  primary: themePresets[0].primary,
-  accent: themePresets[0].accent,
-  radius: "medium",
-};
+const choiceOf = (v: ThemeInput): Choice => ({
+  ...v,
+  mode: themePresets.find((p) => p.primary === v.primary && p.accent === v.accent)?.id ?? CUSTOM,
+});
 
 function Swatch({ color, size = 20 }: { color: string; size?: number }) {
   const { token } = theme.useToken();
@@ -180,9 +185,11 @@ function Preview({ c }: { c: Choice }) {
   );
 }
 
-// Returns the tab body and the reason save is blocked (undefined = can save).
-export function useThemeTab() {
+// Returns the tab body, the reason save is blocked (undefined = can save) and the chosen value.
+// `start` is the saved theme (the mockup passes nothing: the default).
+export function useThemeTab(start: ThemeInput = DEFAULT_THEME) {
   const { token } = theme.useToken();
+  const [initial] = useState(() => choiceOf(start));
   const [c, setC] = useState<Choice>(initial);
   const valid = isHex(c.primary) && isHex(c.accent);
   const checks = valid ? checkTheme(c) : [];
@@ -306,5 +313,8 @@ export function useThemeTab() {
       </Col>
     </Row>
   );
-  return { body, blocked, reset: () => setC(initial) };
+  const value: ThemeInput = { primary: c.primary, accent: c.accent, radius: c.radius };
+  const changed =
+    c.primary !== initial.primary || c.accent !== initial.accent || c.radius !== initial.radius;
+  return { body, blocked, value, changed, reset: () => setC(initial) };
 }

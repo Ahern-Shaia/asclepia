@@ -259,8 +259,8 @@ export const adminCopy = {
     title: "站台設定",
     // the live editor (/admin/settings); the rest of this block also serves the full mockup
     live: {
-      intro: "存檔後前台立即更新。主題、首頁區塊、圖片還在開發中。",
-      tabs: { profile: "店家資料", notes: "說明選項" },
+      intro: "存檔後前台立即更新。每個分頁各自儲存。",
+      tabs: { profile: "店家資料", notes: "說明選項", theme: "主題", home: "首頁區塊" },
       phoneHelp: "顯示在頁首、頁尾、手機底部的來電按鈕和詢價表單。留空就不顯示電話。",
       addressHelp: "地址、營業時間有填才會顯示在頁尾和首頁「看機地點」。",
       neverSaved: "還沒有儲存過，前台目前用預設值。",
@@ -411,7 +411,7 @@ export const adminCopy = {
         latest: { name: "最新上架", desc: "最近上架的商品卡" },
         brands: { name: "依品牌找", desc: "品牌 logo 列" },
         buy: { name: "怎麼買＋看機地點", desc: "三步驟和看機地點卡" },
-        services: { name: "也可以找我們", desc: "收購、維修、租賃" },
+        services: { name: "也可以找我們", desc: "「說明選項」裡的服務清單；沒有項目時不顯示" },
         footer: {
           name: "頁尾",
           desc: "電話、地址、營業時間",
