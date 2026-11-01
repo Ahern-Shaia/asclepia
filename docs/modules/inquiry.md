@@ -206,8 +206,8 @@ query 預算：rate limit 1＋查商品 1＋transaction 內 insert 2＝4 次，*
 |---|---|---|
 | **M0** | 本檔 → APPROVED | ✅ 2026-11-01 |
 | M0-ui | 列表頁、商品頁、清單頁 mockup（依 §B0 `inspect-catalog`） | ⏳ |
-| M1 | B1＋B3（跟 catalog M1 同一批 migration） | 🚧 B1 資料表 ✅ `9a37612`（含 RateLimitHit）；B3 送出端點 ⏳ |
-| M2 | B2 前台清單 | ⏳ |
+| M1 | B1＋B3（跟 catalog M1 同一批 migration） | ✅ B1 `9a37612`；B3 `d1d4073`（限流＋快照＋一條 SQL 寫入，3 query） |
+| M2 | B2 前台清單 | ✅ `64e93af`。已知：`/inquiry/items`（依 id 取卡片）沒有限流，讀的是快取、id 上限 10 |
 | M3 | B4 後台 | ⏳ |
 | M4 | §12 FMEA、SOP | ⏳ |
 
