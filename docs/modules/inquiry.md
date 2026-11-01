@@ -206,7 +206,7 @@ query 預算：rate limit 1＋查商品 1＋transaction 內 insert 2＝4 次，*
 |---|---|---|
 | **M0** | 本檔 → APPROVED | ✅ 2026-11-01 |
 | M0-ui | 列表頁、商品頁、清單頁 mockup（依 §B0 `inspect-catalog`） | ⏳ |
-| M1 | B1＋B3（跟 catalog M1 同一批 migration） | ⏳ |
+| M1 | B1＋B3（跟 catalog M1 同一批 migration） | 🚧 B1 資料表 ✅ `9a37612`（含 RateLimitHit）；B3 送出端點 ⏳ |
 | M2 | B2 前台清單 | ⏳ |
 | M3 | B4 後台 | ⏳ |
 | M4 | §12 FMEA、SOP | ⏳ |

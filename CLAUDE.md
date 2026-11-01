@@ -212,7 +212,9 @@ pnpm depcruise
 pnpm audit --prod
 pnpm guards               # grep 守衛（scripts/guards/rules.sh）；改守衛先跑 pnpm guards:selftest
 pnpm check                # 出貨前那一組（不含 e2e）
-pnpm prisma migrate dev   # 改 schema 後；generated client（src/generated/）不 commit
+pnpm db:setup            # 本機 Postgres（compose.yaml，54329）＋ migrate deploy ＋ 重套 app role 權限
+pnpm db:migrate          # 改 schema 後（= prisma migrate dev）；之後再跑一次 db:setup 重套權限
+                          # generated client（src/generated/）不 commit，postinstall 會產生
 ```
 
 每個 task 完成後（R8）：

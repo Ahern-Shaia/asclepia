@@ -128,7 +128,10 @@ Project-specific traps (each one bit us during scaffold on 2026-10-31):
 - **Don't size antd components with CSS-module classes** (`min-height`, `margin` on `Layout`/`Flex`): antd's own single-class rules are injected later and win. Use props / `style`, or put the class on a plain wrapper `div`.
 - **`pnpm build` green ≠ page works.** Both bugs above built cleanly; only the browser caught them. UI changes are done when `pnpm test:e2e` passes (R19).
 - **`prisma init` writes agent skill files** into `.claude/skills`, `.agents/`, `.windsurf/` (third-party instructions that would auto-load). They were removed; don't re-add them without review.
-- **Prisma 7 config file is `prisma7.config.ts`** (the CLI default in 7.10), not `prisma.config.ts`.
+- **Prisma 7 config file is `prisma7.config.ts`** (the CLI default in 7.10), not `prisma.config.ts`. It points at `MIGRATE_DATABASE_URL` (owner); the app uses `DATABASE_URL` (low-privilege `asclepia_app`). Re-run `prisma/sql/roles.sql` (`pnpm db:setup`) after every migration.
+- **Prisma refuses `migrate reset` when run by an AI agent** ("detected that it was invoked by Claude Code"). That is a deliberate guard: ask the user to run it; don't bypass it.
+- **`psql -q` hides successful INSERT/UPDATE output**: a probe that prints two errors for four statements is not "everything failed". Print explicit results (`-tAc 'select …'`) when checking grants.
+- **The repo path contains non-ASCII (`創業`)**: `new URL(…).pathname` percent-encodes it; use `fileURLToPath`.
 - **Probe the dev server via `localhost`, never `127.0.0.1`.** Next 16 blocks dev resources for other origins (`allowedDevOrigins`): the page renders server HTML but never hydrates, so screenshots look plausible while nothing works (forms don't update, responsive props stay at SSR defaults). Cost one full round of wrong screenshots.
 - **A render-time `notFound()` under the root `<Suspense>` answers 200** (soft 404): the shell has already streamed. Gate whole route trees in `src/proxy.ts` instead (that is how `/mockup` is hidden in production; `e2e/mockup-gate.spec.ts`).
 - **Layout classes on antd components lose to antd's own single-class rules** (`.ant-flex { display: flex }` beats a module `.mobileOnly { display: none }`). Our module CSS doubles those selectors (`.x.x`) on purpose; prefer putting the class on a plain wrapper.

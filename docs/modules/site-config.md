@@ -228,7 +228,7 @@ model SiteAsset {             // 站台用的圖片（首頁照、看機區照�
 |---|---|---|
 | **M0** | 本檔 → APPROVED；§5 的文件修改 | ✅ 2026-11-01（`tokens.ts` 改成預設值＋推導函式屬於實作，在 M2 做） |
 | M0-ui | 後台「站台設定」「商品欄位」mockup；列表頁、商品頁 mockup 改成屬性驅動 | ⏳ |
-| M1 | C1＋catalog M1 同一批 schema | ⏳ |
+| M1 | C1＋catalog M1 同一批 schema | 🚧 C1 資料表 ✅ `9a37612`；屬性驗證（動態 zod）隨後台 CRUD ⏳ |
 | M2 | C2＋C3 | ⏳ |
 | M3 | C4 後台頁面 | ⏳ |
 | M4 | §12 FMEA、SOP（後台設定操作手冊） | ⏳ |
