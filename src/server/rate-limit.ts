@@ -19,3 +19,9 @@ export async function hit(key: string, limit: number, windowSec: number, client:
     returning "count"`;
   return { allowed: row.count <= limit, count: row.count };
 }
+
+// Old windows are useless once they end; the daily job (app/api/cron/daily) removes them so the
+// table stays the size of one day's traffic.
+export async function pruneRateLimits(before: Date, client: Db = db()) {
+  return (await client.rateLimitHit.deleteMany({ where: { windowStart: { lt: before } } })).count;
+}

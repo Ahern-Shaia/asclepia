@@ -11,6 +11,7 @@ export const E2E_AUTH = {
   secret: "e2e-only-secret-not-used-anywhere-else-0123456789",
   admin: "admin@example.com",
 };
+export const E2E_CRON_SECRET = "e2e-cron-secret-not-used-anywhere-else-0123456789";
 const SITE_WIDE = /site-settings\.spec\.ts/;
 
 export const e2eDatabaseUrl = (process.env.DATABASE_URL ?? "").replace(
@@ -65,6 +66,7 @@ export default defineConfig({
       // Rate limiting is per client address; each spec sends its own value so specs don't share a
       // bucket (e2e/support/shop.ts asClient).
       CLIENT_IP_HEADER: E2E_CLIENT_HEADER,
+      CRON_SECRET: E2E_CRON_SECRET,
     },
     port: PORT,
     reuseExistingServer: false,

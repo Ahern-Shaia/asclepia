@@ -64,6 +64,10 @@ export const requestSchema = z.object({
   RATE_LIMIT_SECRET: z.string().min(32).optional(),
 });
 
+// Scheduled jobs (app/api/cron/daily): the platform's scheduler sends `Authorization: Bearer
+// <CRON_SECRET>`. Unset = the endpoint is off.
+export const cronSchema = z.object({ CRON_SECRET: z.string().min(32).optional() });
+
 export const parseDbEnv = (source: Record<string, string | undefined>) => parse(dbSchema, source);
 export const parseAuthEnv = (source: Record<string, string | undefined>) =>
   parse(authSchema, source);
@@ -76,3 +80,4 @@ export const hasDatabase = () => !!process.env.DATABASE_URL;
 export const authEnv = () => parseAuthEnv(process.env);
 export const storageEnv = () => parse(storageSchema, process.env);
 export const requestEnv = () => parse(requestSchema, process.env);
+export const cronEnv = () => parse(cronSchema, process.env);
