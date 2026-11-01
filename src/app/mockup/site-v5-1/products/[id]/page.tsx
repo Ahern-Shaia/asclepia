@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ShopShell } from "@/components/shop/shop-shell";
 import { categoryAttributes, SHOP, shopProducts } from "../../../_attrs";
-import { categories, company } from "../../../_data";
+import { categories, company, sampleNotes } from "../../../_data";
 import { MockDetailView } from "../../_mock-views";
 
 export function generateStaticParams() {
@@ -25,6 +25,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         config={categoryAttributes[p.categoryId] ?? []}
         related={related}
         configs={categoryAttributes}
+        terms={sampleNotes.terms}
       />
     </ShopShell>
   );

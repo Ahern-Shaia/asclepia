@@ -2,6 +2,11 @@
 // Licence numbers are deliberately fake (000xxx) and optional: only items that are registered
 // medical devices carry one. Every page carries the mockup banner.
 
+import { catalogCopy } from "@/copy/catalog";
+import { homeV3Copy } from "@/copy/home-v3";
+import { homeV4Copy } from "@/copy/home-v4";
+import type { SiteNotes } from "@/modules/site-config/notes";
+
 export type ProductStatus = "DRAFT" | "PUBLISHED" | "HIDDEN" | "SOLD";
 
 export type MockProduct = {
@@ -272,4 +277,13 @@ export const company = {
   email: "service@example.com",
   address: "台北市範例區範例路 1 號",
   hours: "週一至週五 09:00–18:00",
+};
+
+// Sample store statements for the mockups only. The real site shows none until the back office
+// sets them (site-config notes.ts; user 2026-11-01).
+export const sampleNotes: SiteNotes = {
+  eyebrow: homeV4Copy.eyebrow,
+  heroPoints: [...homeV3Copy.hero.points],
+  terms: [...catalogCopy.detail.termsBody],
+  services: homeV3Copy.services.items.map((x) => ({ kind: x.id, title: x.title, body: x.body })),
 };

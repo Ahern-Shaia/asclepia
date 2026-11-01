@@ -164,3 +164,21 @@ test("malformed product ids are not found", async ({ page }) => {
     await expect(page.getByRole("heading", { level: 1, name: "找不到這件商品" })).toBeVisible();
   }
 });
+
+// User 2026-11-01: the store's statements (warranty, invoice, delivery, services, "自有庫存") are
+// not shown by default; the back office sets them (site-config notes.ts). Nothing is set here.
+test("store statements are absent until the back office sets them", async ({ page, context }) => {
+  const seeded = await seedShop([{ name: "e2e-說明", brand: "Alpha", model: "N-1" }]);
+  await publishAll(page, context, seeded);
+  const claims = /自有庫存|可預約看機|到場拆裝|拆裝運送|可開立發票|免費維修|收購|租賃/;
+
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "也可以找我們" })).toHaveCount(0);
+  await expect(page.getByRole("main")).not.toContainText(claims);
+
+  await page.goto(`/products/${seeded.products[0].id}`);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("e2e-說明");
+  await expect(page.getByRole("heading", { name: "保固與交易說明" })).toHaveCount(0);
+  await expect(page.getByRole("main")).not.toContainText(claims);
+});

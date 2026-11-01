@@ -11,6 +11,7 @@ import {
   publicProducts,
 } from "@/modules/catalog/server/public/catalog";
 import { submitInquiryAction } from "@/modules/inquiry/actions";
+import { siteNotes } from "@/modules/site-config/server/public/notes";
 import { siteProfile } from "@/modules/site-config/server/public/profile";
 import { productId } from "../../../_params";
 import { pageTitle } from "../../../_store";
@@ -43,10 +44,11 @@ export default function Page({ params }: PageProps<"/products/[id]">) {
 async function Product({ params }: Pick<PageProps<"/products/[id]">, "params">) {
   const p = await find(params);
   if (!p) notFound();
-  const [profile, configs, sameCategory] = await Promise.all([
+  const [profile, configs, sameCategory, notes] = await Promise.all([
     siteProfile(),
     publicConfigs(),
     publicProducts({ cat: p.categoryId }),
+    siteNotes(),
   ]);
   const { config, ...product } = p;
   return (
@@ -57,6 +59,7 @@ async function Product({ params }: Pick<PageProps<"/products/[id]">, "params">) 
       config={config}
       related={sameCategory.items.filter((x) => x.id !== p.id).slice(0, RELATED)}
       configs={configs}
+      terms={notes.terms}
       send={submitInquiryAction}
     />
   );

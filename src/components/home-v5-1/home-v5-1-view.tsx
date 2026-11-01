@@ -9,9 +9,11 @@ import {
   RightOutlined,
   SearchOutlined,
   SwapOutlined,
+  TagOutlined,
   ToolOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import type { CompanyInfo } from "@/components/catalog/site-footer";
 import {
   type EquipKind,
@@ -27,12 +29,18 @@ import { type ShopBrand, ShopShell, useShopSearch } from "@/components/shop/shop
 import { homeV3Copy as c } from "@/copy/home-v3";
 import { homeV4Copy as c4 } from "@/copy/home-v4";
 import { homeV5Copy as c5 } from "@/copy/home-v5";
+import type { ServiceKind, SiteNotes } from "@/modules/site-config/notes";
 import t from "./home-v5-1.module.css";
 
 // `icon` picks a drawing when the category's iconKey names a known kind; otherwise a neutral one.
 export type V51Category = { id: string; name: string; count: number; icon?: EquipKind | null };
 
-const serviceIcon = { buy: <SwapOutlined />, repair: <ToolOutlined />, rent: <CalendarOutlined /> };
+const serviceIcon: Record<ServiceKind, ReactNode> = {
+  buy: <SwapOutlined />,
+  repair: <ToolOutlined />,
+  rent: <CalendarOutlined />,
+  other: <TagOutlined />,
+};
 
 export function HomeV51View({
   base,
@@ -41,6 +49,7 @@ export function HomeV51View({
   latest,
   configs,
   company,
+  notes,
   brand,
   mock = false,
 }: {
@@ -50,6 +59,8 @@ export function HomeV51View({
   latest: (ShopCardProduct & { categoryId: string })[];
   configs: Record<string, CategoryAttr[]>;
   company: CompanyInfo;
+  // the store's own statements; each block is left out while it has none (site-config notes.ts)
+  notes: SiteNotes;
   brand?: ShopBrand;
   mock?: boolean;
 }) {
@@ -67,7 +78,7 @@ export function HomeV51View({
       mock={mock}
     >
       <main>
-        <section className={s.hero} aria-labelledby="hero-title">
+        <section className={`${s.hero} ${mock ? "" : t.heroBare}`} aria-labelledby="hero-title">
           {/* real site: plain navy until the warehouse photo can be uploaded (OQ-CAT-10) */}
           {mock && (
             <PhotoSlot
@@ -80,19 +91,21 @@ export function HomeV51View({
           )}
           <div className={`${s.container} ${s.heroRow}`}>
             <div className={s.heroText}>
-              <span className={s.eyebrow}>{c4.eyebrow}</span>
+              {notes.eyebrow && <span className={s.eyebrow}>{notes.eyebrow}</span>}
               <h1 id="hero-title">
                 {c4.heading.map((line) => (
                   <span key={line}>{line}</span>
                 ))}
               </h1>
-              <ul className={s.points}>
-                {c.hero.points.map((p) => (
-                  <li key={p}>
-                    <CheckOutlined aria-hidden /> {p}
-                  </li>
-                ))}
-              </ul>
+              {notes.heroPoints.length > 0 && (
+                <ul className={s.points}>
+                  {notes.heroPoints.map((p) => (
+                    <li key={p}>
+                      <CheckOutlined aria-hidden /> {p}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
           <div className={`${s.container} ${s.finderWrap}`}>
@@ -252,26 +265,28 @@ export function HomeV51View({
           </div>
         </section>
 
-        <section id="services" className={s.section} aria-labelledby="h-services">
-          <div className={s.container}>
-            <div className={s.head}>
-              <h2 id="h-services">{c.services.title}</h2>
+        {notes.services.length > 0 && (
+          <section id="services" className={s.section} aria-labelledby="h-services">
+            <div className={s.container}>
+              <div className={s.head}>
+                <h2 id="h-services">{c.services.title}</h2>
+              </div>
+              <ul className={s.services}>
+                {notes.services.map((sv) => (
+                  <li key={sv.title}>
+                    <span className={s.serviceIcon} aria-hidden>
+                      {serviceIcon[sv.kind]}
+                    </span>
+                    <span>
+                      <strong>{sv.title}</strong>
+                      {sv.body && <span>{sv.body}</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className={s.services}>
-              {c.services.items.map((sv) => (
-                <li key={sv.id}>
-                  <span className={s.serviceIcon} aria-hidden>
-                    {serviceIcon[sv.id]}
-                  </span>
-                  <span>
-                    <strong>{sv.title}</strong>
-                    <span>{sv.body}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
     </ShopShell>
   );

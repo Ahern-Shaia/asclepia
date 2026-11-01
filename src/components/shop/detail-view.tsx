@@ -37,6 +37,7 @@ export function ShopDetailView({
   config,
   related,
   configs,
+  terms,
   send,
 }: {
   base: string;
@@ -45,6 +46,8 @@ export function ShopDetailView({
   config: CategoryAttr[];
   related: (ShopCardProduct & { categoryId: string })[];
   configs: Record<string, CategoryAttr[]>;
+  // the store's terms (warranty, invoice, delivery…); the block is left out while there are none
+  terms: string[];
   send: SendInquiry;
 }) {
   const list = useInquiryList();
@@ -240,14 +243,16 @@ export function ShopDetailView({
             </section>
           )}
         </div>
-        <section className={l.block} aria-labelledby="h-terms">
-          <h2 id="h-terms">{c.terms}</h2>
-          <ul className={`${l.bullets} ${l.terms}`}>
-            {catalogCopy.detail.termsBody.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        </section>
+        {terms.length > 0 && (
+          <section className={l.block} aria-labelledby="h-terms">
+            <h2 id="h-terms">{c.terms}</h2>
+            <ul className={`${l.bullets} ${l.terms}`}>
+              {terms.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
 
       {related.length > 0 && (

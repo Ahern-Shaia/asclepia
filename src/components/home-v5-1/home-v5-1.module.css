@@ -46,3 +46,9 @@
 .buyRowSolo.buyRowSolo {
   grid-template-columns: minmax(0, 1fr);
 }
+
+/* No hero photo yet (real site, OQ-CAT-10): the 520px floor exists for the photo, so without one
+   the band fits its content. Doubled to beat home-v5's single-class .hero. */
+.heroBare.heroBare {
+  min-height: 0;
+}
