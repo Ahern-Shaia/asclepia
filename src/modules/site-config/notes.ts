@@ -4,11 +4,19 @@ import { z } from "zod";
 // office): hero eyebrow + points, the product page's terms, and the home "services" list. Stored
 // in SiteConfig COPY. Each list drops its malformed items instead of failing as a whole, so one bad
 // entry never blanks the rest (memory pitfall: strict schema breaks the whole list).
-const SERVICE_KINDS = ["buy", "repair", "rent", "other"] as const;
+export const SERVICE_KINDS = ["buy", "repair", "rent", "other"] as const;
+// Shared by the lenient reader below and the strict back-office input (admin-input.ts).
+export const NOTE_LIMITS = {
+  eyebrow: 30,
+  heroPoints: { count: 3, length: 20 },
+  terms: { count: 8, length: 120 },
+  services: { count: 4, title: 10, body: 40 },
+} as const;
+const L = NOTE_LIMITS;
 const service = z.object({
   kind: z.enum(SERVICE_KINDS).catch("other"),
-  title: z.string().trim().min(1).max(10),
-  body: z.string().trim().max(40).catch(""),
+  title: z.string().trim().min(1).max(L.services.title),
+  body: z.string().trim().max(L.services.body).catch(""),
 });
 const text = (max: number) => z.string().trim().min(1).max(max);
 const listOf = <T extends z.ZodType>(item: T, max: number) =>
@@ -25,10 +33,10 @@ const listOf = <T extends z.ZodType>(item: T, max: number) =>
     );
 
 export const siteNotesSchema = z.object({
-  eyebrow: z.string().trim().max(30).catch(""),
-  heroPoints: listOf(text(20), 3),
-  terms: listOf(text(120), 8),
-  services: listOf(service, 4),
+  eyebrow: z.string().trim().max(L.eyebrow).catch(""),
+  heroPoints: listOf(text(L.heroPoints.length), L.heroPoints.count),
+  terms: listOf(text(L.terms.length), L.terms.count),
+  services: listOf(service, L.services.count),
 });
 export type SiteNotes = z.output<typeof siteNotesSchema>;
 export type ServiceKind = (typeof SERVICE_KINDS)[number];
