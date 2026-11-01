@@ -88,7 +88,9 @@ describe("submitInquiry (inquiry.md §4.2)", () => {
   });
 
   it("writes nothing and names the items when any is sold, hidden or missing", async () => {
-    const before = await db.inquiry.count();
+    // scoped to this file's product: other test files write inquiries to the same DB in parallel
+    const mine = { where: { items: { some: { productId: ids.a } } } };
+    const before = await db.inquiry.count(mine);
     try {
       await submitInquiry(input([ids.a, ids.sold, ids.draft, "nope"]), db);
       throw new Error("expected rejection");
@@ -96,7 +98,7 @@ describe("submitInquiry (inquiry.md §4.2)", () => {
       expect(e).toBeInstanceOf(DomainError);
       expect((e as DomainError).extra.detail).toEqual([ids.sold, ids.draft, "nope"]);
     }
-    expect(await db.inquiry.count()).toBe(before);
+    expect(await db.inquiry.count(mine)).toBe(before);
   });
 
   it("validates input like the form says", () => {
