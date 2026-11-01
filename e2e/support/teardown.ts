@@ -1,5 +1,6 @@
+import { rm } from "node:fs/promises";
 import { Client } from "pg";
-import { e2eDatabaseUrl } from "../../playwright.config";
+import { E2E_UPLOAD_DIR, e2eDatabaseUrl } from "../../playwright.config";
 
 // Removes what the admin specs created (names start with "e2e-", attribute keys with "e2e_").
 // Runs as the app role against the e2e database only.
@@ -21,4 +22,5 @@ export default async function teardown() {
   } finally {
     await db.end();
   }
+  await rm(E2E_UPLOAD_DIR, { recursive: true, force: true });
 }

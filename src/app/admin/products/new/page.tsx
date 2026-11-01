@@ -23,7 +23,7 @@ export default async function Page() {
           specNote: "",
           sourceName: "",
           sourceContact: "",
-          imageCount: 0,
+          images: [],
         }}
         transitions={TRANSITIONS.DRAFT}
         categories={categories.map((c) => ({ id: c.id, name: c.name }))}

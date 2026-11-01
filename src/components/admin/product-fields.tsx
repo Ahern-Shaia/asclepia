@@ -1,12 +1,7 @@
 "use client";
 
-import {
-  DeleteOutlined,
-  EyeOutlined,
-  InfoCircleOutlined,
-  PlusOutlined,
-  SnippetsOutlined,
-} from "@ant-design/icons";
+import { type AdminImage, ProductImages } from "./product-images";
+import { DeleteOutlined, EyeOutlined, PlusOutlined, SnippetsOutlined } from "@ant-design/icons";
 import {
   Alert,
   Button,
@@ -105,7 +100,8 @@ export function ProductFields({
   config,
   labelOf,
   categories,
-  imageCount,
+  productId,
+  images,
   onEdit,
 }: {
   form: FormInstance<FormValues>;
@@ -113,7 +109,8 @@ export function ProductFields({
   config: FormAttr[] | undefined;
   labelOf: (key: string) => string;
   categories: { id: string; name: string }[];
-  imageCount: number;
+  productId?: string;
+  images: AdminImage[];
   onEdit: () => void; // programmatic changes (paste) don't fire the form's onValuesChange
 }) {
   const { token } = theme.useToken();
@@ -151,13 +148,7 @@ export function ProductFields({
       </Card>
 
       <Card title={e.sections.images} variant="outlined" styles={card}>
-        <Flex vertical gap={8}>
-          <Typography.Text>{e.imageCount(imageCount)}</Typography.Text>
-          <Flex gap={6} align="start" style={{ color: token.colorTextSecondary }}>
-            <InfoCircleOutlined aria-hidden style={{ paddingBlockStart: 5 }} />
-            <span>{e.imagePending}</span>
-          </Flex>
-        </Flex>
+        <ProductImages productId={productId} images={images} />
       </Card>
 
       <Card title={e.basicCard} variant="outlined" styles={card}>

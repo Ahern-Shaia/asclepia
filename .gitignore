@@ -27,3 +27,4 @@ npm-debug.log*
 
 # prisma generated client
 /src/generated/
+/.uploads-e2e/

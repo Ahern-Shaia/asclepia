@@ -28,6 +28,7 @@ import {
 import { call, type Failure, FailureAlert, fieldErrorsFor } from "./action-result";
 import type { AttrValues, FormAttr, ProductStatus } from "./catalog-data";
 import { LinkButton } from "./link-button";
+import type { AdminImage } from "./product-images";
 import { attrsFor, type FormValues, ProductFields } from "./product-fields";
 import { ProductStatusTag } from "./status";
 
@@ -46,7 +47,7 @@ export type EditProduct = {
   specNote: string;
   sourceName: string;
   sourceContact: string;
-  imageCount: number;
+  images: AdminImage[];
   updatedAt?: string; // ISO, the optimistic-lock version
   updatedAtText?: string;
 };
@@ -307,7 +308,8 @@ function ProductForm({
             config={config}
             labelOf={labelOf}
             categories={categories}
-            imageCount={product.imageCount}
+            productId={product.id}
+            images={product.images}
             onEdit={() => setDirty(true)}
           />
         </Col>

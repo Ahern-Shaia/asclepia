@@ -5,6 +5,7 @@ const PORT = 3100;
 
 // e2e runs against its own database (scripts/db/e2e.sh) and its own auth settings: tests sign in by
 // minting a session with E2E_AUTH.secret (e2e/support/session.ts), never through Google.
+export const E2E_UPLOAD_DIR = ".uploads-e2e";
 export const E2E_AUTH = {
   secret: "e2e-only-secret-not-used-anywhere-else-0123456789",
   admin: "admin@example.com",
@@ -44,6 +45,7 @@ export default defineConfig({
       GOOGLE_CLIENT_ID: "e2e.apps.googleusercontent.com",
       GOOGLE_CLIENT_SECRET: "e2e",
       ADMIN_EMAILS: E2E_AUTH.admin,
+      UPLOAD_DIR: E2E_UPLOAD_DIR, // never the dev .uploads/
     },
     port: PORT,
     reuseExistingServer: false,

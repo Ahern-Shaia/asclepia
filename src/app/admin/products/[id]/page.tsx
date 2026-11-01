@@ -31,7 +31,7 @@ export default async function Page({ params }: PageProps<"/admin/products/[id]">
             specNote: p.specNote ?? "",
             sourceName: p.sourceName ?? "",
             sourceContact: p.sourceContact ?? "",
-            imageCount: p.images.length,
+            images: p.images.map((i) => ({ id: i.id, storageKey: i.storageKey })),
             updatedAt: p.updatedAt.toISOString(),
             updatedAtText: formatTime(p.updatedAt),
           }}

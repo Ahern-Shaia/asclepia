@@ -22,3 +22,38 @@
 .content.content {
   padding: 24px;
 }
+
+/* product images (M2) */
+.imageGrid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+}
+.imageItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid;
+  border-radius: 6px;
+  padding: 6px;
+}
+.imageThumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.plainList {
+  margin: 0;
+  padding-inline-start: 1.2em;
+}
+
+/* The button opens this input. antd's `:where(.css-x).ant-form input[type="file"] { display: block }`
+   (specificity 0,2,1) beats both the `hidden` attribute and a doubled class (0,2,0), so triple it. */
+.fileInput.fileInput.fileInput {
+  display: none;
+}
