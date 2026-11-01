@@ -201,7 +201,7 @@
 
 ```bash
 pnpm i
-pnpm dev
+pnpm dev                 # http://localhost:3200（:3000 被本機其他服務占用；Google OAuth 的來源與 redirect URI 也設 3200）
 pnpm fix          # eslint --fix + prettier --write
 pnpm lint         # 重複跑直到 0 issues
 pnpm type-check
