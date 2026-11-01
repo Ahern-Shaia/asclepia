@@ -12,11 +12,13 @@ import {
   categorySchema,
   changeStatusSchema,
   idSchema,
+  reorderImagesSchema,
   reorderSchema,
   saveProductSchema,
 } from "./admin-input";
 import { deleteAttributeDef, saveAttributeDef, saveCategoryConfig } from "./server/attributes";
 import { deleteCategory, reorderCategories, saveCategory } from "./server/categories";
+import { deleteImage, reorderImages } from "./server/images";
 import { changeStatus, deleteDraft, saveProduct } from "./server/products";
 
 // Public catalog caches are tagged "catalog" and "product:<id>" (stack-rules P7-3). Attribute and
@@ -113,6 +115,26 @@ export const saveCategoryConfigAction = adminAction(
   async (input, admin) => {
     const r = await saveCategoryConfig(input, admin.email);
     invalidate();
+    return { data: r };
+  },
+);
+
+export const deleteImageAction = adminAction(
+  "product.image.delete",
+  idSchema,
+  async ({ id }, admin) => {
+    const r = await deleteImage(id, admin.email);
+    invalidate(r.productId);
+    return { data: r };
+  },
+);
+
+export const reorderImagesAction = adminAction(
+  "product.image.reorder",
+  reorderImagesSchema,
+  async ({ productId, ids }, admin) => {
+    const r = await reorderImages(productId, ids, admin.email);
+    invalidate(productId);
     return { data: r };
   },
 );

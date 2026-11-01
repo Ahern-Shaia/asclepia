@@ -51,9 +51,14 @@ export const authSchema = z.object({
     .pipe(z.array(z.email()).min(1)),
 });
 
+// Where re-encoded product images are written in development (catalog.md §4.2; production storage is
+// decided with the deploy platform, CLAUDE.md §2.4).
+export const storageSchema = z.object({ UPLOAD_DIR: z.string().min(1).default(".uploads") });
+
 export const parseDbEnv = (source: Record<string, string | undefined>) => parse(dbSchema, source);
 export const parseAuthEnv = (source: Record<string, string | undefined>) =>
   parse(authSchema, source);
 
 export const dbEnv = () => parseDbEnv(process.env);
 export const authEnv = () => parseAuthEnv(process.env);
+export const storageEnv = () => parse(storageSchema, process.env);

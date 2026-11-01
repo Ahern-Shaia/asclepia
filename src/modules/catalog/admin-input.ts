@@ -22,6 +22,7 @@ export const changeStatusSchema = z.object({
 });
 
 export const idSchema = z.object({ id });
+export const reorderImagesSchema = z.object({ productId: id, ids: z.array(id).min(1).max(20) });
 
 export const categorySchema = z.object({ id: id.optional(), name: label("分類名稱", 30) });
 export const reorderSchema = z.object({ ids: z.array(id).min(1).max(200) });

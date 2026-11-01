@@ -9,6 +9,10 @@ export const errorCopy = {
   IN_USE: "還有資料在使用它，所以不能刪除或變更。",
   PUBLISH_INCOMPLETE: "還有項目沒完成，暫時無法上架。",
   BAD_TRANSITION: "目前的狀態不能直接改成這個狀態。",
+  IMAGE_TOO_LARGE: "這張圖片超過 15 MB，請先縮小再上傳。",
+  IMAGE_UNSUPPORTED: "只接受 JPG、PNG、WebP 圖片。這個檔案不是這三種格式。",
+  IMAGE_UNREADABLE: "這張圖片無法讀取，請改用 JPG 或 PNG 格式。",
+  IMAGE_LIMIT: "每件商品最多 20 張照片，請先刪掉不需要的再上傳。",
   UNKNOWN: "系統暫時無法完成，請稍後再試一次。一直失敗請聯絡管理員。",
 } as const;
 

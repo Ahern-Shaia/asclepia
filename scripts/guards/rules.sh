@@ -12,7 +12,10 @@ RULES=(
   'no-antd-compound-in-server ⟂ RSC: antd X.Y components are undefined in Server Components (React #130); use src/components/ui ⟂ __SERVER__<[A-Z][A-Za-z]*[.][A-Z] ⟂ *.tsx'
   'server-only-import ⟂ S5-4: server code starts with import "server-only" (client import = build error) ⟂ __MISSING__^import ["'"'"']server-only["'"'"'] ⟂ ^(server|modules/[^/]+/server)/[^/]+[.]ts$'
   'db-transaction-timeout ⟂ P3-2: interactive transactions need explicit maxWait/timeout ⟂ __MISSING__transactionOptions ⟂ ^server/db[.]ts$'
-  'admin-authz ⟂ S4-1: every back-office page/route calls requireAdmin() itself (layouts are not a boundary) ⟂ __MISSING__requireAdmin[(] ⟂ ^app/admin/(.*/)?(page|route)[.]tsx?$ !^app/admin/login/'
+  'admin-authz ⟂ S4-1: every back-office page/route calls requireAdmin() itself, routes via adminRoute() (layouts are not a boundary) ⟂ __MISSING__(requireAdmin|adminRoute)[(] ⟂ ^app/admin/(.*/)?(page|route)[.]tsx?$ !^app/admin/login/'
   'server-actions-wrapped ⟂ S3-1/S3-2: Server Actions are public POST endpoints; export them only via adminAction()/publicAction() ⟂ __ACTIONS__ ⟂ *'
+  'sharp-only-in-images ⟂ S2-3: sharp parses untrusted binaries; only src/modules/catalog/server/images/ may use it ⟂ from ["'"'"']sharp["'"'"'] ⟂ *.ts *.tsx'
+  'sharp-pixel-limit ⟂ S2-3: cap decoded pixels (default ~268M px ≈ 1 GB RGBA) ⟂ __MISSING__limitInputPixels ⟂ ^modules/catalog/server/images/process[.]ts$'
+  'sharp-timeout ⟂ P3-4: sharp default timeout is 0 = forever ⟂ __MISSING__[.]timeout[(] ⟂ ^modules/catalog/server/images/process[.]ts$'
   'no-public-secret ⟂ R3: NEXT_PUBLIC_ vars ship to the browser ⟂ NEXT_PUBLIC_[A-Z0-9_]*(SECRET|TOKEN|PASSWORD|PRIVATE|KEY) ⟂ *.ts *.tsx .env.example'
 )

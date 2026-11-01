@@ -20,6 +20,9 @@ fixture() { # name -> "relative/path<TAB>violating line"
     db-transaction-timeout) printf '%s\t%s' "server/db.ts" 'import "server-only";\nexport const db = 1;' ;;
     admin-authz) printf '%s\t%s' "app/admin/inquiries/page.tsx" 'export default function P() { return null; }' ;;
     server-actions-wrapped) printf '%s\t%s' "modules/x/actions.ts" '"use server";\nexport const ok = adminAction("a", s, f);\nexport async function leak() {}' ;;
+    sharp-only-in-images) printf '%s\t%s' "modules/catalog/server/products.ts" 'import sharp from "sharp";' ;;
+    sharp-pixel-limit) printf '%s\t%s' "modules/catalog/server/images/process.ts" 'import "server-only";\nsharp(b).timeout({ seconds: 30 });' ;;
+    sharp-timeout) printf '%s\t%s' "modules/catalog/server/images/process.ts" 'import "server-only";\nsharp(b, { limitInputPixels: 1 });' ;;
     no-public-secret)  printf '%s\t%s' "lib/env.ts" 'process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET;' ;;
     *) return 1 ;;
   esac
