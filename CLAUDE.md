@@ -7,7 +7,7 @@
 > 狀態：**Scaffold 完成（2026-10-31）**：Next.js 16 + antd 6 骨架，`pnpm check` 和 `pnpm test:e2e` 全綠。下一步是 catalog M1，與 site-config C1、inquiry B1 同一批 schema（三份設計都已 APPROVED）。
 >
 > 網站定位是**中古設備買賣**（用戶 2026-10-31：「當作中古器材買賣就行，我賣的是設備，不是『醫療』器材」）：自營賣中古院所設備與檢驗設備，前台是型錄＋詢價，後台負責上架。
-> 棧規則附件：`docs/stack-rules/nextjs-prisma-antd.md`（R21，⏳ 待人 review，執法點 W1–W10 尚未全部接線）。商品模組設計：`docs/modules/catalog.md`（APPROVED；v0.2 定位修訂待用戶確認）。視覺：profile `inspect-catalog`「實機型錄」（用戶 2026-11-01 定案，基準稿 `/mockup/site-v5-1`，規則在 `frontend-design-principles.md` §B0）；mockup 清單 `docs/mockups/README.md`。
+> 棧規則附件：`docs/stack-rules/nextjs-prisma-antd.md`（R21，✅ 用戶 2026-11-01 照草案生效；執法點隨各模組 M1 起逐條接線）。商品模組設計：`docs/modules/catalog.md`（APPROVED；v0.2 定位修訂待用戶確認）。視覺：profile `inspect-catalog`「實機型錄」（用戶 2026-11-01 定案，基準稿 `/mockup/site-v5-1`，規則在 `frontend-design-principles.md` §B0）；mockup 清單 `docs/mockups/README.md`。
 > 🔴 法規邊界：一件設備算不算醫療器材，依醫材法 §3 看它的設計與用途（診斷、治療…），不看新舊或賣方怎麼稱呼（research §5）。哪些品項落在線內**不屬於 Claude Code 可以裁定的事**（R7），送律師或衛生局 🔒。
 
 ---
@@ -62,7 +62,7 @@
 | 7 授權 | 專案 proprietary。相依套件只收 MIT／BSD／Apache-2.0／ISC，其他授權逐案讀 LICENSE 本文 | ✅ |
 | 8 fork／自研 | 自研。參考站只看功能的形狀，不抄程式碼、文案、圖片 | ✅ |
 | 9 repo 形態 | 單一 Next.js app 的 modular monolith（`src/modules/<domain>`）。dependency-cruiser 進 CI，擋循環依賴和跨模組 deep import | ✅ |
-| 10bis 威脅／效能 | `security-baseline.md` §0 · `performance-baseline.md` §0 | ⏳ 草案已寫，請 review |
+| 10bis 威脅／效能 | `security-baseline.md` §0 · `performance-baseline.md` §0 | ✅ 用戶 2026-11-01「全部照草案生效」 |
 | 10 測試分層 | Vitest（單元）· testcontainers Postgres（整合，走低權 app role）· Playwright（e2e）· junit reporter 寫在 config 裡 | ✅ |
 | 11 視覺權威 | `docs/frontend-design-principles.md` ＋ `src/theme/tokens.ts` | ✅ |
 | 12 母心智模型 | 醫材商腦中是原廠型錄和規格表；民眾腦中是拍賣網商品頁（參考站本身外連 Yahoo、露天賣場） | ✅ 參考站已用 Playwright 實測（research §1b） |

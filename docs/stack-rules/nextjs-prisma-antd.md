@@ -1,6 +1,6 @@
 # 技術棧規則附件:Next.js 16 + Prisma 7 + antd 6(`nextjs-prisma-antd`)
 
-> **狀態**|⏳ 生成物(依 `_generator.md` 產出,2026-10-31),**人 review 後才生效**。
+> **狀態**|✅ **生效(用戶 2026-11-01「全部照草案生效」)**。依 `_generator.md` 產出(2026-10-31);發現不對時改本檔並記在檔尾。〈需要接線的執法點〉隨各模組 M1 起逐條接上。
 > **本檔只寫「兩塊地板在這個棧上長什麼樣」**;地板本身看 `security-baseline.md` / `performance-baseline.md`(含兩份的本專案 §0),這裡不重述。
 > 規則編號 `S1-1`…`P8-3` 與檔尾〈CI-fail 禁令清單〉一一對應。出處代號(`[N1]` 等)見〈來源與查證狀態〉。
 
@@ -296,11 +296,11 @@ next 16.4.3 · react / react-dom 19.3.0 · typescript 5.9.3 · antd 6.6.7 · @an
 1. **上傳通道**:Route Handler(建議,S8-3)或調大全域 `bodySizeLimit`
 2. **CSP 策略**:不用 nonce(`'unsafe-inline'`)/ experimental SRI / 放棄 static shell(S8-2)
 3. **前台用 antd 的範圍**:影響 P8-2 的預算數字;JS 預算本身也待定
-4. **rate limit 儲存位置**:單實例記憶體或 Postgres 表(S4-6)
-5. **session maxAge**:預設 30 天;後台建議縮成工作日長度,具體數字由人定(S4-3)
+4. **rate limit 儲存位置**:✅ **Postgres 表**(用戶 2026-11-01)(S4-6)
+5. **session maxAge**:✅ **8 小時**(用戶 2026-11-01)(S4-3)
 6. **部署平台**:一次解掉 P5-2、P7-4、S7-3、S8-5、S8-7 的輸入缺口
 7. **授權例外**:LGPL-3.0 的 libvips 等 5 類(S7-4)
-8. **目錄慣例**:`src/server/` 與 `src/modules/<d>/server/`(守衛依賴它,見〈輸入〉)
+8. **目錄慣例**:✅ 照草案:`src/server/`(共用:env、db、log、auth)與 `src/modules/<d>/server/`(用戶 2026-11-01「全部照草案生效」)(守衛依賴它,見〈輸入〉)
 
 ## 需要接線的執法點
 
