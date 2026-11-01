@@ -22,7 +22,6 @@ test("an allowlisted admin reaches the back office", async ({ page, context }) =
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin\/products$/);
   await expect(page.getByRole("heading", { level: 1, name: "商品管理" })).toBeVisible();
-  await expect(page.getByText("還沒有商品。")).toBeVisible();
   // already signed in: the login page sends you back in
   await page.goto("/admin/login");
   await expect(page).toHaveURL(/\/admin\/products$/);

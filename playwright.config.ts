@@ -9,11 +9,17 @@ export const E2E_AUTH = {
   secret: "e2e-only-secret-not-used-anywhere-else-0123456789",
   admin: "admin@example.com",
 };
-const e2eDatabaseUrl = (process.env.DATABASE_URL ?? "").replace(/\/asclepia$/, "/asclepia_e2e");
+export const e2eDatabaseUrl = (process.env.DATABASE_URL ?? "").replace(
+  /\/asclepia$/,
+  "/asclepia_e2e",
+);
 
 export default defineConfig({
   testDir: "e2e",
   forbidOnly: true,
+  // The e2e database persists between runs; specs name their data "e2e-…" / "e2e_…" and this
+  // removes it afterwards, so lists stay under their caps (listCategories takes 200).
+  globalTeardown: "./e2e/support/teardown.ts",
   reporter: [
     ["list"],
     ["junit", { outputFile: "reports/junit-e2e.xml" }],

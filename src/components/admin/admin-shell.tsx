@@ -30,6 +30,9 @@ import { adminTheme } from "@/theme/tokens";
 import styles from "./admin.module.css";
 
 export type AdminSection = "products" | "categories" | "inquiries" | "attributes" | "settings";
+// Sections the real back office has built so far; the mockup shows every section. Add a section
+// here when its page exists, so the menu never links to a 404.
+const LIVE: AdminSection[] = ["products", "categories", "attributes"];
 type ShellProps = {
   base: string;
   active: AdminSection;
@@ -51,52 +54,58 @@ function AdminNav({
   base,
   active,
   newInquiries,
+  mock,
   onNavigate,
 }: {
   base: string;
   active: AdminSection;
   newInquiries?: number;
+  mock?: boolean;
   onNavigate?: () => void;
 }) {
   const m = adminCopy.menu;
+  const items = [
+    {
+      key: "products",
+      icon: <AppstoreOutlined />,
+      label: <Link href={`${base}/products`}>{m.products}</Link>,
+    },
+    {
+      key: "categories",
+      icon: <TagsOutlined />,
+      // the mockup has no categories page
+      label: mock ? m.categories : <Link href={`${base}/categories`}>{m.categories}</Link>,
+    },
+    {
+      key: "inquiries",
+      icon: <MessageOutlined />,
+      label: (
+        <Link href={`${base}/inquiries`}>
+          <Flex justify="space-between" align="center">
+            {m.inquiries}
+            {!!newInquiries && <Badge count={newInquiries} title={`${newInquiries} 筆未處理`} />}
+          </Flex>
+        </Link>
+      ),
+    },
+    {
+      key: "attributes",
+      icon: <ProfileOutlined />,
+      label: <Link href={`${base}/attributes`}>{m.attributes}</Link>,
+    },
+    {
+      key: "settings",
+      icon: <SettingOutlined />,
+      label: <Link href={`${base}/settings`}>{m.settings}</Link>,
+    },
+  ];
   return (
     <Menu
       mode="inline"
       selectedKeys={[active]}
       style={{ borderInlineEnd: "none" }}
       onClick={onNavigate}
-      items={[
-        {
-          key: "products",
-          icon: <AppstoreOutlined />,
-          label: <Link href={`${base}/products`}>{m.products}</Link>,
-        },
-        { key: "categories", icon: <TagsOutlined />, label: m.categories },
-        {
-          key: "inquiries",
-          icon: <MessageOutlined />,
-          label: (
-            <Link href={`${base}/inquiries`}>
-              <Flex justify="space-between" align="center">
-                {m.inquiries}
-                {!!newInquiries && (
-                  <Badge count={newInquiries} title={`${newInquiries} 筆未處理`} />
-                )}
-              </Flex>
-            </Link>
-          ),
-        },
-        {
-          key: "attributes",
-          icon: <ProfileOutlined />,
-          label: <Link href={`${base}/attributes`}>{m.attributes}</Link>,
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: <Link href={`${base}/settings`}>{m.settings}</Link>,
-        },
-      ]}
+      items={mock ? items : items.filter((i) => LIVE.includes(i.key as AdminSection))}
     />
   );
 }
@@ -123,7 +132,7 @@ function AdminShellInner({ base, active, newInquiries, user, mock, children }: S
         >
           <Flex vertical gap={8} style={{ paddingBlockStart: 18 }}>
             <div style={{ paddingInline: 20 }}>{brand}</div>
-            <AdminNav base={base} active={active} newInquiries={newInquiries} />
+            <AdminNav base={base} active={active} newInquiries={newInquiries} mock={mock} />
           </Flex>
         </Layout.Sider>
         <Layout>
@@ -174,6 +183,7 @@ function AdminShellInner({ base, active, newInquiries, user, mock, children }: S
           base={base}
           active={active}
           newInquiries={newInquiries}
+          mock={mock}
           onNavigate={() => setNavOpen(false)}
         />
       </Drawer>
