@@ -1,0 +1,88 @@
+# The same commands that gate a release locally (CLAUDE.md §0.2 #17): `pnpm check` and
+# `pnpm test:e2e`, plus the supply-chain and secret gates (security-baseline §7, §9;
+# stack-rules S7-1, S7-3, P8-1). Third-party actions and images are pinned by commit SHA / digest.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check (lint, types, boundaries, guards, unit + integration, build)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0 (packageManager)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+      # S7-1: a lockfile that disagrees with package.json fails here instead of being re-resolved
+      - run: pnpm install --frozen-lockfile
+      # integration tests start their own Postgres with testcontainers (Docker is on the runner);
+      # the build runs without DATABASE_URL, like the mockup share site (hasDatabase() = false)
+      - run: pnpm check
+      # S7-3: no high in the production chain, no critical anywhere
+      - run: pnpm audit --prod --audit-level high
+      - run: pnpm audit --audit-level critical
+
+  e2e:
+    name: e2e (production build in a real browser)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # A throwaway database for this run only: fresh random passwords, never a real secret.
+      # Auth and upload settings for the test server come from playwright.config.ts.
+      - name: Write a CI-only .env
+        run: |
+          owner=$(openssl rand -hex 24); app=$(openssl rand -hex 24)
+          echo "::add-mask::$owner"; echo "::add-mask::$app"
+          {
+            echo "DB_OWNER_PASSWORD=$owner"
+            echo "DB_APP_PASSWORD=$app"
+            echo "DATABASE_URL=postgresql://asclepia_app:$app@localhost:54329/asclepia"
+            echo "MIGRATE_DATABASE_URL=postgresql://asclepia_owner:$owner@localhost:54329/asclepia"
+          } > .env
+      - run: pnpm db:setup
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: e2e-report
+          path: |
+            playwright-report/
+            reports/junit-e2e.xml
+          retention-days: 14
+
+  secrets:
+    name: secret scan (whole history)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      # gitleaks v8.21.2, pinned by digest; --redact keeps any hit out of the log
+      - run: >
+          docker run --rm -v "$PWD:/repo"
+          ghcr.io/gitleaks/gitleaks@sha256:0e99e8821643ea5b235718642b93bb32486af9c8162c8b8731f7cbdc951a7f46
+          git /repo --redact --no-banner --exit-code 1
