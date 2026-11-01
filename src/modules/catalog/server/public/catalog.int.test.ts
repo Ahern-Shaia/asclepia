@@ -11,7 +11,7 @@ let queries = 0;
 db.$on("query", () => {
   queries += 1;
 });
-const { publicProduct, publicProducts } = await import("./catalog");
+const { publicFacets, publicProduct, publicProducts } = await import("./catalog");
 
 const tag = randomUUID().slice(0, 8);
 const ids: Record<string, string> = {};
@@ -135,5 +135,26 @@ describe("public filters and sorting", () => {
     spies.forEach((s) => s.mockRestore());
     expect(queries).toBeGreaterThan(0); // the probe really counts
     expect(queries).toBeLessThanOrEqual(5);
+  });
+});
+
+describe("public facet counts (list filter panel)", () => {
+  it("counts visible items only, per category for the keyword and per option within it", async () => {
+    const f = await publicFacets({ cat });
+    expect(f).not.toBeNull();
+    // drafts and hidden items are not counted (S4-4); sold ones are listed, so they count
+    expect(f!.categories[cat]).toBe(4);
+    expect(f!.values[`pb_${tag}`]).toEqual({ GE: 3, Philips: 1 });
+    const q = await publicFacets({ cat, q: "Philips" });
+    expect(q!.categories[cat]).toBe(1);
+    expect(q!.values[`pb_${tag}`]).toEqual({ Philips: 1 });
+  });
+
+  it("agrees with the list it sits beside", async () => {
+    const f = await publicFacets({ cat, q: "商品" });
+    const list = await publicProducts({ cat, q: "商品" });
+    expect(f!.categories[cat]).toBe(list.total);
+    const ge = await publicProducts({ cat, q: "商品", filters: { [`pb_${tag}`]: ["GE"] } });
+    expect(f!.values[`pb_${tag}`].GE).toBe(ge.total);
   });
 });

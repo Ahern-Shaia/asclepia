@@ -58,16 +58,8 @@ export type PublicQuery = {
   cursor?: string;
 };
 
-export async function publicProducts(query: PublicQuery) {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("catalog");
-  const [configs, categories, newest] = await Promise.all([
-    publicConfigs(),
-    publicCategories(),
-    newestIds(),
-  ]);
-  const nameOf = (id: string) => categories.find((c) => c.id === id)?.name ?? "";
+// The list filter, shared by the page query and its facet counts so the two can't disagree.
+function whereOf(query: PublicQuery, configs: Record<string, PublicAttr[]>) {
   const scope = query.cat ? (configs[query.cat] ?? []) : Object.values(configs).flat();
   const byKey = new Map(scope.filter((a) => a.filterable).map((a) => [a.key, a]));
   const textKeys = [
@@ -100,6 +92,20 @@ export async function publicProducts(query: PublicQuery) {
     ...(query.cat ? { categoryId: query.cat } : {}),
     ...(and.length ? { AND: and } : {}),
   };
+  return where;
+}
+
+export async function publicProducts(query: PublicQuery) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("catalog");
+  const [configs, categories, newest] = await Promise.all([
+    publicConfigs(),
+    publicCategories(),
+    newestIds(),
+  ]);
+  const nameOf = (id: string) => categories.find((c) => c.id === id)?.name ?? "";
+  const where = whereOf(query, configs);
   const orderBy: Prisma.ProductOrderByWithRelationInput[] =
     query.sort === "priceAsc" || query.sort === "priceDesc"
       ? [
@@ -123,6 +129,52 @@ export async function publicProducts(query: PublicQuery) {
     items: rows.slice(0, PUBLIC_PAGE).map((r) => toCard(r, configs, newest, nameOf)),
     nextCursor: rows.length > PUBLIC_PAGE ? rows[PUBLIC_PAGE - 1].id : null,
   };
+}
+
+// Counts beside the list filters (catalog list page): per category for the keyword, and per value
+// of each filterable SELECT attribute for the keyword + category — the same scopes the panel
+// offers, through the same filter as the list. Capped reads of `categoryId` + `attributes` (two when
+// a category is picked); when a cap is hit the counts would be wrong, so none are returned.
+const FACET_CAP = 2000;
+export type PublicFacets = {
+  all: number;
+  categories: Record<string, number>;
+  values: Record<string, Record<string, number>>;
+} | null;
+
+export async function publicFacets(query: Pick<PublicQuery, "cat" | "q">): Promise<PublicFacets> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("catalog");
+  const configs = await publicConfigs();
+  const read = (where: Prisma.ProductWhereInput) =>
+    db().product.findMany({
+      where,
+      select: { categoryId: true, attributes: true },
+      take: FACET_CAP + 1,
+    });
+  const [rows, inCat] = await Promise.all([
+    read(whereOf({ q: query.q }, configs)),
+    query.cat ? read(whereOf({ q: query.q, cat: query.cat }, configs)) : null,
+  ]);
+  if (rows.length > FACET_CAP || (inCat?.length ?? 0) > FACET_CAP) return null;
+  const categories: Record<string, number> = {};
+  for (const r of rows) categories[r.categoryId] = (categories[r.categoryId] ?? 0) + 1;
+  const scope = query.cat ? (configs[query.cat] ?? []) : Object.values(configs).flat();
+  const keys = [
+    ...new Set(scope.filter((a) => a.filterable && a.type === "SELECT").map((a) => a.key)),
+  ];
+  const values: Record<string, Record<string, number>> = Object.fromEntries(
+    keys.map((k) => [k, {}]),
+  );
+  for (const r of inCat ?? rows) {
+    const attrs = pickAttrs(r.attributes, configs[r.categoryId]); // hidden values don't count
+    for (const k of keys) {
+      const v = attrs[k];
+      if (typeof v === "string") values[k][v] = (values[k][v] ?? 0) + 1;
+    }
+  }
+  return { all: rows.length, categories, values };
 }
 
 export async function publicProduct(id: string) {
