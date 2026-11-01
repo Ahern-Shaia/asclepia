@@ -36,6 +36,7 @@ import {
   saveThemeAction,
 } from "@/modules/site-config/actions";
 import type { HomeLayout } from "@/modules/site-config/home";
+import type { SiteImages } from "@/modules/site-config/images";
 import type { NotesInput, ProfileInput, SettingsSection } from "@/modules/site-config/admin-input";
 import { NOTE_LIMITS as N, SERVICE_KINDS, type SiteNotes } from "@/modules/site-config/notes";
 import { PROFILE_LIMITS as P } from "@/modules/site-config/profile";
@@ -44,6 +45,7 @@ import type { ThemeInput } from "@/theme/derive";
 import { call, type Failure, FailureAlert, fieldErrorsFor } from "./action-result";
 import styles from "./admin.module.css";
 import { useHomeTab } from "./settings-home";
+import { ImagesTab } from "./settings-images";
 import { useThemeTab } from "./settings-theme";
 
 const s = adminCopy.settings;
@@ -62,6 +64,7 @@ export type SettingsData = {
   notes: Meta & { value: SiteNotes };
   theme: Meta & { value: ThemeInput };
   home: Meta & { value: HomeLayout };
+  images: SiteImages;
 };
 
 // 站台設定 (site-config.md §4.2, §4.5-bis): one tab per SiteConfig section, each saved on its own
@@ -90,6 +93,7 @@ export function SiteSettings({ data }: { data: SettingsData }) {
       label: live.tabs.home,
       body: <HomeTab key={data.home.version} meta={data.home} onSaved={setWarnings} />,
     },
+    { key: "images", label: live.tabs.images, body: <ImagesTab images={data.images} /> },
   ];
   return (
     <Flex vertical gap={16}>

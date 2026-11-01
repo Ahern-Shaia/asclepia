@@ -26,6 +26,8 @@ export default async function teardown() {
     await db.query(`delete from "AttributeDef" where key like 'e2e\\_%'`);
     // site settings: the next run starts on the defaults (e2e/site-settings.spec.ts)
     await db.query(`delete from "SiteConfig"`);
+    // the upload dir is removed below, so image rows would point at missing files next run
+    await db.query(`delete from "SiteAsset" where kind in ('LOGO', 'HERO')`);
     await db.query("commit");
   } finally {
     await db.end();

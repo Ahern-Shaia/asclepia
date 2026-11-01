@@ -3,6 +3,7 @@ import { formatTime } from "@/components/admin/catalog-data";
 import { SiteSettings } from "@/components/admin/site-settings";
 import { countNewInquiries } from "@/modules/inquiry/server/admin";
 import { getSettings } from "@/modules/site-config/server/admin";
+import { listSiteImages } from "@/modules/site-config/server/images";
 import { requireAdmin } from "@/server/auth";
 
 // Session-bound like every back-office page (see admin/categories/page.tsx).
@@ -10,7 +11,11 @@ export const instant = false;
 
 export default async function Page() {
   const admin = await requireAdmin();
-  const [settings, newCount] = await Promise.all([getSettings(), countNewInquiries()]);
+  const [settings, images, newCount] = await Promise.all([
+    getSettings(),
+    listSiteImages(),
+    countNewInquiries(),
+  ]);
   const stamp = <T extends { savedAt: Date | null }>(x: T) => ({
     ...x,
     savedAt: x.savedAt ? formatTime(x.savedAt) : null,
@@ -23,6 +28,7 @@ export default async function Page() {
           notes: stamp(settings.notes),
           theme: stamp(settings.theme),
           home: stamp(settings.home),
+          images,
         }}
       />
     </AdminShell>

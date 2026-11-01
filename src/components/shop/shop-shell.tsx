@@ -25,7 +25,8 @@ import s from "@/components/home-v5/home-v5.module.css";
 import t from "@/components/home-v5-1/home-v5-1.module.css";
 import { homeV3Copy as c } from "@/copy/home-v3";
 import { siteCopy } from "@/copy/site";
-import { DEFAULT_THEME, type DerivedTheme, deriveTheme } from "@/theme/derive";
+import type { SiteImage } from "@/modules/site-config/images";
+import { DEFAULT_THEME, type DerivedTheme, deriveTheme, HERO_SCRIM } from "@/theme/derive";
 import { palette } from "@/theme/tokens";
 import { useInquiryList } from "./inquiry-store";
 
@@ -60,6 +61,7 @@ export function shopVars(d: DerivedTheme) {
     "--illus-glow": d.illusGlow,
     "--radius": `${d.radius}px`,
     "--radius-sm": `${d.radiusSM}px`,
+    "--hero-scrim": `${HERO_SCRIM * 100}%`,
   } as CSSProperties;
 }
 const DEFAULT_DERIVED = deriveTheme(DEFAULT_THEME);
@@ -179,6 +181,7 @@ export function ShopShell({
   search = true,
   mock = false,
   theme = DEFAULT_DERIVED,
+  logo,
   children,
 }: {
   base: string;
@@ -188,6 +191,9 @@ export function ShopShell({
   search?: boolean;
   mock?: boolean;
   theme?: DerivedTheme;
+  // the store's own logo (back office); the header shows it instead of the letter mark and name.
+  // The footer keeps the white mark: a logo made for white would vanish on the dark band.
+  logo?: SiteImage;
   children: ReactNode;
 }) {
   const [menu, setMenu] = useState(false);
@@ -229,13 +235,21 @@ export function ShopShell({
           <header className={s.header}>
             <div className={`${s.container} ${s.headerRow}`}>
               <Link href={homeOf(base)} className={s.brand} aria-label={`${brand.name} 首頁`}>
-                <span className={s.mark} aria-hidden>
-                  {[...brand.name][0]}
-                </span>
-                <span className={s.brandText}>
-                  <strong>{brand.name}</strong>
-                  {brand.tagline && <span>{brand.tagline}</span>}
-                </span>
+                {logo ? (
+                  // alt = store name: if the file is ever missing, the name still shows
+                  // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from /media
+                  <img src={logo.src} alt={brand.name} className={t.logo} decoding="async" />
+                ) : (
+                  <>
+                    <span className={s.mark} aria-hidden>
+                      {[...brand.name][0]}
+                    </span>
+                    <span className={s.brandText}>
+                      <strong>{brand.name}</strong>
+                      {brand.tagline && <span>{brand.tagline}</span>}
+                    </span>
+                  </>
+                )}
               </Link>
               {search && (
                 <Suspense

@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import sharp from "sharp";
 import { themePresets } from "../src/theme/tokens";
 import { btn, signIn } from "./support/admin";
 import { asClient, noHorizontalScroll, publishAll, seedShop, sql } from "./support/shop";
@@ -11,7 +12,7 @@ test.beforeEach(({ page }) => asClient(page));
 const PHONE = "02-2345-6789";
 const SAVE = /儲 ?存$/; // the button has an icon: its name is "save 儲存"
 
-async function openTab(page: Page, tab: "店家資料" | "說明選項" | "主題" | "首頁區塊") {
+async function openTab(page: Page, tab: "店家資料" | "說明選項" | "主題" | "首頁區塊" | "圖片") {
   await page.goto("/admin/settings");
   await expect(page.getByRole("heading", { level: 1, name: "站台設定" })).toBeVisible();
   await page.getByRole("tab", { name: tab }).click();
@@ -183,6 +184,60 @@ test("home blocks: switched off and reordered on the public home page", async ({
   await restore(page, "首頁區塊");
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "最新上架" })).toBeVisible();
+});
+
+test("images: logo and hero photo are uploaded, shown on the public site, and removed", async ({
+  page,
+  context,
+}) => {
+  await signIn(context);
+  const png = await sharp({
+    create: { width: 600, height: 200, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+  })
+    .png()
+    .toBuffer();
+  const jpeg = await sharp({
+    create: { width: 2400, height: 1350, channels: 3, background: { r: 90, g: 110, b: 130 } },
+  })
+    .jpeg()
+    .toBuffer();
+
+  const panel = await openTab(page, "圖片");
+  await noHorizontalScroll(page);
+  // not an image: refused before anything is sent
+  await panel
+    .getByLabel("選擇店家 logo檔案")
+    .setInputFiles({ name: "logo.txt", mimeType: "text/plain", buffer: Buffer.from("hi") });
+  await expect(panel.getByRole("alert").first()).toBeVisible();
+
+  await panel
+    .getByLabel("選擇店家 logo檔案")
+    .setInputFiles({ name: "logo.png", mimeType: "image/png", buffer: png });
+  await expect(page.getByText("已更新店家 logo，前台已更新。")).toBeVisible();
+  await panel
+    .getByLabel("選擇首頁主照片檔案")
+    .setInputFiles({ name: "hero.jpg", mimeType: "image/jpeg", buffer: jpeg });
+  await expect(page.getByText("已更新首頁主照片，前台已更新。")).toBeVisible();
+
+  await page.goto("/");
+  const logo = page.getByRole("banner").getByRole("link", { name: /首頁$/ }).locator("img");
+  await expect(logo).toHaveAttribute("src", /^\/media\/img_[0-9a-f]{32}-400\.webp$/);
+  await expect(logo).toHaveAttribute("alt", "Asclepia");
+  const hero = page.locator("section[aria-labelledby=hero-title] > img");
+  await expect(hero).toHaveCount(1);
+  expect(await hero.evaluate((i: HTMLImageElement) => i.naturalWidth)).toBe(1600);
+
+  for (const label of ["店家 logo", "首頁主照片"]) {
+    const p = await openTab(page, "圖片");
+    await p.getByRole("button", { name: /移除$/ }).first().click();
+    const dialog = page.getByRole("dialog", { name: `移除${label}？` });
+    await expect(dialog).toContainText("刪除後不能復原");
+    await dialog.getByRole("button", { name: btn("移除") }).click();
+    await expect(page.getByText(`已移除${label}，前台已更新。`)).toBeVisible();
+  }
+  await page.goto("/");
+  await expect(page.getByRole("banner").locator("img")).toHaveCount(0);
+  await expect(page.locator("section[aria-labelledby=hero-title] > img")).toHaveCount(0);
 });
 
 test("two people saving the same tab: the second is told to reload, nothing is overwritten", async ({

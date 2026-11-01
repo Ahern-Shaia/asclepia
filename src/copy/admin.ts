@@ -260,7 +260,13 @@ export const adminCopy = {
     // the live editor (/admin/settings); the rest of this block also serves the full mockup
     live: {
       intro: "存檔後前台立即更新。每個分頁各自儲存。",
-      tabs: { profile: "店家資料", notes: "說明選項", theme: "主題", home: "首頁區塊" },
+      tabs: {
+        profile: "店家資料",
+        notes: "說明選項",
+        theme: "主題",
+        home: "首頁區塊",
+        images: "圖片",
+      },
       phoneHelp: "顯示在頁首、頁尾、手機底部的來電按鈕和詢價表單。留空就不顯示電話。",
       addressHelp: "地址、營業時間有填才會顯示在頁尾和首頁「看機地點」。",
       neverSaved: "還沒有儲存過，前台目前用預設值。",
@@ -270,6 +276,25 @@ export const adminCopy = {
         "不會動到其他分頁的設定。",
       ],
       unsaved: "有未儲存的變更",
+    },
+    images: {
+      logoUse: "顯示在頁首，取代店名旁的字母方塊。頁尾是深色底，維持白色字母方塊。",
+      heroUse: "首頁最上方的大圖，上面會蓋一層深色讓白字看得清楚。沒有照片時是純色深底。",
+      none: "還沒有設定",
+      current: (label: string) => `目前的${label}`,
+      pick: (label: string) => `選擇${label}檔案`,
+      upload: "上傳",
+      replace: "換一張",
+      remove: "移除",
+      uploaded: (label: string) => `已更新${label}，前台已更新。`,
+      removed: (label: string) => `已移除${label}，前台已更新。`,
+      removeTitle: (label: string) => `移除${label}？`,
+      removeBody: (label: string) => [
+        `會刪除目前的${label}，前台立即改回沒有圖片的樣子。`,
+        "刪除後不能復原，要用時請重新上傳。",
+        "不會動到其他圖片和設定。",
+      ],
+      removeOk: "移除",
     },
     notes: {
       intro: "這些是店家自己的說明，前台不會自動加上。沒有填的區塊，前台整塊不顯示。",
@@ -387,6 +412,7 @@ export const adminCopy = {
         primaryOnTint: "主色淺底上的主色字（後台選單選中項）",
         accentOnTint: "重點色淺底上的重點色字（「已在清單」按鈕）",
         mutedOnDeep: "首屏深色帶上的次要文字",
+        onHeroPhoto: "首屏照片上的白字（照片最亮處）",
       },
       ratio: (r: number) => `${r.toFixed(2)} : 1`,
       pass: "及格",

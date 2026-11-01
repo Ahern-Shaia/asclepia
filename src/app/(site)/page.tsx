@@ -29,6 +29,7 @@ export default async function Home() {
       notes={notes}
       home={home}
       theme={store.theme}
+      images={store.images}
       brand={store.brand}
       categories={store.categories.map((c) => ({
         id: c.id,

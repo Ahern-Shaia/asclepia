@@ -52,3 +52,29 @@
 .heroBare.heroBare {
   min-height: 0;
 }
+
+/* Store logo in the header (back office). Height fixed so the header row doesn't jump; width
+   follows the image, capped so a very wide wordmark can't push the search box away. */
+.logo {
+  display: block;
+  block-size: 40px;
+  inline-size: auto;
+  max-inline-size: 200px;
+  object-fit: contain;
+}
+
+/* Hero photo (back office): covers the band; a flat dark tint on top keeps the white heading
+   readable on any photo (solid fill, no gradient: §B0). The tint strength is HERO_SCRIM in
+   src/theme/derive.ts, whose contrast gate checks white text on it over a pure white pixel. */
+.heroImg {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--navy-ink) var(--hero-scrim, 80%), transparent);
+}

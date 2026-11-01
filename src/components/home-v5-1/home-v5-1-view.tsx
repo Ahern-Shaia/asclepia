@@ -30,6 +30,7 @@ import { homeV3Copy as c } from "@/copy/home-v3";
 import { homeV4Copy as c4 } from "@/copy/home-v4";
 import { homeV5Copy as c5 } from "@/copy/home-v5";
 import { DEFAULT_HOME, type HomeBlock, type HomeLayout } from "@/modules/site-config/home";
+import type { SiteImages } from "@/modules/site-config/images";
 import type { ServiceKind, SiteNotes } from "@/modules/site-config/notes";
 import { type DerivedTheme } from "@/theme/derive";
 import t from "./home-v5-1.module.css";
@@ -74,6 +75,7 @@ export function HomeV51View({
   notes,
   home = DEFAULT_HOME,
   theme,
+  images = {},
   brand,
   mock = false,
 }: {
@@ -87,6 +89,7 @@ export function HomeV51View({
   notes: SiteNotes;
   home?: HomeLayout;
   theme?: DerivedTheme;
+  images?: SiteImages;
   brand?: ShopBrand;
   mock?: boolean;
 }) {
@@ -101,12 +104,23 @@ export function HomeV51View({
       categories={categories}
       brand={brand}
       theme={theme}
+      logo={images.LOGO}
       search={false}
       mock={mock}
     >
       <main>
-        <section className={`${s.hero} ${mock ? "" : t.heroBare}`} aria-labelledby="hero-title">
-          {/* real site: plain navy until the warehouse photo can be uploaded (OQ-CAT-10) */}
+        <section
+          className={`${s.hero} ${mock || images.HERO ? "" : t.heroBare}`}
+          aria-labelledby="hero-title"
+        >
+          {/* real site: the photo set in the back office, plain deep band until there is one */}
+          {!mock && images.HERO && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from /media */}
+              <img src={images.HERO.src} alt="" className={t.heroImg} decoding="async" />
+              <span className={t.heroScrim} aria-hidden />
+            </>
+          )}
           {mock && (
             <PhotoSlot
               tone="dark"
