@@ -45,6 +45,19 @@ test("詢價這件: one item, checked, really sent", async ({ page, context }) =
   await page.getByRole("button", { name: "詢價這件" }).click();
   const dialog = page.getByRole("dialog", { name: "詢價這件" });
   await expect(dialog).toContainText(fullName(p));
+  // the dialog is portalled out of the shop shell: its fields must still look like fields
+  await expect(dialog.getByRole("textbox", { name: "姓名" })).toHaveCSS(
+    "border-top-style",
+    "solid",
+  );
+  await expect(dialog.getByRole("textbox", { name: /想了解什麼/ })).toHaveCSS(
+    "border-top-style",
+    "solid",
+  );
+  await expect(dialog.getByRole("button", { name: "送出詢價（1 件）" })).not.toHaveCSS(
+    "background-color",
+    "rgba(0, 0, 0, 0)",
+  );
   await dialog.getByRole("button", { name: "送出詢價（1 件）" }).click();
   await expect(dialog.getByText("請填寫姓名")).toBeVisible();
   await expect(dialog.getByText("請填寫聯絡電話，我們會用電話聯絡你")).toBeVisible();
