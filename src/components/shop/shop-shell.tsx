@@ -367,7 +367,19 @@ export function ShopShell({
                         <a href={`mailto:${email}`}>{email}</a>
                       </li>
                     )}
-                    {address && <li>{address}</li>}
+                    {address && (
+                      <li>
+                        {address}
+                        {company.map && (
+                          <>
+                            {" "}
+                            <a href={company.map} target="_blank" rel="noopener noreferrer">
+                              {siteCopy.openMap}
+                            </a>
+                          </>
+                        )}
+                      </li>
+                    )}
                     {hours && <li>{hours}</li>}
                   </ul>
                 )}

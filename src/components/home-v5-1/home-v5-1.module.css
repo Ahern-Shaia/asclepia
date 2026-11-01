@@ -84,3 +84,38 @@
   color: var(--on-navy-muted);
   font-size: 14px;
 }
+
+/* 看機地點 photo (back office): fills the 4:3 slot the mockup drew. */
+.visitImg {
+  display: block;
+  inline-size: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-sm, 4px);
+}
+
+/* Category icon uploaded in the back office: fits the same circle as the drawings. */
+.catImg {
+  inline-size: 70%;
+  block-size: 70%;
+  object-fit: contain;
+}
+
+/* Brand with a logo: the tile keeps its size, the logo sits inside it. */
+.brandLogo.brandLogo {
+  display: grid;
+  place-items: center;
+  padding: 8px 16px;
+  min-block-size: 50px;
+}
+.brandLogo img {
+  display: block;
+  block-size: 32px;
+  inline-size: auto;
+  max-inline-size: 140px;
+  object-fit: contain;
+}
+
+.mapLink {
+  white-space: nowrap;
+  color: var(--navy);
+}

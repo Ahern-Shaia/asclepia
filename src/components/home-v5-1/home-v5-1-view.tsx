@@ -27,6 +27,7 @@ import type { CategoryAttr } from "@/components/shop/attrs";
 import { type ShopCardProduct, ShopCard } from "@/components/shop/product-card";
 import { type ShopBrand, ShopShell, useShopSearch } from "@/components/shop/shop-shell";
 import { homeV3Copy as c } from "@/copy/home-v3";
+import { siteCopy } from "@/copy/site";
 import { homeV5Copy as c5 } from "@/copy/home-v5";
 import { DEFAULT_HOME, type HomeBlock, type HomeLayout } from "@/modules/site-config/home";
 import { ALL_ON, type SiteFeatures } from "@/modules/site-config/features";
@@ -37,7 +38,13 @@ import { type DerivedTheme } from "@/theme/derive";
 import t from "./home-v5-1.module.css";
 
 // `icon` picks a drawing when the category's iconKey names a known kind; otherwise a neutral one.
-export type V51Category = { id: string; name: string; count: number; icon?: EquipKind | null };
+export type V51Category = {
+  id: string;
+  name: string;
+  count: number;
+  icon?: EquipKind | null;
+  iconSrc?: string | null; // uploaded in the back office; wins over the drawing
+};
 
 const serviceIcon: Record<ServiceKind, ReactNode> = {
   buy: <SwapOutlined />,
@@ -101,6 +108,12 @@ export function HomeV51View({
   const search = useShopSearch(base);
   const total = categories.reduce((n, x) => n + x.count, 0);
   const visit = features.visit && !!(company.address || company.hours || company.phone);
+  // brands with a logo first, in the order set in the back office; the rest as text after them
+  const logoOf = new Map((images.brands ?? []).map((b) => [b.brand, b.src]));
+  const rank = new Map((images.brands ?? []).map((b, i) => [b.brand, i]));
+  const orderedBrands = [...brands].sort(
+    (x, y) => (rank.get(x) ?? Infinity) - (rank.get(y) ?? Infinity),
+  );
 
   return (
     <ShopShell
@@ -196,7 +209,14 @@ export function HomeV51View({
                         <li key={x.id}>
                           <Link href={`${base}/products?cat=${x.id}`} className={s.cat}>
                             <span className={s.catArt}>
-                              {x.icon ? <EquipIllus kind={x.icon} /> : <GenericEquipIllus />}
+                              {x.iconSrc ? (
+                                // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from /media
+                                <img src={x.iconSrc} alt="" className={t.catImg} loading="lazy" />
+                              ) : x.icon ? (
+                                <EquipIllus kind={x.icon} />
+                              ) : (
+                                <GenericEquipIllus />
+                              )}
                             </span>
                             <span className={s.catName}>{x.name}</span>
                             <span className={s.catCount}>
@@ -241,10 +261,18 @@ export function HomeV51View({
                       {mock && <span className={s.headNote}>{c5.brandsNote}</span>}
                     </div>
                     <ul className={s.brands}>
-                      {brands.map((b) => (
+                      {orderedBrands.map((b) => (
                         <li key={b}>
-                          <Link href={`${base}/products?f.brand=${encodeURIComponent(b)}`}>
-                            {b}
+                          <Link
+                            href={`${base}/products?f.brand=${encodeURIComponent(b)}`}
+                            className={logoOf.has(b) ? t.brandLogo : undefined}
+                          >
+                            {logoOf.has(b) ? (
+                              // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from /media
+                              <img src={logoOf.get(b)} alt={b} loading="lazy" />
+                            ) : (
+                              b
+                            )}
                           </Link>
                         </li>
                       ))}
@@ -278,12 +306,22 @@ export function HomeV51View({
                   </div>
                   {visit && (
                     <aside className={s.visit} aria-labelledby="h-visit">
-                      {mock && (
+                      {mock ? (
                         <PhotoSlot
                           label={c5.photo.visit.label}
                           spec={c5.photo.visit.spec}
                           className={s.visitPhoto}
                         />
+                      ) : (
+                        images.VISIT && (
+                          // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from /media
+                          <img
+                            src={images.VISIT.src}
+                            alt=""
+                            className={`${s.visitPhoto} ${t.visitImg}`}
+                            loading="lazy"
+                          />
+                        )
                       )}
                       <h2 id="h-visit">{c.visit.title}</h2>
                       {(company.address || company.hours) && (
@@ -293,7 +331,22 @@ export function HomeV51View({
                               <dt>
                                 <EnvironmentOutlined aria-hidden /> {c.visit.address}
                               </dt>
-                              <dd>{company.address}</dd>
+                              <dd>
+                                {company.address}
+                                {company.map && (
+                                  <>
+                                    {" "}
+                                    <a
+                                      href={company.map}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={t.mapLink}
+                                    >
+                                      {siteCopy.openMap}
+                                    </a>
+                                  </>
+                                )}
+                              </dd>
                             </div>
                           )}
                           {company.hours && (

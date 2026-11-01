@@ -28,6 +28,7 @@ export async function storeInfo() {
       email: profile.email,
       address: profile.address,
       hours: profile.hours,
+      map: profile.map,
     },
     brand: { name: profile.name, tagline: profile.tagline },
     categories,

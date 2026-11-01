@@ -38,6 +38,7 @@ export default async function Home() {
         name: c.name,
         count: c.count,
         icon: isEquipKind(c.iconKey) ? c.iconKey : null,
+        iconSrc: c.iconSrc,
       }))}
       brands={brands}
       latest={priced(latest.items.slice(0, LATEST), store.features)}

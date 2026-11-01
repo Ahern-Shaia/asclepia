@@ -1,13 +1,24 @@
 "use client";
 
-import { DeleteOutlined, PictureOutlined, UploadOutlined } from "@ant-design/icons";
+import {
+  ArrowDownOutlined,
+  ArrowUpOutlined,
+  DeleteOutlined,
+  PictureOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import { App, Button, Card, Col, Flex, Modal, Row, theme, Typography } from "antd";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { adminCopy } from "@/copy/admin";
 import { errorCopy } from "@/copy/errors";
-import { removeSiteImageAction } from "@/modules/site-config/actions";
-import type { SiteImage, SiteImageKind, SiteImages } from "@/modules/site-config/images";
+import {
+  removeBrandLogoAction,
+  removeSiteImageAction,
+  reorderBrandLogosAction,
+} from "@/modules/site-config/actions";
+import type { BrandLogo, SiteImage, SiteImageKind, SiteImages } from "@/modules/site-config/images";
+import type { Result } from "@/server/action";
 import { call, type Failure, FailureAlert } from "./action-result";
 import styles from "./admin.module.css";
 
@@ -19,6 +30,8 @@ const TYPES = ["image/jpeg", "image/png", "image/webp"];
 const SLOTS: { kind: SiteImageKind; label: string; spec: string; use: string; ratio: string }[] = [
   { kind: "LOGO", ...p.logo, use: im.logoUse, ratio: "3 / 1" },
   { kind: "HERO", ...p.hero, use: im.heroUse, ratio: "16 / 9" },
+  { kind: "VISIT", ...p.visit, use: im.visitUse, ratio: "4 / 3" },
+  { kind: "FAVICON", ...p.favicon, use: im.faviconUse, ratio: "1 / 1" },
 ];
 
 function Slot({
@@ -28,7 +41,14 @@ function Slot({
   use,
   ratio,
   image,
-}: (typeof SLOTS)[number] & { image?: SiteImage }) {
+  uploadUrl = `/admin/settings/images/${kind.toLowerCase()}`,
+  onRemove,
+}: Omit<(typeof SLOTS)[number], "kind"> & {
+  kind: SiteImageKind | "BRAND";
+  image?: SiteImage;
+  uploadUrl?: string;
+  onRemove?: () => Promise<Result<unknown>>;
+}) {
   const { token } = theme.useToken();
   const router = useRouter();
   const { message } = App.useApp();
@@ -45,7 +65,7 @@ function Slot({
     if (f.size > MAX_BYTES) return setProblem(errorCopy.IMAGE_TOO_LARGE);
     setBusy(true);
     try {
-      const res = await fetch(`/admin/settings/images/${kind.toLowerCase()}`, {
+      const res = await fetch(uploadUrl, {
         method: "POST",
         headers: { "Content-Type": f.type },
         body: f,
@@ -77,7 +97,9 @@ function Slot({
       okButtonProps: { danger: true },
       cancelText: adminCopy.settings.footer.cancel,
       onOk: async () => {
-        const r = await call(removeSiteImageAction, { kind });
+        const r = onRemove
+          ? await call(onRemove, undefined)
+          : await call(removeSiteImageAction, { kind: kind as SiteImageKind });
         if (!r.ok) return setFailure(r);
         message.success(im.removed(label));
         router.refresh();
@@ -95,7 +117,8 @@ function Slot({
             maxInlineSize: 480,
             border: `1px solid ${token.colorBorder}`,
             borderRadius: token.borderRadius,
-            background: kind === "LOGO" ? token.colorBgContainer : token.colorBgLayout,
+            background:
+              kind === "HERO" || kind === "VISIT" ? token.colorBgLayout : token.colorBgContainer,
             display: "grid",
             placeItems: "center",
             overflow: "hidden",
@@ -109,7 +132,7 @@ function Slot({
               style={{
                 inlineSize: "100%",
                 blockSize: "100%",
-                objectFit: kind === "LOGO" ? "contain" : "cover",
+                objectFit: kind === "HERO" || kind === "VISIT" ? "cover" : "contain",
               }}
             />
           ) : (
@@ -154,9 +177,79 @@ function Slot({
   );
 }
 
+// Brand logos (home 「依品牌找」): every brand on the catalog, each with its own upload; the ones
+// with a logo can be moved up and down (saved at once).
+function BrandLogos({ brands, logos }: { brands: string[]; logos: BrandLogo[] }) {
+  const router = useRouter();
+  const { message } = App.useApp();
+  const [failure, setFailure] = useState<Failure | null>(null);
+  const withLogo = logos.map((l) => l.brand);
+  const without = brands.filter((b) => !withLogo.includes(b));
+  const move = async (i: number, d: -1 | 1) => {
+    const next = [...withLogo];
+    [next[i], next[i + d]] = [next[i + d], next[i]];
+    const r = await call(reorderBrandLogosAction, { brands: next });
+    if (!r.ok) return setFailure(r);
+    setFailure(null);
+    message.success(im.reordered);
+    router.refresh();
+  };
+  return (
+    <Card title={im.brands} variant="outlined" size="small" styles={{ body: { padding: 16 } }}>
+      <Flex vertical gap={12}>
+        <Typography.Text type="secondary">{im.brandsHelp}</Typography.Text>
+        {failure && <FailureAlert failure={failure} />}
+        {brands.length === 0 && logos.length === 0 ? (
+          <Typography.Text type="secondary">{im.brandsEmpty}</Typography.Text>
+        ) : (
+          <Row gutter={[16, 16]}>
+            {[
+              ...logos.map((l) => ({ brand: l.brand, src: l.src })),
+              ...without.map((b) => ({ brand: b, src: "" })),
+            ].map((b, i) => (
+              <Col key={b.brand} xs={24} md={12} xl={8}>
+                <Flex vertical gap={8}>
+                  <Slot
+                    kind="BRAND"
+                    label={b.brand}
+                    spec={p.logo.spec}
+                    use={b.src ? im.brandUse(b.brand) : im.noLogo}
+                    ratio="3 / 1"
+                    image={b.src ? { src: b.src, width: 0, height: 0 } : undefined}
+                    uploadUrl={`/admin/settings/images/brand?name=${encodeURIComponent(b.brand)}`}
+                    onRemove={() => removeBrandLogoAction({ brand: b.brand })}
+                  />
+                  {b.src && (
+                    <Flex gap={8}>
+                      <Button
+                        size="small"
+                        icon={<ArrowUpOutlined />}
+                        aria-label={im.moveUp(b.brand)}
+                        disabled={i === 0}
+                        onClick={() => move(i, -1)}
+                      />
+                      <Button
+                        size="small"
+                        icon={<ArrowDownOutlined />}
+                        aria-label={im.moveDown(b.brand)}
+                        disabled={i === logos.length - 1}
+                        onClick={() => move(i, 1)}
+                      />
+                    </Flex>
+                  )}
+                </Flex>
+              </Col>
+            ))}
+          </Row>
+        )}
+      </Flex>
+    </Card>
+  );
+}
+
 // 圖片 tab (site-config.md §4.2 SiteAsset). Each image is saved the moment it is uploaded; there is
 // no separate save button and no 「還原上一版」 (the previous file is deleted on replace).
-export function ImagesTab({ images }: { images: SiteImages }) {
+export function ImagesTab({ images, brands }: { images: SiteImages; brands: string[] }) {
   return (
     <Flex vertical gap={16}>
       <Typography.Text type="secondary">{p.accept}</Typography.Text>
@@ -167,6 +260,7 @@ export function ImagesTab({ images }: { images: SiteImages }) {
           </Col>
         ))}
       </Row>
+      <BrandLogos brands={brands} logos={images.brands ?? []} />
     </Flex>
   );
 }

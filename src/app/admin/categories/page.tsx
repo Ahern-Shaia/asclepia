@@ -1,5 +1,6 @@
 import { AdminShell } from "@/components/admin/admin-shell";
 import { CategoriesView } from "@/components/admin/categories-view";
+import { mediaUrl } from "@/components/shop/media-img";
 import { listCategories } from "@/modules/catalog/server/categories";
 import { countNewInquiries } from "@/modules/inquiry/server/admin";
 import { requireAdmin } from "@/server/auth";
@@ -19,6 +20,8 @@ export default async function Page() {
           id: c.id,
           name: c.name,
           products: c._count.products,
+          iconKey: c.iconKey,
+          iconSrc: c.iconAsset ? mediaUrl(c.iconAsset.storageKey, 400) : null,
         }))}
       />
     </AdminShell>

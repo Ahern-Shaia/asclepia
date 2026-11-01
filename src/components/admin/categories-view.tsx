@@ -31,10 +31,17 @@ import {
   saveCategoryAction,
 } from "@/modules/catalog/actions";
 import { call, type Failure, FailureAlert } from "./action-result";
+import { CategoryIcon } from "./category-icon";
 
 const c = adminCopy.categories;
 
-type Row = { id: string; name: string; products: number };
+type Row = {
+  id: string;
+  name: string;
+  products: number;
+  iconKey: string | null;
+  iconSrc: string | null;
+};
 
 // The name error for a failed save: field-level when the server says which field, otherwise the
 // sentence itself (DUPLICATE is about the name too).
@@ -227,6 +234,13 @@ export function CategoriesView({ categories }: { categories: Row[] }) {
                   ) : (
                     r.name
                   ),
+              },
+              {
+                title: c.columns.icon,
+                key: "icon",
+                render: (_, r) => (
+                  <CategoryIcon id={r.id} name={r.name} iconKey={r.iconKey} iconSrc={r.iconSrc} />
+                ),
               },
               {
                 title: c.columns.products,

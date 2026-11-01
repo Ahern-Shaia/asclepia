@@ -4,4 +4,5 @@ export const siteCopy = {
   tagline: "中古設備買賣",
   description: "中古院所與檢驗設備型錄，線上詢價，看機後成交。",
   copyright: "© Asclepia",
+  openMap: "開啟地圖",
 } as const;

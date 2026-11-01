@@ -16,6 +16,7 @@ export type CompanyInfo = {
   email: string;
   address: string;
   hours: string;
+  map?: string; // https share link, opened in a new tab (never embedded)
 };
 
 export function CatalogFooter({ company }: { company: CompanyInfo }) {

@@ -307,6 +307,91 @@ test("texts: hero heading, a buy step and the footer line follow the back office
   await expect(page.getByRole("contentinfo")).not.toContainText("e2e 週日公休");
 });
 
+test("visit photo, favicon, brand logo, map link and search description reach the public site", async ({
+  page,
+  context,
+}) => {
+  const seeded = await seedShop([{ name: "e2e-品牌", brand: "Beta", model: "B-1" }]);
+  // the home 「依品牌找」 and the brand-logo list read the attribute keyed `brand` (catalog
+  // publicBrands); seeded attributes use e2e_ keys, so give this category the real key too
+  const [{ id: brandDef }] = await sql<{ id: string }>(
+    `insert into "AttributeDef" (id, key, label, type, options, "updatedAt")
+     values ('e2e-brand-def', 'brand', '品牌', 'TEXT', '{}', now())
+     on conflict (key) do update set key = excluded.key returning id`,
+  );
+  await sql(
+    `insert into "CategoryAttribute" ("categoryId", "attributeId", "sortOrder") values ($1, $2, 99)`,
+    [seeded.category.id, brandDef],
+  );
+  await sql(`update "Product" set attributes = attributes || '{"brand":"Beta"}' where id = $1`, [
+    seeded.products[0].id,
+  ]);
+  await publishAll(page, context, seeded); // also signs in (and expires the catalog cache)
+  const photo = (w: number, h: number) =>
+    sharp({ create: { width: w, height: h, channels: 3, background: { r: 120, g: 140, b: 160 } } })
+      .jpeg()
+      .toBuffer();
+  const map = "https://maps.app.goo.gl/e2eExample";
+
+  const profile = await openTab(page, "店家資料");
+  await profile.getByLabel("地址").fill("台北市範例路 9 號");
+  await profile.getByLabel("地圖連結").fill("not a link");
+  await profile.getByRole("button", { name: SAVE }).click();
+  await expect(profile.getByText("請貼上以 https:// 開頭的連結。")).toBeVisible();
+  await profile.getByLabel("地圖連結").fill(map);
+  await profile.getByLabel("搜尋結果的網站描述").fill("e2e 中古設備，看機後成交。");
+  await profile.getByRole("button", { name: SAVE }).click();
+  await expect(page.getByText("已儲存，前台已更新。")).toBeVisible();
+
+  const images = await openTab(page, "圖片");
+  await images
+    .getByLabel("選擇看機區照片檔案")
+    .setInputFiles({ name: "v.jpg", mimeType: "image/jpeg", buffer: await photo(1200, 900) });
+  await expect(page.getByText("已更新看機區照片，前台已更新。")).toBeVisible();
+  await images
+    .getByLabel("選擇瀏覽器分頁小圖示檔案")
+    .setInputFiles({ name: "f.jpg", mimeType: "image/jpeg", buffer: await photo(600, 400) });
+  await expect(page.getByText("已更新瀏覽器分頁小圖示，前台已更新。")).toBeVisible();
+  await images
+    .getByLabel("選擇Beta檔案")
+    .setInputFiles({ name: "b.jpg", mimeType: "image/jpeg", buffer: await photo(600, 200) });
+  await expect(page.getByText("已更新Beta，前台已更新。")).toBeVisible();
+
+  await page.goto("/");
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    "content",
+    "e2e 中古設備，看機後成交。",
+  );
+  const icon = page.locator('link[rel="icon"][sizes="32x32"]');
+  await expect(icon).toHaveAttribute("href", /-32\.png$/);
+  const res = await page.request.get((await icon.getAttribute("href"))!);
+  expect([res.status(), res.headers()["content-type"]]).toEqual([200, "image/png"]);
+  const visit = page.getByRole("complementary", { name: "看機地點" });
+  await expect(visit.locator("img")).toHaveAttribute("src", /-1600\.webp$/);
+  await expect(visit.getByRole("link", { name: "開啟地圖" })).toHaveAttribute("href", map);
+  await expect(
+    page.getByRole("contentinfo").getByRole("link", { name: "開啟地圖" }),
+  ).toHaveAttribute("target", "_blank");
+  const brands = page.getByRole("region", { name: "依品牌找" });
+  await expect(
+    brands.getByRole("link", { name: "Beta", exact: true }).locator("img"),
+  ).toHaveAttribute("alt", "Beta");
+
+  // clean up: images removed, store details restored
+  const again = await openTab(page, "圖片");
+  for (const label of ["看機區照片", "瀏覽器分頁小圖示", "Beta"]) {
+    await again.getByRole("button", { name: /移除$/ }).first().click();
+    await page
+      .getByRole("dialog", { name: `移除${label}？` })
+      .getByRole("button", { name: btn("移除") })
+      .click();
+    await expect(page.getByText(`已移除${label}，前台已更新。`)).toBeVisible();
+  }
+  await restore(page, "店家資料");
+  await page.goto("/");
+  await expect(page.locator('link[rel="icon"][sizes="32x32"]')).toHaveCount(0);
+});
+
 test("two people saving the same tab: the second is told to reload, nothing is overwritten", async ({
   page,
   context,

@@ -211,3 +211,39 @@ test("a photo added to a published product shows on its page at once", async ({
   await page.goto(`/products/${p.id}`);
   await expect(thumbs.getByRole("button")).toHaveCount(3);
 });
+
+// Category icon (back office, 分類): a built-in drawing, then an uploaded image, on the home card.
+test("a category icon chosen in the back office shows on the home page", async ({
+  page,
+  context,
+}) => {
+  const seeded = await seedShop([{ name: "e2e-圖示", brand: "Alpha", model: "I-1" }]);
+  await publishAll(page, context, seeded); // also signs in
+  // the card in the 設備分類 section (the header menu has a same-named link without a picture)
+  const card = page
+    .getByRole("region", { name: "設備分類" })
+    .getByRole("link", { name: new RegExp(seeded.category.name) });
+
+  await page.goto("/admin/categories");
+  const row = page.getByRole("row").filter({ hasText: seeded.category.name });
+  await row.getByRole("combobox", { name: `「${seeded.category.name}」的首頁圖示` }).click();
+  await page.locator('.ant-select-item-option[title="顯微鏡"]').click();
+  await expect(
+    page.getByText(`已更新「${seeded.category.name}」的圖示，前台已更新。`),
+  ).toBeVisible();
+
+  const png = await sharp({
+    create: { width: 300, height: 300, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+  })
+    .png()
+    .toBuffer();
+  await row
+    .getByLabel(`選擇「${seeded.category.name}」的圖示檔案`)
+    .setInputFiles({ name: "i.png", mimeType: "image/png", buffer: png });
+  await expect(
+    row.getByRole("button", { name: `換一張「${seeded.category.name}」的圖示` }),
+  ).toBeVisible();
+
+  await page.goto("/");
+  await expect(card.locator("img")).toHaveAttribute("src", /^\/media\/img_[0-9a-f]{32}-400\.webp$/);
+});

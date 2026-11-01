@@ -1,6 +1,7 @@
 import { AdminShell } from "@/components/admin/admin-shell";
 import { formatTime } from "@/components/admin/catalog-data";
 import { SiteSettings } from "@/components/admin/site-settings";
+import { publicBrands } from "@/modules/catalog/server/public/catalog";
 import { countNewInquiries } from "@/modules/inquiry/server/admin";
 import { getSettings } from "@/modules/site-config/server/admin";
 import { listSiteImages } from "@/modules/site-config/server/images";
@@ -11,9 +12,10 @@ export const instant = false;
 
 export default async function Page() {
   const admin = await requireAdmin();
-  const [settings, images, newCount] = await Promise.all([
+  const [settings, images, brands, newCount] = await Promise.all([
     getSettings(),
     listSiteImages(),
+    publicBrands(),
     countNewInquiries(),
   ]);
   const stamp = <T extends { savedAt: Date | null }>(x: T) => ({
@@ -30,6 +32,7 @@ export default async function Page() {
           home: stamp(settings.home),
           features: stamp(settings.features),
           images,
+          brands,
         }}
       />
     </AdminShell>

@@ -77,6 +77,7 @@ export type SettingsData = {
   home: Meta & { value: HomeLayout };
   features: Meta & { value: SiteFeatures };
   images: SiteImages;
+  brands: string[]; // brand values on the catalog, for the brand-logo list
 };
 
 // 站台設定 (site-config.md §4.2, §4.5-bis): one tab per SiteConfig section, each saved on its own
@@ -118,7 +119,11 @@ export function SiteSettings({ data }: { data: SettingsData }) {
       label: live.tabs.features,
       body: <FeaturesTab key={data.features.version} meta={data.features} onSaved={setWarnings} />,
     },
-    { key: "images", label: live.tabs.images, body: <ImagesTab images={data.images} /> },
+    {
+      key: "images",
+      label: live.tabs.images,
+      body: <ImagesTab images={data.images} brands={data.brands} />,
+    },
   ];
   return (
     <Flex vertical gap={16}>
@@ -342,6 +347,21 @@ function ProfileTab({
           <Col xs={24} md={12}>
             <Form.Item label={pf.hours} name="hours">
               <Input maxLength={P.hours} />
+            </Form.Item>
+          </Col>
+          <Col xs={24}>
+            <Form.Item
+              label={pf.map}
+              name="map"
+              extra={pf.mapHelp}
+              rules={[{ pattern: /^https:\/\/\S+$/, message: pf.mapInvalid }]}
+            >
+              <Input type="url" placeholder={pf.mapPlaceholder} maxLength={P.map} />
+            </Form.Item>
+          </Col>
+          <Col xs={24}>
+            <Form.Item label={pf.seo} name="seo" extra={pf.seoHelp}>
+              <Input.TextArea maxLength={P.seo} showCount autoSize={{ minRows: 2, maxRows: 4 }} />
             </Form.Item>
           </Col>
         </Row>
