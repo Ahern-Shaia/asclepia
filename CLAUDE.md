@@ -4,7 +4,7 @@
 
 > 本文件是 Claude Code 在 Asclepia 中的最高指導原則。所有開發任務開始前，Claude Code 必須先讀完本文件。
 
-> 狀態：**Scaffold 完成（2026-10-31）**：Next.js 16 + antd 6 骨架，`pnpm check` 和 `pnpm test:e2e` 全綠。下一步是 catalog M1。
+> 狀態：**Scaffold 完成（2026-10-31）**：Next.js 16 + antd 6 骨架，`pnpm check` 和 `pnpm test:e2e` 全綠。下一步是 catalog M1，與 site-config C1、inquiry B1 同一批 schema（三份設計都已 APPROVED）。
 >
 > 網站定位是**中古設備買賣**（用戶 2026-10-31：「當作中古器材買賣就行，我賣的是設備，不是『醫療』器材」）：自營賣中古院所設備與檢驗設備，前台是型錄＋詢價，後台負責上架。
 > 棧規則附件：`docs/stack-rules/nextjs-prisma-antd.md`（R21，⏳ 待人 review，執法點 W1–W10 尚未全部接線）。商品模組設計：`docs/modules/catalog.md`（APPROVED；v0.2 定位修訂待用戶確認）。視覺：profile `inspect-catalog`「實機型錄」（用戶 2026-11-01 定案，基準稿 `/mockup/site-v5-1`，規則在 `frontend-design-principles.md` §B0）；mockup 清單 `docs/mockups/README.md`。
@@ -32,7 +32,9 @@
 
 **MVP**（用戶 2026-10-31：「參考這個網站就好」＋「商品我要從後台上傳，圖片、資訊等等」）：
 - 前台型錄：分類、搜尋、商品頁。商品頁區塊照 [used-equip /product/22/67](https://www.used-equip.com.tw/product/22/67)，逐區塊對照表見 `docs/modules/catalog.md` §2
-- **後台上傳**：圖片（多張、可排序）、品牌、型號、品名、產品訊息、規格、特色；可以存草稿、上架、下架、標記已售出
+- **後台上傳**：圖片（多張、可排序）、品名、產品訊息、規格、特色，以及該分類的屬性（預設是品牌、型號、年份、狀況、保固）；可以存草稿、上架、下架、標記已售出
+- **後台可設定**（用戶 2026-11-01：「任何商品都要能用，透過管理後台設定」，形態＝只有本公司使用）：店家資料、分類、商品屬性、主題（2 色＋圓角）、首頁區塊、文案、功能開關。網站本身不限商品類型，本公司用它賣中古設備。設計：`docs/modules/site-config.md`
+- **多台合併詢價**：`docs/modules/inquiry.md`
 - 商品頁詢價表單（自動帶入商品）＋電話，後台查看詢價（OQ-CAT-3）
 - 後台用 Google 登入，只有白名單帳號能進（OQ-CAT-6）
 
@@ -120,12 +122,12 @@
 
 | 規則 | 說明 |
 |---|---|
-| **R11** | **型錄不變量**（2026-10-31 定位改為中古設備買賣後修訂）：①前台**沒有任何下單、付款、購物車路徑**，只能詢價（MVP 範圍，用戶裁定）；②後台文案欄位擋療效字詞（醫材法 §3 以療效定義醫療器材、§6 定義醫材廣告；關鍵字守衛，送出時警告並寫 audit）；③醫療器材許可證字號**選填**，有值才在商品頁顯示。執法點：grep 守衛擋 `checkout\|cart\|payment` 路由 + `src/modules/catalog/efficacy-words.ts` 單元測試 |
+| **R11** | **型錄不變量**（2026-10-31 定位改為中古設備買賣後修訂）：①前台**沒有任何下單、付款、購物車路徑**，只能詢價（MVP 範圍，用戶裁定）；②後台文案欄位擋療效字詞（醫材法 §3 以療效定義醫療器材、§6 定義醫材廣告；關鍵字守衛，送出時警告並寫 audit）；③醫療器材許可證字號是**選填屬性**，只勾給醫療類分類，有值才在商品頁顯示（2026-11-01 起商品欄位由後台定義，site-config.md §4.1）。執法點：grep 守衛擋 `checkout\|cart\|payment` 路由 + `src/modules/catalog/efficacy-words.ts` 單元測試 |
 | **R12** | **單語 zh-TW，不上 i18n 框架**：買方都在台灣，法規要求的揭露文字是中文。UI 文案集中在 `src/copy/`，不散落在元件裡，以後要多語時才有遷移起點 |
 | **R13** | **Component spacing**：button group / form group 一律用 antd `<Flex gap>` / `<Space>`，元件裡禁止用 inline `style` 的 margin 做間距。執法點：`scripts/guards/no-inline-margin.sh` |
 | **R14** | **新代碼框架**：一律放在同一個 Next.js App Router app 裡，Server Component 優先；不另外開 SPA 或獨立後端服務 |
 | **R15** | **出貨前清單**：solo 直接 commit，不走 PR（memory `feedback_no_pr_workflow`）。每個功能標「完成」前必須走過 `docs/pre-pr-checklist.md` |
-| **R16** | **前端設計鐵則**：所有前端產出必過 `docs/frontend-design-principles.md` **§A 普世核心**（token、a11y、全狀態、響應式、複用、文案）+ **§C 設計流程迴圈**。🔴 **§B 美學 profile 於開工時決定**（見 `docs/pre-dev-decisions.md` §二）——profile 的正確來源是**目標使用者的母心智模型與競品實測**，不是預設鎖一個名字（2026-09 更新：前一版鎖 `modern-SaaS-craft`，在一個 B2B 表單專案被實戰推翻 —— 那個 profile 與使用者要的「紙的形狀」全面相反）。定了之後 Claude Code 不得自行換；要換由人改本鐵則並說明理由。**本專案**：2026-10-31 用戶說「前端視覺設計不限制」，Claude 先選了 `spec-catalog`；經 16 站版面量測、86 站美工分析和多輪 mockup，**用戶 2026-11-01 裁定「視覺設計風格採用 site-v5-1」**，profile 改為 **`inspect-catalog`「實機型錄」**：首屏實拍照片＋唯一一個搜尋、藍＋橘（橘只用在價格、主要行動、新到）、圓角 6px、商品卡欄位固定、設備銘牌＋規格表、插畫只用在小尺度。規則與執法點在 `frontend-design-principles.md` §B0 |
+| **R16** | **前端設計鐵則**：所有前端產出必過 `docs/frontend-design-principles.md` **§A 普世核心**（token、a11y、全狀態、響應式、複用、文案）+ **§C 設計流程迴圈**。🔴 **§B 美學 profile 於開工時決定**（見 `docs/pre-dev-decisions.md` §二）——profile 的正確來源是**目標使用者的母心智模型與競品實測**，不是預設鎖一個名字（2026-09 更新：前一版鎖 `modern-SaaS-craft`，在一個 B2B 表單專案被實戰推翻 —— 那個 profile 與使用者要的「紙的形狀」全面相反）。定了之後 Claude Code 不得自行換；要換由人改本鐵則並說明理由。**本專案**：2026-10-31 用戶說「前端視覺設計不限制」，Claude 先選了 `spec-catalog`；經 16 站版面量測、86 站美工分析和多輪 mockup，**用戶 2026-11-01 裁定「視覺設計風格採用 site-v5-1」**，profile 改為 **`inspect-catalog`「實機型錄」**：首屏實拍照片＋唯一一個搜尋、藍＋橘（橘只用在價格、主要行動、新到）、圓角 6px、商品卡欄位固定、設備銘牌＋規格表、插畫只用在小尺度。規則與執法點在 `frontend-design-principles.md` §B0。後台只能調主色、重點色、圓角（site-config.md §4.3，存檔時檢查對比），其餘 §B0 規則不能從後台改 |
 
 ### 1.4 執行模式（autonomy level）
 
@@ -311,3 +313,4 @@ PR 內容必含：目的、變更內容、測試結果、影響範圍。
 | 2026-10-31 | v1.0 | 初版：走過 pre-dev 25 格，填入定位、棧、合規不變量（R11）、profile（R16）、執行模式 | Claude Code（與用戶逐格裁定） |
 | 2026-10-31 | v1.1 | 用戶改定位：「當作中古器材買賣就行，我賣的是設備，不是『醫療』器材」。§0／§0.1／R11／R16 改寫；許可證字號改選填；法規邊界移到 research §5 | Claude Code（依用戶指示） |
 | 2026-11-01 | v1.2 | 用戶定案視覺：「視覺設計風格採用 site-v5-1」。R16 與 §0.2 #13 的 profile 由 `spec-catalog` 改為 `inspect-catalog`「實機型錄」 | Claude Code（依用戶指示） |
+| 2026-11-01 | v1.3 | 用戶裁定後台可設定（形態 C）、任何商品都要能用：§0.1 MVP、R11③、R16 補後台可調範圍；新增 inquiry.md、site-config.md（皆 APPROVED） | Claude Code（依用戶指示） |

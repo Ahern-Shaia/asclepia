@@ -92,7 +92,7 @@ model InquiryItem {
   productId   String
   sortOrder   Int            // 清單裡的順序
   // 快照：買家送出當下看到的內容。商品之後改價、改名、售出，紀錄不跟著變
-  titleSnap   String         // 品牌＋型號＋中文品名
+  titleSnap   String         // 送出當下組好的標題（品名＋該分類 inTitle 屬性，site-config.md §4.1）
   priceSnap   Decimal?       @db.Decimal(12, 0)   // null = 當時是「歡迎詢價」
   inquiry     Inquiry        @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
   product     Product        @relation(fields: [productId], references: [id], onDelete: Restrict)

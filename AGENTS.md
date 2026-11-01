@@ -16,7 +16,8 @@ This file provides guidance to AI coding assistants when working with code in th
 - Database schema is defined in `prisma/schema.prisma`
 - Migration files are in `prisma/migrations/`
 - Domain code lives in `src/modules/<domain>`; cross-module deep imports are blocked by dependency-cruiser
-- Catalog invariants (no checkout path, no efficacy claims; medical-device licence number is optional) — `CLAUDE.md` R11
+- Catalog invariants (no checkout path, no efficacy claims; medical-device licence number is an optional attribute) — `CLAUDE.md` R11
+- Product fields beyond the common ones are admin-defined attributes; site profile, theme (2 colours + radius), home sections, copy and feature flags are admin-configurable — `docs/modules/site-config.md`
 
 ## Baselines (read before writing code)
 

@@ -267,11 +267,11 @@ next 16.4.3 · react / react-dom 19.3.0 · typescript 5.9.3 · antd 6.6.7 · @an
 
 ### P7 快取
 
-- **P7-1 [P0]** `'use cache'` 只准出現在 `src/modules/catalog/server/public/`;後台、詢價、admin-auth 一律禁止;`'use cache: private'` / `'use cache: remote'` / `unstable_cache` 全面禁止 —— cache key = build ID + 參數 + 閉包變數 [N7],**不含身分**。本專案沒有 tenant 維度,權限維度是「公開 vs 後台」;用「後台不准快取」整個消掉這一維,就不必靠 key 帶 scope
+- **P7-1 [P0]** `'use cache'` 只准出現在 `src/modules/catalog/server/public/` 與 `src/modules/site-config/server/public/`(後者 2026-11-01 加入:前台每頁都讀的公開站台設定,沒有身分維度,site-config.md §4.7);後台、詢價、admin-auth 一律禁止;`'use cache: private'` / `'use cache: remote'` / `unstable_cache` 全面禁止 —— cache key = build ID + 參數 + 閉包變數 [N7],**不含身分**。本專案沒有 tenant 維度,權限維度是「公開 vs 後台」;用「後台不准快取」整個消掉這一維,就不必靠 key 帶 scope
   · 執法點:`guards/cache.sh` · 出處 [N7]
 - **P7-2 [P0]** 每個含 `'use cache'` 的檔案都要同時呼叫 `cacheLife(` 與 `cacheTag(` —— 不呼叫 `cacheLife` 就走 `default` profile(revalidate 15 分鐘、expire 永不 [N7]);沒有 tag 就沒辦法依需要讓它失效
   · 執法點:`guards/cache.sh` · 出處 [N7]
-- **P7-3 [P0]** 失效策略:商品內容或狀態變更時,在 Server Action 裡呼叫 `updateTag('product:' + id)` 與 `updateTag('catalog')`;Route Handler(上傳)不能用 `updateTag`,改用 `revalidateTag(tag, { expire: 0 })` [N7];**禁用 `revalidateTag(…, 'max')`** —— `'max'` 是 stale-while-revalidate,下架(HIDDEN)的商品還會再被提供至少一次,而下架是合規動作。`revalidateTag` 單參數的寫法已經 deprecated,會出 TS 錯誤 [N9]
+- **P7-3 [P0]** 失效策略:商品內容或狀態變更時,在 Server Action 裡呼叫 `updateTag('product:' + id)` 與 `updateTag('catalog')`;站台設定存檔時呼叫 `updateTag('site-config')`(含商品屬性定義變更,因為它影響卡片與篩選,同時也要 `updateTag('catalog')`);Route Handler(上傳)不能用 `updateTag`,改用 `revalidateTag(tag, { expire: 0 })` [N7];**禁用 `revalidateTag(…, 'max')`** —— `'max'` 是 stale-while-revalidate,下架(HIDDEN)的商品還會再被提供至少一次,而下架是合規動作。`revalidateTag` 單參數的寫法已經 deprecated,會出 TS 錯誤 [N9]
   · 執法點:`guards/cache.sh`(禁 `'max'`)· e2e(後台下架 → 前台同一個 URL 立即 404)· 出處 [N7][N9]
 - **P7-4 [P1]** 多實例時,in-memory `use cache` 與 `updateTag` 推定只作用在本實例(待回查 `cacheHandlers.md`)⇒ 部署定案時決定 `cacheHandlers` 或單實例;client router 另有最低 30 秒的 stale time [N7]
   · 執法點:review(部署定案時)
@@ -374,9 +374,9 @@ extra=$(comm -23 <(printf '%s\n' "$found" | sed '/^$/d') <(sort -u scripts/guard
 grep -rnE '\b(e|err|error|cause)\??\.(message|stack)\b|JSON\.stringify\((e|err|error)\)' "$ROOT/app" "$ROOT/modules" --include='*.ts' --include='*.tsx' && fail=1
 
 # cache.sh — P7-1, P7-2, P7-3
-grep -rlE "['\"]use cache" "$ROOT" --include='*.ts' --include='*.tsx' | grep -v "^$ROOT/modules/catalog/server/public/" && fail=1
+grep -rlE "['\"]use cache" "$ROOT" --include='*.ts' --include='*.tsx' | grep -vE "^$ROOT/modules/(catalog|site-config)/server/public/" && fail=1
 grep -rnE "['\"]use cache: (private|remote)['\"]|unstable_cache" "$ROOT" && fail=1
-for f in $(grep -rlE "['\"]use cache['\"]" "$ROOT/modules/catalog/server/public" 2>/dev/null); do
+for f in $(grep -rlE "['\"]use cache['\"]" "$ROOT/modules/catalog/server/public" "$ROOT/modules/site-config/server/public" 2>/dev/null); do
   grep -q 'cacheLife(' "$f" && grep -q 'cacheTag(' "$f" || fail=1
 done
 grep -rnE "revalidateTag\([^)]*['\"]max['\"]" "$ROOT" && fail=1
