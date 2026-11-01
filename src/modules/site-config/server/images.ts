@@ -3,7 +3,7 @@ import { audit } from "@/server/audit";
 import { type Db, db } from "@/server/db";
 import { processImage } from "@/server/images/process";
 import { fileName, newKey, putImage, removeImage } from "@/server/images/storage";
-import type { SiteImageKind, SiteImages } from "../images";
+import { SITE_IMAGE_SIZE, type SiteImageKind, type SiteImages } from "../images";
 
 // One image per kind: setting a new one replaces the old row and, after the commit, its files.
 export async function setSiteImage(
@@ -42,7 +42,7 @@ export async function setSiteImage(
       return created;
     });
     for (const k of old) await removeImage(k);
-    return { ...row, src: `/media/${fileName(key, 1600)}` };
+    return { ...row, src: `/media/${fileName(key, SITE_IMAGE_SIZE[kind])}` };
   } catch (e) {
     await removeImage(key); // no orphan files when the row isn't written
     throw e;
@@ -79,7 +79,11 @@ export async function listSiteImages(client: Db = db()): Promise<SiteImages> {
   return Object.fromEntries(
     rows.map((r) => [
       r.kind,
-      { src: `/media/${fileName(r.storageKey, 1600)}`, width: r.width, height: r.height },
+      {
+        src: `/media/${fileName(r.storageKey, SITE_IMAGE_SIZE[r.kind as SiteImageKind])}`,
+        width: r.width,
+        height: r.height,
+      },
     ]),
   );
 }

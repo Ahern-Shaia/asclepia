@@ -7,3 +7,5 @@ export type SiteImageKind = (typeof SITE_IMAGE_KINDS)[number];
 export const siteImageKindSchema = z.enum(SITE_IMAGE_KINDS);
 export type SiteImage = { src: string; width: number; height: number };
 export type SiteImages = Partial<Record<SiteImageKind, SiteImage>>;
+// The logo is shown 40 px tall: the 400 px rendition is plenty; the hero needs the 1600 one.
+export const SITE_IMAGE_SIZE: Record<SiteImageKind, 400 | 1600> = { LOGO: 400, HERO: 1600 };

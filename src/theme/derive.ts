@@ -43,6 +43,9 @@ export function deriveTheme({ primary, accent, radius }: ThemeInput) {
   };
 }
 export type DerivedTheme = ReturnType<typeof deriveTheme>;
+// How much of the deep primary covers a hero photo. checkTheme tests white text on this tint over a
+// pure white pixel (the worst photo), so any saved theme keeps the hero heading readable.
+export const HERO_SCRIM = 0.8;
 export const DEFAULT_THEME: ThemeInput = {
   primary: palette.primary,
   accent: palette.accent,
@@ -56,7 +59,8 @@ export type ContrastCheckId =
   | "accentOnWhite"
   | "primaryOnTint"
   | "accentOnTint"
-  | "mutedOnDeep";
+  | "mutedOnDeep"
+  | "onHeroPhoto";
 export type ContrastCheck = {
   id: ContrastCheckId;
   fg: string;
@@ -78,6 +82,7 @@ export function checkTheme({ primary, accent }: Pick<ThemeInput, "primary" | "ac
     ["primaryOnTint", primary, d.primaryBg],
     ["accentOnTint", accent, d.accentBg],
     ["mutedOnDeep", d.onDeepMuted, d.primaryDeep],
+    ["onHeroPhoto", WHITE, mix(d.primaryDeep, WHITE, 1 - HERO_SCRIM)],
   ];
   return pairs.map(([id, fg, bg]): ContrastCheck => {
     const ratio = contrastRatio(fg, bg);

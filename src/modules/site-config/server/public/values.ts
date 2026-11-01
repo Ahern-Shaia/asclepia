@@ -4,7 +4,7 @@ import type { ConfigSection } from "@/generated/prisma/client";
 import { db } from "@/server/db";
 import { hasDatabase } from "@/server/env";
 import { fileName, KEY } from "@/server/images/storage";
-import type { SiteImageKind, SiteImages } from "../../images";
+import { SITE_IMAGE_SIZE, type SiteImageKind, type SiteImages } from "../../images";
 
 type Row = { t: "C" | "A"; k: string; value: unknown };
 export type SiteConfigValues = {
@@ -31,9 +31,10 @@ export async function siteConfigValues(): Promise<SiteConfigValues> {
     if (r.t === "C") out.values[r.k as ConfigSection] = r.value;
     else {
       const a = r.value as { key: string; width: number; height: number };
-      if (KEY.test(a.key))
-        out.images[r.k as SiteImageKind] = {
-          src: `/media/${fileName(a.key, 1600)}`,
+      const kind = r.k as SiteImageKind;
+      if (KEY.test(a.key) && kind in SITE_IMAGE_SIZE)
+        out.images[kind] = {
+          src: `/media/${fileName(a.key, SITE_IMAGE_SIZE[kind])}`,
           width: a.width,
           height: a.height,
         };

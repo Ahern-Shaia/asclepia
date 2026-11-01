@@ -14,6 +14,7 @@ describe("checkTheme", () => {
       "primaryOnTint",
       "accentOnTint",
       "mutedOnDeep",
+      "onHeroPhoto",
     ]);
     expect(checks.filter((c) => !c.pass)).toEqual([]);
   });
@@ -27,6 +28,7 @@ describe("checkTheme", () => {
       "primaryOnWhite",
       "primaryOnTint",
       "mutedOnDeep",
+      "onHeroPhoto",
     ]);
     expect(failing[0].ratio).toBeLessThan(1.5);
   });

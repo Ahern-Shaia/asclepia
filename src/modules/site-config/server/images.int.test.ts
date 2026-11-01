@@ -53,7 +53,8 @@ describe("site images", () => {
     const { siteConfigValues } = await import("./public/values");
     const { images } = await siteConfigValues();
     expect(images.HERO).toMatchObject({ width: 1600, height: 900 }); // stored at most 1600 wide
-    expect(images.LOGO?.src).toMatch(/^\/media\/img_[0-9a-f]{32}-1600\.webp$/);
+    expect(images.LOGO?.src).toMatch(/^\/media\/img_[0-9a-f]{32}-400\.webp$/); // shown 40 px tall
+    expect(images.HERO?.src).toMatch(/-1600\.webp$/);
   });
 
   it("removes an image and its files", async () => {
