@@ -55,6 +55,15 @@ export const authSchema = z.object({
 // decided with the deploy platform, CLAUDE.md §2.4).
 export const storageSchema = z.object({ UPLOAD_DIR: z.string().min(1).default(".uploads") });
 
+// Public write endpoints (stack-rules S4-6). The client address header depends on the deploy
+// platform (undecided, CLAUDE.md §2.4): until then `x-forwarded-for`'s first entry, which a client can
+// forge when no proxy overwrites it — a known input gap. The secret keys the HMAC so raw addresses
+// are never stored; without one each process uses a random key (limits then count per process).
+export const requestSchema = z.object({
+  CLIENT_IP_HEADER: z.string().min(1).default("x-forwarded-for"),
+  RATE_LIMIT_SECRET: z.string().min(32).optional(),
+});
+
 export const parseDbEnv = (source: Record<string, string | undefined>) => parse(dbSchema, source);
 export const parseAuthEnv = (source: Record<string, string | undefined>) =>
   parse(authSchema, source);
@@ -62,3 +71,4 @@ export const parseAuthEnv = (source: Record<string, string | undefined>) =>
 export const dbEnv = () => parseDbEnv(process.env);
 export const authEnv = () => parseAuthEnv(process.env);
 export const storageEnv = () => parse(storageSchema, process.env);
+export const requestEnv = () => parse(requestSchema, process.env);

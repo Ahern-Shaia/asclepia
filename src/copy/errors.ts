@@ -13,6 +13,8 @@ export const errorCopy = {
   IMAGE_UNSUPPORTED: "只接受 JPG、PNG、WebP 圖片。這個檔案不是這三種格式。",
   IMAGE_UNREADABLE: "這張圖片無法讀取，請改用 JPG 或 PNG 格式。",
   IMAGE_LIMIT: "每件商品最多 20 張照片，請先刪掉不需要的再上傳。",
+  RATE_LIMITED: "短時間內送出太多次了。請 10 分鐘後再試，或直接來電。",
+  INQUIRY_UNAVAILABLE: "清單裡有商品已經無法詢價（售出或下架），請移除後再送出。",
   UNKNOWN: "系統暫時無法完成，請稍後再試一次。一直失敗請聯絡管理員。",
 } as const;
 

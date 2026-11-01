@@ -182,3 +182,24 @@ export async function publicBrands() {
 export { newestIds, publicCategories, publicConfigs } from "./shared";
 export type { PublicAttr, PublicCard } from "../../public-types";
 export { PUBLIC_PAGE, VISIBLE } from "../../public-types";
+
+// Cards for the inquiry list page (ids come from the visitor's browser). Sold items come back with
+// `sold: true` so the page can flag them; drafts and hidden items don't come back at all.
+export async function publicCardsByIds(ids: string[]) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("catalog");
+  const wanted = [...new Set(ids)].slice(0, 10);
+  if (!wanted.length) return [];
+  const [rows, configs, categories, newest] = await Promise.all([
+    db().product.findMany({
+      where: { id: { in: wanted }, status: { in: [...VISIBLE] } },
+      select: cardSelect,
+    }),
+    publicConfigs(),
+    publicCategories(),
+    newestIds(),
+  ]);
+  const nameOf = (cid: string) => categories.find((c) => c.id === cid)?.name ?? "";
+  return rows.map((r) => toCard(r, configs, newest, nameOf));
+}
