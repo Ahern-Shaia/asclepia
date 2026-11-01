@@ -23,6 +23,11 @@ fixture() { # name -> "relative/path<TAB>violating line"
     sharp-only-in-images) printf '%s\t%s' "modules/catalog/server/products.ts" 'import sharp from "sharp";' ;;
     sharp-pixel-limit) printf '%s\t%s' "modules/catalog/server/images/process.ts" 'import "server-only";\nsharp(b).timeout({ seconds: 30 });' ;;
     sharp-timeout) printf '%s\t%s' "modules/catalog/server/images/process.ts" 'import "server-only";\nsharp(b, { limitInputPixels: 1 });' ;;
+    use-cache-public-only) printf '%s\t%s' "modules/inquiry/server/list.ts" 'export async function f() {\n  "use cache";\n}' ;;
+    no-private-cache) printf '%s\t%s' "modules/x/server/public/a.ts" '"use cache: private";' ;;
+    cache-life) printf '%s\t%s' "modules/catalog/server/public/a.ts" 'import "server-only";\ncacheTag("catalog");' ;;
+    cache-tag) printf '%s\t%s' "modules/catalog/server/public/a.ts" 'import "server-only";\ncacheLife("hours");' ;;
+    no-revalidate-max) printf '%s\t%s' "modules/x/actions.ts" 'revalidateTag("catalog", "max");' ;;
     no-public-secret)  printf '%s\t%s' "lib/env.ts" 'process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET;' ;;
     *) return 1 ;;
   esac

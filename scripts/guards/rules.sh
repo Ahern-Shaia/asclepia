@@ -17,5 +17,10 @@ RULES=(
   'sharp-only-in-images ⟂ S2-3: sharp parses untrusted binaries; only src/modules/catalog/server/images/ may use it ⟂ from ["'"'"']sharp["'"'"'] ⟂ *.ts *.tsx'
   'sharp-pixel-limit ⟂ S2-3: cap decoded pixels (default ~268M px ≈ 1 GB RGBA) ⟂ __MISSING__limitInputPixels ⟂ ^modules/catalog/server/images/process[.]ts$'
   'sharp-timeout ⟂ P3-4: sharp default timeout is 0 = forever ⟂ __MISSING__[.]timeout[(] ⟂ ^modules/catalog/server/images/process[.]ts$'
+  'use-cache-public-only ⟂ P7-1: use cache only in modules/{catalog,site-config}/server/public (cache keys carry no identity) ⟂ ^[[:space:]]*["'"'"']use cache ⟂ *.ts *.tsx'
+  'no-private-cache ⟂ P7-1: use cache: private / remote and unstable_cache are banned ⟂ ["'"'"']use cache: (private|remote)["'"'"']|unstable_cache[(] ⟂ *.ts *.tsx'
+  'cache-life ⟂ P7-2: every cached public module sets cacheLife (else default = 15 min revalidate, never expire) ⟂ __MISSING__cacheLife[(] ⟂ ^modules/(catalog|site-config)/server/public/[^/]+[.]ts$'
+  'cache-tag ⟂ P7-2: every cached public module sets cacheTag so admin writes can invalidate it ⟂ __MISSING__cacheTag[(] ⟂ ^modules/(catalog|site-config)/server/public/[^/]+[.]ts$'
+  'no-revalidate-max ⟂ P7-3: revalidateTag(…, "max") serves a hidden product at least once more ⟂ revalidateTag[(][^)]*["'"'"']max["'"'"'] ⟂ *.ts *.tsx'
   'no-public-secret ⟂ R3: NEXT_PUBLIC_ vars ship to the browser ⟂ NEXT_PUBLIC_[A-Z0-9_]*(SECRET|TOKEN|PASSWORD|PRIVATE|KEY) ⟂ *.ts *.tsx .env.example'
 )

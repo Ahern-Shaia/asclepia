@@ -57,6 +57,9 @@ for rule in "${RULES[@]}"; do
     if [[ "$name" == no-hardcoded-hex || "$name" == no-gradient ]]; then excludes+=(--exclude-dir=style-lab); fi
     hits=$(grep -rnE "${includes[@]}" "${excludes[@]}" -- "$pattern" "$ROOT")
     rc=$?
+    if [[ "$name" == use-cache-public-only && $rc -eq 0 ]]; then
+      hits=$(grep -vE '/modules/(catalog|site-config)/server/public/' <<<"$hits"); [[ -n "$hits" ]] && rc=0 || rc=1
+    fi
     if [[ "$name" == sharp-only-in-images && $rc -eq 0 ]]; then
       hits=$(grep -v '/modules/catalog/server/images/' <<<"$hits"); [[ -n "$hits" ]] && rc=0 || rc=1
     fi
