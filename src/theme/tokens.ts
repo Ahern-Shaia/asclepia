@@ -50,6 +50,22 @@ export const contrastPairs: ReadonlyArray<readonly [fg: string, bg: string, labe
   [palette.accent, palette.accentBg, "accent tag"],
 ];
 
+// Back-office theme choices (docs/modules/site-config.md §4.3): two colours + one radius step,
+// everything else is derived in derive.ts. Every preset must pass derive.ts checkTheme (derive.test.ts).
+// Display names live in src/copy/admin.ts (themePresets).
+export const themePresets = [
+  { id: "inspect", primary: palette.primary, accent: palette.accent },
+  { id: "forest", primary: "#1F5F4A", accent: "#9A3412" },
+  { id: "graphite", primary: "#334155", accent: "#1D4ED8" },
+  { id: "harbor", primary: "#0F3D5E", accent: "#0F766E" },
+] as const;
+
+export const radiusSteps = {
+  small: { base: 4, sm: 2 },
+  medium: { base: 6, sm: 4 },
+  large: { base: 10, sm: 6 },
+} as const;
+
 // Display sizes above the 30px heading scale (§B0): hero title and section headings.
 export const display = { hero: 46, heroMobile: 30, section: 26, sectionMobile: 22 } as const;
 

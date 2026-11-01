@@ -14,7 +14,7 @@ export function HeroDrawing() {
       <svg
         viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
         role="img"
-        aria-label="超音波推車的線稿，標出出貨前檢測、保固維修、到場安裝三項"
+        aria-label="超音波推車的線稿，標出照片與規格表、保固維修、到場安裝三項"
         className={s.drawingSvg}
       >
         <g className={s.lines}>

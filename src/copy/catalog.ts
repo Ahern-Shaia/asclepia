@@ -4,7 +4,7 @@ export const catalogCopy = {
   search: { placeholder: "搜尋品牌、型號或品名", button: "搜尋" },
   hero: {
     heading: "中古院所與檢驗設備",
-    trust: ["自有庫存，不是代售", "出貨前完成功能檢測", "看機確認後再成交"],
+    trust: ["自有庫存，不是代售", "每件附照片與規格表", "看機確認後再成交"],
   },
   sections: { categories: "依分類瀏覽", latest: "最新上架", viewAll: "看全部商品" },
   card: { askPrice: "歡迎詢價", sold: "已售出", year: (y: number) => `${y} 年` },
@@ -37,7 +37,7 @@ export const catalogCopy = {
     features: "Main Features",
     terms: "保固與交易說明",
     termsBody: [
-      "出貨前完成功能檢測，保固期間內非人為故障免費維修。",
+      "保固期間內，非人為故障免費維修。",
       "大型設備需到場拆裝，運送與安裝費用依地點另行報價。",
       "可開立發票。",
     ],

@@ -57,7 +57,6 @@ export const products: MockProduct[] = [
     highlights: [
       "主機含兩支探頭：線性 12L-RS、凸面 4C-RS",
       "原廠軟體 R9 版，開機時數約 2,100 小時",
-      "出貨前完成功能檢測與外觀清潔",
     ],
     specs: [
       { label: "顯示器", value: "15 吋 LCD" },

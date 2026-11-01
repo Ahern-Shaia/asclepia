@@ -7,7 +7,7 @@ export const homeCopy = {
     quick: "常找的分類",
     tag: { title: "可看機", sub: "歡迎預約" },
     callouts: [
-      { id: "test", title: "出貨前功能檢測", body: "開機、影像、配件逐項測過" },
+      { id: "test", title: "附照片與規格表", body: "每件都有實拍照片和規格表" },
       { id: "warranty", title: "保固期內免費維修", body: "非人為故障，不另收費" },
       { id: "install", title: "到場拆裝與運送", body: "大型設備派人安裝" },
     ],

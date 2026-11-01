@@ -1,15 +1,9 @@
 import type { ReactNode } from "react";
-import { AdminShell } from "@/components/admin/admin-shell";
+import { type AdminSection, AdminShell } from "@/components/admin/admin-shell";
 import { inquiries } from "../_data";
 import { ADMIN } from "../_adapters";
 
-export function AdminFrame({
-  active,
-  children,
-}: {
-  active: "products" | "inquiries";
-  children: ReactNode;
-}) {
+export function AdminFrame({ active, children }: { active: AdminSection; children: ReactNode }) {
   return (
     <AdminShell
       base={ADMIN}

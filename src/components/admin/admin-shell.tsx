@@ -5,6 +5,7 @@ import {
   LogoutOutlined,
   MenuOutlined,
   MessageOutlined,
+  ProfileOutlined,
   SettingOutlined,
   TagsOutlined,
 } from "@ant-design/icons";
@@ -27,10 +28,10 @@ import { adminCopy } from "@/copy/admin";
 import { adminTheme } from "@/theme/tokens";
 import styles from "./admin.module.css";
 
-type Active = "products" | "categories" | "inquiries" | "settings";
+export type AdminSection = "products" | "categories" | "inquiries" | "attributes" | "settings";
 type ShellProps = {
   base: string;
-  active: Active;
+  active: AdminSection;
   newInquiries: number;
   user: string;
   mock?: boolean;
@@ -52,7 +53,7 @@ function AdminNav({
   onNavigate,
 }: {
   base: string;
-  active: Active;
+  active: AdminSection;
   newInquiries: number;
   onNavigate?: () => void;
 }) {
@@ -84,7 +85,16 @@ function AdminNav({
             </Link>
           ),
         },
-        { key: "settings", icon: <SettingOutlined />, label: m.settings },
+        {
+          key: "attributes",
+          icon: <ProfileOutlined />,
+          label: <Link href={`${base}/attributes`}>{m.attributes}</Link>,
+        },
+        {
+          key: "settings",
+          icon: <SettingOutlined />,
+          label: <Link href={`${base}/settings`}>{m.settings}</Link>,
+        },
       ]}
     />
   );
