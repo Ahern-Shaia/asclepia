@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import sharp from "sharp";
 import { fullName, noHorizontalScroll, publishAll, seedShop, setStatus } from "./support/shop";
 
 // Public list and product pages against the real catalog reads (catalog.md A3, §B0).
@@ -181,4 +182,32 @@ test("store statements are absent until the back office sets them", async ({ pag
   await expect(page.getByRole("heading", { level: 1 })).toContainText("e2e-說明");
   await expect(page.getByRole("heading", { name: "保固與交易說明" })).toHaveCount(0);
   await expect(page.getByRole("main")).not.toContainText(claims);
+});
+
+// A photo added to a product that is already on sale shows on the public page right away
+// (the upload is a Route Handler: it must expire the catalog cache itself).
+test("a photo added to a published product shows on its page at once", async ({
+  page,
+  context,
+}) => {
+  const seeded = await seedShop([{ name: "e2e-補照片", brand: "Alpha", model: "U-1", photos: 2 }]);
+  const [p] = seeded.products;
+  await publishAll(page, context, seeded); // also signs in
+  const thumbs = page.getByRole("list", { name: "商品照片" });
+  await page.goto(`/products/${p.id}`); // warms the cached page
+  await expect(thumbs.getByRole("button")).toHaveCount(2);
+
+  const jpeg = await sharp({
+    create: { width: 800, height: 600, channels: 3, background: { r: 40, g: 90, b: 60 } },
+  })
+    .jpeg()
+    .toBuffer();
+  const res = await page.request.post(`/admin/products/${p.id}/images`, {
+    headers: { "Content-Type": "image/jpeg" },
+    data: jpeg,
+  });
+  expect((await res.json()).ok).toBe(true);
+
+  await page.goto(`/products/${p.id}`);
+  await expect(thumbs.getByRole("button")).toHaveCount(3);
 });
