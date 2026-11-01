@@ -168,7 +168,7 @@ model AuditLog     { id BigInt @id @default(autoincrement()); actorId String; ac
 |---|---|---|
 | **M0** | 本檔 → APPROVED | ⏳ |
 | **M1** | A4 登入＋A1 資料模型與後台 CRUD | 🚧 M1a 資料表＋migration＋低權角色＋DB 測試 ✅ `9a37612`；M1b Google 登入＋白名單＋requireAdmin ✅ `1304891`；M1c 後台商品／分類／欄位管理 ✅ `236313d`…`32a3aa7`。已知殘留：後台搜尋對欄位值區分大小寫、最多比對 50 個文字／選項欄位；動作錯誤路徑有 `input.` 前綴與無前綴兩種（畫面兩種都處理） |
-| **M2** | A2 圖片管線 | ⏳ |
+| **M2** | A2 圖片管線 | ✅ `6d6337f` 伺服器＋`4ce2b20` 後台 UI。上傳走 Route Handler（S8-3 預設建議）。已知殘留：草稿的照片可以用網址直接開（檔名是 128-bit 隨機值，猜不到，但不是權限控制）；正式環境的儲存與獨立網域等 §2.4 部署決定 |
 | **M3** | A3 前台型錄（前提：前端 M0 profile 已寫定） | ⏳ |
 | **M4** | SOP（後台上架操作手冊）＋ smoke | ⏳ |
 | **M5** | §12 FMEA | ⏳ |

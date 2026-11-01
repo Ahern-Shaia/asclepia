@@ -293,7 +293,7 @@ next 16.4.3 · react / react-dom 19.3.0 · typescript 5.9.3 · antd 6.6.7 · @an
 
 ## 需人裁定(本檔不替人決定,R6 / R7)
 
-1. **上傳通道**:Route Handler(建議,S8-3)或調大全域 `bodySizeLimit`
+1. **上傳通道**:✅ **Route Handler**(用戶 2026-11-01「全部照草案生效」,採預設建議;S8-3)
 2. **CSP 策略**:不用 nonce(`'unsafe-inline'`)/ experimental SRI / 放棄 static shell(S8-2)
 3. **前台用 antd 的範圍**:影響 P8-2 的預算數字;JS 預算本身也待定
 4. **rate limit 儲存位置**:✅ **Postgres 表**(用戶 2026-11-01)(S4-6)
