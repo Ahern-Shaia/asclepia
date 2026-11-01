@@ -138,7 +138,7 @@ model AuditLog     { id BigInt @id @default(autoincrement()); actorId String; ac
 - 文案欄位有療效字詞守衛（R11 ②）：送出時警告，列出命中的詞，不硬擋（守衛會誤判），但會寫進 audit
 
 **前台商品頁**，區塊順序照 §2：分類標題 → 圖片（主圖＋縮圖列）→ 標題 → 設備銘牌（品牌、型號、年份、保固、狀況；有許可證字號才多一列）→ 〔詢價這件商品〕→ 產品訊息 → 規格表 → Main Features → 回列表。
-視覺依 §B0 `inspect-catalog`「實機型錄」（用戶 2026-11-01 定案，`frontend-design-principles.md` §B0）。詢價按鈕的形式見 `docs/modules/inquiry.md`（多台合併詢價，DRAFT）。
+視覺依 §B0 `inspect-catalog`「實機型錄」（用戶 2026-11-01 定案，`frontend-design-principles.md` §B0）。詢價按鈕的形式見 `docs/modules/inquiry.md`（多台合併詢價，APPROVED 2026-11-01）。
 
 ---
 
