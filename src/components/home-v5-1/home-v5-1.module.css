@@ -78,3 +78,9 @@
   inset: 0;
   background: color-mix(in srgb, var(--navy-ink) var(--hero-scrim, 80%), transparent);
 }
+
+/* One line of store copy in the footer (back office, 文案 tab), above the copyright. */
+.footerLine {
+  color: var(--on-navy-muted);
+  font-size: 14px;
+}

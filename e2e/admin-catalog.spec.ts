@@ -212,3 +212,23 @@ test("the real admin menu links only to built sections", async ({ page }) => {
     "/admin/settings",
   );
 });
+
+// Six settings tabs don't fit a phone; there the tab bar is a select listing every section.
+test("site settings: every section is reachable on a phone", async ({ page }, info) => {
+  test.skip(info.project.name !== "mobile", "desktop shows the tab bar");
+  await page.goto("/admin/settings");
+  const select = page.getByRole("combobox", { name: "要設定的項目" });
+  await select.click();
+  // antd's a11y listbox holds only a few role=option nodes; the visible list is these items
+  const options = page.locator(".ant-select-item-option");
+  await expect(options).toHaveText([
+    "店家資料",
+    "文案與說明",
+    "主題",
+    "首頁區塊",
+    "功能開關",
+    "圖片",
+  ]);
+  await page.locator('.ant-select-item-option[title="圖片"]').click();
+  await expect(page.getByText("首頁主照片").first()).toBeVisible();
+});

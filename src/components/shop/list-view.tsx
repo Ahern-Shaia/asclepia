@@ -9,7 +9,7 @@ import s from "@/components/home-v5/home-v5.module.css";
 import { shopCopy } from "@/copy/shop";
 import { type CategoryAttr, filtersFor, formatValue } from "./attrs";
 import { ShopCard, type ShopCardProduct } from "./product-card";
-import { homeOf, type ShopCategory } from "./shop-shell";
+import { homeOf, type ShopCategory, useShopFeatures } from "./shop-shell";
 import l from "./shop.module.css";
 
 const c = shopCopy.list;
@@ -59,6 +59,7 @@ export function ShopListView({
   const view = new URLSearchParams(query);
   const cat = params.get("cat") ?? "";
   const q = (params.get("q") ?? "").trim();
+  const features = useShopFeatures();
   const sort = (view.get("sort") as ListSort) || "new";
   const current = categories.find((x) => x.id === cat);
   const filters = filtersFor(cat ? [configs[cat] ?? []] : Object.values(configs));
@@ -198,23 +199,26 @@ export function ShopListView({
           >
             <FilterOutlined aria-hidden /> {c.filterOpen(active)}
           </button>
-          <label className={l.sort}>
-            <span>{c.sort}</span>
-            <select
-              value={sort}
-              onChange={(e) =>
-                go((sp) =>
-                  e.target.value === "new" ? sp.delete("sort") : sp.set("sort", e.target.value),
-                )
-              }
-            >
-              {Object.entries(c.sortOptions).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v}
-                </option>
-              ))}
-            </select>
-          </label>
+          {/* prices hidden (back office): price sorting is off too, so only one order is left */}
+          {features.showPrice && (
+            <label className={l.sort}>
+              <span>{c.sort}</span>
+              <select
+                value={sort}
+                onChange={(e) =>
+                  go((sp) =>
+                    e.target.value === "new" ? sp.delete("sort") : sp.set("sort", e.target.value),
+                  )
+                }
+              >
+                {Object.entries(c.sortOptions).map(([k, v]) => (
+                  <option key={k} value={k}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
         </div>
       </div>
 

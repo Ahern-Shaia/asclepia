@@ -7,7 +7,7 @@ import {
 } from "@/modules/catalog/server/public/catalog";
 import { siteHome } from "@/modules/site-config/server/public/home";
 import { siteNotes } from "@/modules/site-config/server/public/notes";
-import { storeInfo } from "./_store";
+import { priced, storeInfo } from "./_store";
 
 const LATEST = 4;
 
@@ -30,6 +30,8 @@ export default async function Home() {
       home={home}
       theme={store.theme}
       images={store.images}
+      texts={store.texts}
+      features={store.features}
       brand={store.brand}
       categories={store.categories.map((c) => ({
         id: c.id,
@@ -38,7 +40,7 @@ export default async function Home() {
         icon: isEquipKind(c.iconKey) ? c.iconKey : null,
       }))}
       brands={brands}
-      latest={latest.items.slice(0, LATEST)}
+      latest={priced(latest.items.slice(0, LATEST), store.features)}
       configs={configs}
     />
   );

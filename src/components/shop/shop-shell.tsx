@@ -25,6 +25,7 @@ import s from "@/components/home-v5/home-v5.module.css";
 import t from "@/components/home-v5-1/home-v5-1.module.css";
 import { homeV3Copy as c } from "@/copy/home-v3";
 import { siteCopy } from "@/copy/site";
+import { ALL_ON, type SiteFeatures } from "@/modules/site-config/features";
 import type { SiteImage } from "@/modules/site-config/images";
 import { DEFAULT_THEME, type DerivedTheme, deriveTheme, HERO_SCRIM } from "@/theme/derive";
 import { palette } from "@/theme/tokens";
@@ -37,6 +38,11 @@ export type ShopBrand = { name: string; tagline: string };
 // placeholders. Real pages never set it.
 const MockContext = createContext(false);
 export const useShopMock = () => useContext(MockContext);
+
+// Feature switches from the back office (site-config.md §4.6). Prices are also removed on the
+// server when off (src/app/(site)/_store.tsx), so hiding here is only the presentation half.
+const FeaturesContext = createContext<SiteFeatures>(ALL_ON);
+export const useShopFeatures = () => useContext(FeaturesContext);
 
 // `base` is "" on the real site and "/mockup/site-v5-1" on the mockup.
 export const homeOf = (base: string) => base || "/";
@@ -182,6 +188,8 @@ export function ShopShell({
   mock = false,
   theme = DEFAULT_DERIVED,
   logo,
+  features = ALL_ON,
+  footerLine = "",
   children,
 }: {
   base: string;
@@ -194,6 +202,8 @@ export function ShopShell({
   // the store's own logo (back office); the header shows it instead of the letter mark and name.
   // The footer keeps the white mark: a logo made for white would vanish on the dark band.
   logo?: SiteImage;
+  features?: SiteFeatures;
+  footerLine?: string;
   children: ReactNode;
 }) {
   const [menu, setMenu] = useState(false);
@@ -204,169 +214,185 @@ export function ShopShell({
 
   return (
     <MockContext.Provider value={mock}>
-      {/* antd renders Modal and Drawer into document.body, outside `.page`: they get the same
+      <FeaturesContext.Provider value={features}>
+        {/* antd renders Modal and Drawer into document.body, outside `.page`: they get the same
           variables, or every var(--line)/var(--accent) in a dialog resolves to nothing */}
-      <ConfigProvider
-        theme={antdTheme(theme)}
-        modal={{ styles: { root: vars } }}
-        drawer={{ styles: { root: vars } }}
-      >
-        <div className={s.page} style={vars}>
-          {mock && <MockBanner />}
+        <ConfigProvider
+          theme={antdTheme(theme)}
+          modal={{ styles: { root: vars } }}
+          drawer={{ styles: { root: vars } }}
+        >
+          <div className={s.page} style={vars}>
+            {mock && <MockBanner />}
 
-          {(hours || phone) && (
-            <div className={s.util}>
-              <div className={`${s.container} ${s.utilRow}`}>
-                {hours && (
-                  <span>
-                    <ClockCircleOutlined aria-hidden /> {c.util.hours(hours)}
-                  </span>
-                )}
-                {phone && <span className={s.desktopOnly}>{c.util.visit}</span>}
-                {phone && (
-                  <a href={`tel:${phone}`} className={s.utilPhone}>
-                    <PhoneOutlined aria-hidden /> {phone}
-                  </a>
-                )}
+            {(hours || phone) && (
+              <div className={s.util}>
+                <div className={`${s.container} ${s.utilRow}`}>
+                  {hours && (
+                    <span>
+                      <ClockCircleOutlined aria-hidden /> {c.util.hours(hours)}
+                    </span>
+                  )}
+                  {phone && features.visit && <span className={s.desktopOnly}>{c.util.visit}</span>}
+                  {phone && (
+                    <a href={`tel:${phone}`} className={s.utilPhone}>
+                      <PhoneOutlined aria-hidden /> {phone}
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <header className={s.header}>
-            <div className={`${s.container} ${s.headerRow}`}>
-              <Link href={homeOf(base)} className={s.brand} aria-label={`${brand.name} 首頁`}>
-                {logo ? (
-                  // alt = store name: if the file is ever missing, the name still shows
-                  // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from /media
-                  <img src={logo.src} alt={brand.name} className={t.logo} decoding="async" />
-                ) : (
-                  <>
-                    <span className={s.mark} aria-hidden>
-                      {[...brand.name][0]}
-                    </span>
-                    <span className={s.brandText}>
-                      <strong>{brand.name}</strong>
-                      {brand.tagline && <span>{brand.tagline}</span>}
-                    </span>
-                  </>
+            <header className={s.header}>
+              <div className={`${s.container} ${s.headerRow}`}>
+                <Link href={homeOf(base)} className={s.brand} aria-label={`${brand.name} 首頁`}>
+                  {logo ? (
+                    // alt = store name: if the file is ever missing, the name still shows
+                    // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from /media
+                    <img src={logo.src} alt={brand.name} className={t.logo} decoding="async" />
+                  ) : (
+                    <>
+                      <span className={s.mark} aria-hidden>
+                        {[...brand.name][0]}
+                      </span>
+                      <span className={s.brandText}>
+                        <strong>{brand.name}</strong>
+                        {brand.tagline && <span>{brand.tagline}</span>}
+                      </span>
+                    </>
+                  )}
+                </Link>
+                {search && (
+                  <Suspense
+                    fallback={
+                      <HeaderSearch base={base} categories={categories} params={NO_PARAMS} />
+                    }
+                  >
+                    <WithParams>
+                      {(params) => (
+                        <HeaderSearch base={base} categories={categories} params={params} />
+                      )}
+                    </WithParams>
+                  </Suspense>
                 )}
-              </Link>
+                <div className={`${s.headerActions} ${search ? "" : t.pushEnd}`}>
+                  {features.inquiryList && (
+                    <Link
+                      href={listHref}
+                      className={s.listBtn}
+                      aria-label={`${c.header.inquiryList} ${ids.length} 件`}
+                    >
+                      <ProfileOutlined aria-hidden />
+                      <span className={s.desktopOnly}>{c.header.inquiryList}</span>
+                      <span
+                        className={`${s.badge} ${ids.length ? s.badgeOn : ""}`}
+                        key={ids.length}
+                      >
+                        {ids.length}
+                      </span>
+                    </Link>
+                  )}
+                  {phone && features.visit && (
+                    <a href={`tel:${phone}`} className={`${s.bookBtn} ${s.desktopOnly}`}>
+                      {features.visitLabel}
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    className={`${s.iconBtn} ${s.mobileOnly}`}
+                    aria-label="開啟選單"
+                    onClick={() => setMenu(true)}
+                  >
+                    <MenuOutlined aria-hidden />
+                  </button>
+                </div>
+              </div>
               {search && (
-                <Suspense
-                  fallback={<HeaderSearch base={base} categories={categories} params={NO_PARAMS} />}
-                >
+                <Suspense fallback={<MobileSearch base={base} params={NO_PARAMS} />}>
                   <WithParams>
-                    {(params) => (
-                      <HeaderSearch base={base} categories={categories} params={params} />
-                    )}
+                    {(params) => <MobileSearch base={base} params={params} />}
                   </WithParams>
                 </Suspense>
               )}
-              <div className={`${s.headerActions} ${search ? "" : t.pushEnd}`}>
-                <Link
-                  href={listHref}
-                  className={s.listBtn}
-                  aria-label={`${c.header.inquiryList} ${ids.length} 件`}
-                >
-                  <ProfileOutlined aria-hidden />
-                  <span className={s.desktopOnly}>{c.header.inquiryList}</span>
-                  <span className={`${s.badge} ${ids.length ? s.badgeOn : ""}`} key={ids.length}>
-                    {ids.length}
+              <nav className={`${s.catNav} ${s.desktopOnly}`} aria-label="商品分類">
+                <div className={`${s.container} ${s.catNavRow}`}>
+                  {categories.map((x) => (
+                    <Link key={x.id} href={`${base}/products?cat=${x.id}`}>
+                      {x.name}
+                    </Link>
+                  ))}
+                  <Link href={`${base}/products`} className={s.catNavAll}>
+                    {c.categories.all}
+                  </Link>
+                </div>
+              </nav>
+              <Drawer open={menu} onClose={() => setMenu(false)} title={brand.name} size="default">
+                <nav className={s.drawerNav} aria-label="主選單">
+                  {categories.map((x) => (
+                    <Link
+                      key={x.id}
+                      href={`${base}/products?cat=${x.id}`}
+                      onClick={() => setMenu(false)}
+                    >
+                      {x.name}
+                      <span>{x.count}</span>
+                    </Link>
+                  ))}
+                </nav>
+              </Drawer>
+            </header>
+
+            {children}
+
+            <footer id="contact" className={s.footer}>
+              <div className={`${s.container} ${s.footerRow}`}>
+                <div className={s.brand}>
+                  <span className={`${s.mark} ${s.markInv}`} aria-hidden>
+                    {[...brand.name][0]}
                   </span>
-                </Link>
+                  <span className={s.brandText}>
+                    <strong>{company.name}</strong>
+                    {brand.tagline && <span>{brand.tagline}</span>}
+                  </span>
+                </div>
+                {(phone || email || address || hours) && (
+                  <ul className={s.footerContact}>
+                    {phone && (
+                      <li>
+                        <PhoneOutlined aria-hidden /> <a href={`tel:${phone}`}>{phone}</a>
+                      </li>
+                    )}
+                    {email && (
+                      <li>
+                        <a href={`mailto:${email}`}>{email}</a>
+                      </li>
+                    )}
+                    {address && <li>{address}</li>}
+                    {hours && <li>{hours}</li>}
+                  </ul>
+                )}
+                {footerLine && <p className={t.footerLine}>{footerLine}</p>}
+                <p className={s.copy}>{siteCopy.copyright}</p>
+              </div>
+            </footer>
+
+            {(phone || features.inquiryList) && (
+              <div className={`${s.mobileBar} ${s.mobileOnlyFlex}`}>
                 {phone && (
-                  <a href={`tel:${phone}`} className={`${s.bookBtn} ${s.desktopOnly}`}>
-                    {c.header.book}
+                  <a href={`tel:${phone}`}>
+                    <PhoneOutlined aria-hidden /> {c.mobileBar.call}
                   </a>
                 )}
-                <button
-                  type="button"
-                  className={`${s.iconBtn} ${s.mobileOnly}`}
-                  aria-label="開啟選單"
-                  onClick={() => setMenu(true)}
-                >
-                  <MenuOutlined aria-hidden />
-                </button>
-              </div>
-            </div>
-            {search && (
-              <Suspense fallback={<MobileSearch base={base} params={NO_PARAMS} />}>
-                <WithParams>{(params) => <MobileSearch base={base} params={params} />}</WithParams>
-              </Suspense>
-            )}
-            <nav className={`${s.catNav} ${s.desktopOnly}`} aria-label="商品分類">
-              <div className={`${s.container} ${s.catNavRow}`}>
-                {categories.map((x) => (
-                  <Link key={x.id} href={`${base}/products?cat=${x.id}`}>
-                    {x.name}
+                {features.inquiryList && (
+                  <Link href={listHref} className={s.mobileBarMain}>
+                    <ProfileOutlined aria-hidden /> {c.mobileBar.inquiry}（{ids.length}）
                   </Link>
-                ))}
-                <Link href={`${base}/products`} className={s.catNavAll}>
-                  {c.categories.all}
-                </Link>
+                )}
               </div>
-            </nav>
-            <Drawer open={menu} onClose={() => setMenu(false)} title={brand.name} size="default">
-              <nav className={s.drawerNav} aria-label="主選單">
-                {categories.map((x) => (
-                  <Link
-                    key={x.id}
-                    href={`${base}/products?cat=${x.id}`}
-                    onClick={() => setMenu(false)}
-                  >
-                    {x.name}
-                    <span>{x.count}</span>
-                  </Link>
-                ))}
-              </nav>
-            </Drawer>
-          </header>
-
-          {children}
-
-          <footer id="contact" className={s.footer}>
-            <div className={`${s.container} ${s.footerRow}`}>
-              <div className={s.brand}>
-                <span className={`${s.mark} ${s.markInv}`} aria-hidden>
-                  {[...brand.name][0]}
-                </span>
-                <span className={s.brandText}>
-                  <strong>{company.name}</strong>
-                  {brand.tagline && <span>{brand.tagline}</span>}
-                </span>
-              </div>
-              {(phone || email || address || hours) && (
-                <ul className={s.footerContact}>
-                  {phone && (
-                    <li>
-                      <PhoneOutlined aria-hidden /> <a href={`tel:${phone}`}>{phone}</a>
-                    </li>
-                  )}
-                  {email && (
-                    <li>
-                      <a href={`mailto:${email}`}>{email}</a>
-                    </li>
-                  )}
-                  {address && <li>{address}</li>}
-                  {hours && <li>{hours}</li>}
-                </ul>
-              )}
-              <p className={s.copy}>{siteCopy.copyright}</p>
-            </div>
-          </footer>
-
-          <div className={`${s.mobileBar} ${s.mobileOnlyFlex}`}>
-            {phone && (
-              <a href={`tel:${phone}`}>
-                <PhoneOutlined aria-hidden /> {c.mobileBar.call}
-              </a>
             )}
-            <Link href={listHref} className={s.mobileBarMain}>
-              <ProfileOutlined aria-hidden /> {c.mobileBar.inquiry}（{ids.length}）
-            </Link>
           </div>
-        </div>
-      </ConfigProvider>
+        </ConfigProvider>
+      </FeaturesContext.Provider>
     </MockContext.Provider>
   );
 }

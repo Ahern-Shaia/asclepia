@@ -9,10 +9,11 @@ import { asClient, noHorizontalScroll, publishAll, seedShop, sql } from "./suppo
 test.describe.configure({ mode: "serial" });
 test.beforeEach(({ page }) => asClient(page));
 
+type Tab = "店家資料" | "文案與說明" | "主題" | "首頁區塊" | "功能開關" | "圖片";
 const PHONE = "02-2345-6789";
 const SAVE = /儲 ?存$/; // the button has an icon: its name is "save 儲存"
 
-async function openTab(page: Page, tab: "店家資料" | "說明選項" | "主題" | "首頁區塊" | "圖片") {
+async function openTab(page: Page, tab: Tab) {
   await page.goto("/admin/settings");
   await expect(page.getByRole("heading", { level: 1, name: "站台設定" })).toBeVisible();
   await page.getByRole("tab", { name: tab }).click();
@@ -70,7 +71,7 @@ test("statements: none until set, then shown where they belong, warned on effica
   await publishAll(page, context, seeded); // also signs in
   const product = `/products/${seeded.products[0].id}`;
 
-  const panel = await openTab(page, "說明選項");
+  const panel = await openTab(page, "文案與說明");
   await panel.getByLabel("首屏小標").fill("e2e 自有庫存");
   await panel.getByRole("button", { name: "首屏重點：新增一項" }).click();
   await panel.getByLabel("首屏重點第 1 項", { exact: true }).fill("e2e 可開立發票");
@@ -101,7 +102,7 @@ test("statements: none until set, then shown where they belong, warned on effica
   await expect(page.getByText("e2e 保固三個月")).toBeVisible();
 
   // restore takes every block away again
-  const again = await openTab(page, "說明選項");
+  const again = await openTab(page, "文案與說明");
   await again.getByRole("button", { name: /還原上一版/ }).click();
   await page
     .getByRole("dialog", { name: "還原上一版？" })
@@ -120,7 +121,7 @@ const pageVar = (page: Page, name: string) =>
     name,
   );
 
-async function restore(page: Page, tab: "主題" | "首頁區塊") {
+async function restore(page: Page, tab: Tab) {
   const panel = await openTab(page, tab);
   await panel.getByRole("button", { name: /還原上一版/ }).click();
   await page
@@ -238,6 +239,72 @@ test("images: logo and hero photo are uploaded, shown on the public site, and re
   await page.goto("/");
   await expect(page.getByRole("banner").locator("img")).toHaveCount(0);
   await expect(page.locator("section[aria-labelledby=hero-title] > img")).toHaveCount(0);
+});
+
+test("features: prices hidden even from the page data, no inquiry list, custom visit label", async ({
+  page,
+  context,
+}) => {
+  const seeded = await seedShop([{ name: "e2e-開關", brand: "Alpha", model: "F-1", price: 87654 }]);
+  await publishAll(page, context, seeded); // also signs in
+  const product = `/products/${seeded.products[0].id}`;
+  // a phone number makes the visit button show
+  const profile = await openTab(page, "店家資料");
+  await profile.getByLabel("電話").fill("02-2222-3333");
+  await profile.getByRole("button", { name: SAVE }).click();
+  await expect(page.getByText("已儲存，前台已更新。")).toBeVisible();
+
+  const panel = await openTab(page, "功能開關");
+  await panel.getByRole("switch", { name: "顯示價格" }).click();
+  await panel.getByRole("switch", { name: "詢價清單" }).click();
+  await panel.getByLabel("預約按鈕文字").fill("預約看貨");
+  await panel.getByRole("button", { name: SAVE }).click();
+  await expect(page.getByText("已儲存，前台已更新。")).toBeVisible();
+
+  await page.goto(product);
+  await expect(page.getByText("歡迎詢價").first()).toBeVisible();
+  expect(await page.content()).not.toContain("87654"); // not in the HTML nor the RSC payload
+  expect(await page.content()).not.toContain("87,654");
+  await expect(page.getByRole("button", { name: /加入詢價清單/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "詢價這件" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /預約看貨/ }).first()).toBeAttached();
+  await page.goto(`/products?cat=${seeded.category.id}&sort=priceAsc`);
+  await expect(page.getByRole("combobox", { name: "排序" })).toHaveCount(0);
+  expect(await page.content()).not.toContain("87654");
+  await page.goto("/inquiry");
+  await expect(page.getByRole("heading", { name: "詢價清單" })).toHaveCount(0);
+
+  await restore(page, "功能開關");
+  await restore(page, "店家資料");
+  await page.goto(product);
+  await expect(page.getByText("NT$ 87,654").first()).toBeVisible();
+  // positive control for the "not in the page data" checks above: the same probe finds it now
+  expect(await page.content()).toContain("87654");
+  await expect(page.getByRole("button", { name: /加入詢價清單/ })).toBeVisible();
+});
+
+test("texts: hero heading, a buy step and the footer line follow the back office", async ({
+  page,
+  context,
+}) => {
+  await signIn(context);
+  const panel = await openTab(page, "文案與說明");
+  await panel.getByLabel("第 1 行").fill("e2e 二手設備");
+  await panel.getByLabel("第 2 行").fill("");
+  await panel.getByLabel("第 1 步標題").fill("e2e 來電");
+  await panel.getByLabel("頁尾一句話（選填）").fill("e2e 週日公休");
+  await panel.getByRole("button", { name: SAVE }).click();
+  await expect(page.getByText("已儲存，前台已更新。")).toBeVisible();
+
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("e2e 二手設備");
+  await expect(page.getByText("e2e 來電")).toBeVisible();
+  await expect(page.getByRole("contentinfo")).toContainText("e2e 週日公休");
+
+  await restore(page, "文案與說明");
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("看過實機再決定");
+  await expect(page.getByRole("contentinfo")).not.toContainText("e2e 週日公休");
 });
 
 test("two people saving the same tab: the second is told to reload, nothing is overwritten", async ({

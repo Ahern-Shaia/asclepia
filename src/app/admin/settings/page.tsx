@@ -28,6 +28,7 @@ export default async function Page() {
           notes: stamp(settings.notes),
           theme: stamp(settings.theme),
           home: stamp(settings.home),
+          features: stamp(settings.features),
           images,
         }}
       />

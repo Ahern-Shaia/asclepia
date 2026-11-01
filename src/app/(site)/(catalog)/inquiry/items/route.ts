@@ -2,7 +2,9 @@ import { z } from "zod";
 import { publicCardsByIds, publicConfigs } from "@/modules/catalog/server/public/catalog";
 import { INQUIRY_MAX } from "@/modules/inquiry";
 import { fail, toFailure } from "@/server/errors";
+import { siteFeatures } from "@/modules/site-config/server/public/features";
 import { productId } from "../../../_params";
+import { priced } from "../../../_store";
 
 // Current state of the items in a visitor's inquiry list (ids come from their browser, so they
 // are validated and capped). Drafts and hidden items don't come back; sold ones come back flagged.
@@ -20,10 +22,12 @@ export async function GET(req: Request) {
   const parsed = query.safeParse(Object.fromEntries(new URL(req.url).searchParams));
   if (!parsed.success) return Response.json(fail("INVALID"), { status: 400, headers });
   try {
-    const [items, configs] = await Promise.all([
+    const [found, configs, features] = await Promise.all([
       publicCardsByIds(parsed.data.ids),
       publicConfigs(),
+      siteFeatures(),
     ]);
+    const items = priced(found, features);
     const used = new Set(items.map((p) => p.categoryId));
     return Response.json(
       {

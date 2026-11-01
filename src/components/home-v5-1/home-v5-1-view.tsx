@@ -27,10 +27,11 @@ import type { CategoryAttr } from "@/components/shop/attrs";
 import { type ShopCardProduct, ShopCard } from "@/components/shop/product-card";
 import { type ShopBrand, ShopShell, useShopSearch } from "@/components/shop/shop-shell";
 import { homeV3Copy as c } from "@/copy/home-v3";
-import { homeV4Copy as c4 } from "@/copy/home-v4";
 import { homeV5Copy as c5 } from "@/copy/home-v5";
 import { DEFAULT_HOME, type HomeBlock, type HomeLayout } from "@/modules/site-config/home";
+import { ALL_ON, type SiteFeatures } from "@/modules/site-config/features";
 import type { SiteImages } from "@/modules/site-config/images";
+import { DEFAULT_TEXTS, type SiteTexts } from "@/modules/site-config/texts";
 import type { ServiceKind, SiteNotes } from "@/modules/site-config/notes";
 import { type DerivedTheme } from "@/theme/derive";
 import t from "./home-v5-1.module.css";
@@ -76,6 +77,8 @@ export function HomeV51View({
   home = DEFAULT_HOME,
   theme,
   images = {},
+  texts = DEFAULT_TEXTS,
+  features = ALL_ON,
   brand,
   mock = false,
 }: {
@@ -90,12 +93,14 @@ export function HomeV51View({
   home?: HomeLayout;
   theme?: DerivedTheme;
   images?: SiteImages;
+  texts?: SiteTexts;
+  features?: SiteFeatures;
   brand?: ShopBrand;
   mock?: boolean;
 }) {
   const search = useShopSearch(base);
   const total = categories.reduce((n, x) => n + x.count, 0);
-  const visit = !!(company.address || company.hours || company.phone);
+  const visit = features.visit && !!(company.address || company.hours || company.phone);
 
   return (
     <ShopShell
@@ -105,6 +110,8 @@ export function HomeV51View({
       brand={brand}
       theme={theme}
       logo={images.LOGO}
+      features={features}
+      footerLine={texts.footerLine}
       search={false}
       mock={mock}
     >
@@ -134,7 +141,7 @@ export function HomeV51View({
             <div className={s.heroText}>
               {notes.eyebrow && <span className={s.eyebrow}>{notes.eyebrow}</span>}
               <h1 id="hero-title">
-                {c4.heading.map((line) => (
+                {texts.heading.map((line) => (
                   <span key={line}>{line}</span>
                 ))}
               </h1>
@@ -253,7 +260,7 @@ export function HomeV51View({
                       <h2 id="h-buy">{c.buy.title}</h2>
                     </div>
                     <ol className={s.steps}>
-                      {c.buy.steps.map((st, i) => (
+                      {texts.steps.map((st, i) => (
                         <li key={st.title}>
                           <span className={s.stepArt}>
                             <StepIllus step={i as 0 | 1 | 2} />

@@ -260,11 +260,13 @@ export const adminCopy = {
     // the live editor (/admin/settings); the rest of this block also serves the full mockup
     live: {
       intro: "存檔後前台立即更新。每個分頁各自儲存。",
+      section: "要設定的項目",
       tabs: {
         profile: "店家資料",
-        notes: "說明選項",
+        notes: "文案與說明",
         theme: "主題",
         home: "首頁區塊",
+        features: "功能開關",
         images: "圖片",
       },
       phoneHelp: "顯示在頁首、頁尾、手機底部的來電按鈕和詢價表單。留空就不顯示電話。",
@@ -276,6 +278,18 @@ export const adminCopy = {
         "不會動到其他分頁的設定。",
       ],
       unsaved: "有未儲存的變更",
+    },
+    texts: {
+      heading: "首屏大標題",
+      headingHelp:
+        "最多 2 行，每行 16 字以內。兩行都留空就用灰字的預設標題；只填一行就只顯示一行。",
+      headingLine: (n: number) => `第 ${n} 行`,
+      steps: "首頁「怎麼買」三步驟",
+      stepsHelp: "留空的欄位用灰字的預設文字。",
+      stepTitle: (n: number) => `第 ${n} 步標題`,
+      stepBody: (n: number) => `第 ${n} 步說明`,
+      footerLine: "頁尾一句話（選填）",
+      footerLineHelp: "顯示在每一頁最下面、版權字上方。留空就不顯示。",
     },
     images: {
       logoUse: "顯示在頁首，取代店名旁的字母方塊。頁尾是深色底，維持白色字母方塊。",
@@ -297,7 +311,8 @@ export const adminCopy = {
       removeOk: "移除",
     },
     notes: {
-      intro: "這些是店家自己的說明，前台不會自動加上。沒有填的區塊，前台整塊不顯示。",
+      intro:
+        "大標題和「怎麼買」三步驟留空時用灰字的預設文字。其餘是店家自己的說明，前台不會自動加上；沒有填的區塊整塊不顯示。",
       eyebrow: "首屏小標",
       eyebrowHelp: "首頁大標題上方的一小行字，例如「自有庫存 · 可預約看機」。",
       heroPoints: "首屏重點",
@@ -467,19 +482,26 @@ export const adminCopy = {
       intro: "關掉的功能，前台對應的按鈕和區塊會一起隱藏。",
       off: "關掉時：",
       items: {
-        price: { name: "顯示價格", off: "全站價格位置改成「歡迎詢價」。" },
+        showPrice: {
+          name: "顯示價格",
+          off: "全站價格位置改成「歡迎詢價」，也不能依價格排序。價格不會出現在網頁資料裡。",
+        },
         inquiryList: {
           name: "詢價清單",
-          off: "商品頁只剩「詢價這件」，頁首不顯示清單件數。",
+          off: "商品頁只剩「詢價這件」；頁首、手機底部不顯示清單，商品卡沒有「加入詢價清單」，清單頁關閉。",
         },
-        visit: { name: "看機預約", off: "頁首「預約看機」按鈕和首頁看機地點卡都隱藏。" },
+        visit: {
+          name: "看機預約",
+          off: "頁首的預約按鈕、「看機請先來電預約」提示和首頁看機地點卡都隱藏；商品頁的電話按鈕改顯示「致電＋號碼」。",
+        },
         buyback: { name: "收購", off: "首頁「也可以找我們」不顯示收購。" },
         repair: { name: "維修", off: "首頁「也可以找我們」不顯示維修。" },
         rent: { name: "租賃", off: "首頁「也可以找我們」不顯示租賃。" },
       },
       servicesAllOff: "收購、維修、租賃都關掉時，首頁「也可以找我們」整區不顯示。",
-      visitLabel: "按鈕上的字",
-      visitLabelHelp: "例：看機、看貨、試穿。",
+      visitLabel: "預約按鈕文字",
+      visitLabelHelp:
+        "頁首與商品頁的預約按鈕，例如「看機」「看貨」「預約參觀」。最多 6 個字，留空用「預約看機」。",
       visitWordDefault: "看機",
       visitLabelPreview: (w: string) => `前台顯示：預約${w}`,
     },

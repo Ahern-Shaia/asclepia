@@ -9,9 +9,10 @@ import {
   publicFacets,
   publicProducts,
 } from "@/modules/catalog/server/public/catalog";
+import { siteFeatures } from "@/modules/site-config/server/public/features";
 import { siteProfile } from "@/modules/site-config/server/public/profile";
 import { listQuery } from "../../_params";
-import { pageTitle } from "../../_store";
+import { pageTitle, priced } from "../../_store";
 
 const c = shopCopy.list;
 
@@ -37,7 +38,10 @@ export default function Page({ searchParams }: PageProps<"/products">) {
 }
 
 async function Results({ searchParams }: Pick<PageProps<"/products">, "searchParams">) {
-  const query = listQuery(await searchParams);
+  const features = await siteFeatures();
+  const asked = listQuery(await searchParams);
+  // no price sorting while prices are hidden: the order alone would reveal them
+  const query = features.showPrice ? asked : { ...asked, sort: undefined };
   const [result, facets, categories, configs, profile] = await Promise.all([
     publicProducts(query),
     publicFacets({ cat: query.cat, q: query.q }),
@@ -50,7 +54,7 @@ async function Results({ searchParams }: Pick<PageProps<"/products">, "searchPar
       base=""
       phone={profile.phone}
       categories={categories}
-      products={result.items}
+      products={priced(result.items, features)}
       total={result.total}
       facets={facets ?? { all: null, categories: null, values: null }}
       nextCursor={result.nextCursor}

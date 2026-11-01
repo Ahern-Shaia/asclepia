@@ -15,7 +15,7 @@ import { refusal, type SendInquiry } from "./inquiry-send";
 import { useInquiryList } from "./inquiry-store";
 import { MediaImg } from "./media-img";
 import { ShopCard, type ShopCardProduct } from "./product-card";
-import { homeOf, useShopMock } from "./shop-shell";
+import { homeOf, useShopFeatures, useShopMock } from "./shop-shell";
 import l from "./shop.module.css";
 
 const c = shopCopy.detail;
@@ -52,6 +52,7 @@ export function ShopDetailView({
 }) {
   const list = useInquiryList();
   const mock = useShopMock();
+  const features = useShopFeatures();
   const [asking, setAsking] = useState(false);
   const [sent, setSent] = useState<string[] | null>(null);
   const [shown, setShown] = useState(0);
@@ -174,23 +175,26 @@ export function ShopDetailView({
                 <button type="button" className={l.primaryBtn} onClick={() => setAsking(true)}>
                   {c.askOne}
                 </button>
-                <button
-                  type="button"
-                  className={`${l.secondaryBtn} ${added ? l.secondaryOn : ""}`}
-                  aria-pressed={added}
-                  disabled={!added && list.full}
-                  onClick={() => list.toggle(p.id)}
-                >
-                  {added ? <CheckOutlined aria-hidden /> : <PlusOutlined aria-hidden />}
-                  {added ? c.added : c.add}
-                </button>
+                {features.inquiryList && (
+                  <button
+                    type="button"
+                    className={`${l.secondaryBtn} ${added ? l.secondaryOn : ""}`}
+                    aria-pressed={added}
+                    disabled={!added && list.full}
+                    onClick={() => list.toggle(p.id)}
+                  >
+                    {added ? <CheckOutlined aria-hidden /> : <PlusOutlined aria-hidden />}
+                    {added ? c.added : c.add}
+                  </button>
+                )}
                 {phone && (
                   <a href={`tel:${phone}`} className={l.callBtn}>
-                    <PhoneOutlined aria-hidden /> {c.book}
+                    <PhoneOutlined aria-hidden />{" "}
+                    {features.visit ? features.visitLabel : catalogCopy.detail.call(phone)}
                   </a>
                 )}
               </div>
-              {added && (
+              {added && features.inquiryList && (
                 <Link href={`${base}/inquiry`} className={l.note}>
                   <ProfileOutlined aria-hidden /> {c.viewList}（{list.ids.length}）
                 </Link>

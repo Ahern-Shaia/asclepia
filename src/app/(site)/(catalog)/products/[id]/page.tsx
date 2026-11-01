@@ -11,10 +11,11 @@ import {
   publicProducts,
 } from "@/modules/catalog/server/public/catalog";
 import { submitInquiryAction } from "@/modules/inquiry/actions";
+import { siteFeatures } from "@/modules/site-config/server/public/features";
 import { siteNotes } from "@/modules/site-config/server/public/notes";
 import { siteProfile } from "@/modules/site-config/server/public/profile";
 import { productId } from "../../../_params";
-import { pageTitle } from "../../../_store";
+import { pageTitle, priced } from "../../../_store";
 
 const RELATED = 4;
 
@@ -44,20 +45,21 @@ export default function Page({ params }: PageProps<"/products/[id]">) {
 async function Product({ params }: Pick<PageProps<"/products/[id]">, "params">) {
   const p = await find(params);
   if (!p) notFound();
-  const [profile, configs, sameCategory, notes] = await Promise.all([
+  const [profile, configs, sameCategory, notes, features] = await Promise.all([
     siteProfile(),
     publicConfigs(),
     publicProducts({ cat: p.categoryId }),
     siteNotes(),
+    siteFeatures(),
   ]);
   const { config, ...product } = p;
   return (
     <ShopDetailView
       base=""
       phone={profile.phone}
-      product={product}
+      product={priced([product], features)[0]}
       config={config}
-      related={sameCategory.items.filter((x) => x.id !== p.id).slice(0, RELATED)}
+      related={priced(sameCategory.items.filter((x) => x.id !== p.id).slice(0, RELATED), features)}
       configs={configs}
       terms={notes.terms}
       send={submitInquiryAction}

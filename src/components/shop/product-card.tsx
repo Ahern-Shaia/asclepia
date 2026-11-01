@@ -11,7 +11,7 @@ import { shopCopy } from "@/copy/shop";
 import { type Attrs, type CategoryAttr, cardMeta, titleOf } from "./attrs";
 import { INQUIRY_MAX, useInquiryList } from "./inquiry-store";
 import { MediaImg } from "./media-img";
-import { useShopMock } from "./shop-shell";
+import { useShopFeatures, useShopMock } from "./shop-shell";
 import l from "./shop.module.css";
 
 const c = shopCopy.card;
@@ -40,6 +40,7 @@ export function ShopCard({
 }) {
   const list = useInquiryList();
   const mock = useShopMock();
+  const features = useShopFeatures();
   const added = list.has(p.id);
   const title = titleOf(config, p.attrs);
   const blocked = !added && list.full;
@@ -91,7 +92,9 @@ export function ShopCard({
           </span>
         </span>
       </Link>
-      {!p.sold && (blocked ? <Tooltip title={c.full(INQUIRY_MAX)}>{addBtn}</Tooltip> : addBtn)}
+      {!p.sold &&
+        features.inquiryList &&
+        (blocked ? <Tooltip title={c.full(INQUIRY_MAX)}>{addBtn}</Tooltip> : addBtn)}
     </li>
   );
 }

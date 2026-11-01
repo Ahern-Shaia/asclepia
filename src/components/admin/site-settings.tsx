@@ -17,10 +17,12 @@ import {
   Flex,
   Form,
   type FormInstance,
+  Grid,
   Input,
   Modal,
   Row,
   Select,
+  Switch,
   Tabs,
   theme,
   Typography,
@@ -30,16 +32,23 @@ import { type ReactNode, useState } from "react";
 import { adminCopy } from "@/copy/admin";
 import {
   restoreSettingsAction,
+  saveCopyAction,
+  saveFeaturesAction,
   saveHomeAction,
-  saveNotesAction,
   saveProfileAction,
   saveThemeAction,
 } from "@/modules/site-config/actions";
+import {
+  DEFAULT_VISIT_LABEL,
+  type SiteFeatures,
+  VISIT_LABEL_MAX,
+} from "@/modules/site-config/features";
 import type { HomeLayout } from "@/modules/site-config/home";
 import type { SiteImages } from "@/modules/site-config/images";
-import type { NotesInput, ProfileInput, SettingsSection } from "@/modules/site-config/admin-input";
+import type { CopyInput, ProfileInput, SettingsSection } from "@/modules/site-config/admin-input";
 import { NOTE_LIMITS as N, SERVICE_KINDS, type SiteNotes } from "@/modules/site-config/notes";
 import { PROFILE_LIMITS as P } from "@/modules/site-config/profile";
+import { DEFAULT_TEXTS, type RawTexts, TEXT_LIMITS as T } from "@/modules/site-config/texts";
 import type { Result } from "@/server/action";
 import type { ThemeInput } from "@/theme/derive";
 import { call, type Failure, FailureAlert, fieldErrorsFor } from "./action-result";
@@ -52,6 +61,8 @@ const s = adminCopy.settings;
 const live = s.live;
 const n = s.notes;
 const pf = s.profile;
+const tx = s.texts;
+const fs = s.features;
 
 type Meta = {
   version: number;
@@ -61,9 +72,10 @@ type Meta = {
 };
 export type SettingsData = {
   profile: Meta & { value: ProfileInput };
-  notes: Meta & { value: SiteNotes };
+  notes: Meta & { value: SiteNotes & RawTexts };
   theme: Meta & { value: ThemeInput };
   home: Meta & { value: HomeLayout };
+  features: Meta & { value: SiteFeatures };
   images: SiteImages;
 };
 
@@ -72,6 +84,14 @@ export type SettingsData = {
 export function SiteSettings({ data }: { data: SettingsData }) {
   const { token } = theme.useToken();
   const [warnings, setWarnings] = useState<string[]>([]);
+  const [active, setActive] = useState("profile");
+  // Six tabs don't fit a phone: antd scrolls the bar with no visible "more", so the last tabs
+  // were simply off screen. Narrow screens pick the tab from a select instead.
+  const narrow = Grid.useBreakpoint().md === false;
+  const pick = (key: string) => {
+    setActive(key);
+    setWarnings([]);
+  };
   const tabs: { key: string; label: string; body: ReactNode }[] = [
     {
       key: "profile",
@@ -93,6 +113,11 @@ export function SiteSettings({ data }: { data: SettingsData }) {
       label: live.tabs.home,
       body: <HomeTab key={data.home.version} meta={data.home} onSaved={setWarnings} />,
     },
+    {
+      key: "features",
+      label: live.tabs.features,
+      body: <FeaturesTab key={data.features.version} meta={data.features} onSaved={setWarnings} />,
+    },
     { key: "images", label: live.tabs.images, body: <ImagesTab images={data.images} /> },
   ];
   return (
@@ -110,7 +135,25 @@ export function SiteSettings({ data }: { data: SettingsData }) {
         />
       )}
       <Tabs
-        onChange={() => setWarnings([])}
+        activeKey={active}
+        onChange={pick}
+        renderTabBar={(props, DefaultTabBar) =>
+          narrow ? (
+            <Flex vertical gap={4} style={{ paddingBlockEnd: 12 }}>
+              <Typography.Text strong id="settings-section">
+                {live.section}
+              </Typography.Text>
+              <Select
+                aria-labelledby="settings-section"
+                value={active}
+                onChange={pick}
+                options={tabs.map((t) => ({ value: t.key, label: t.label }))}
+              />
+            </Flex>
+          ) : (
+            <DefaultTabBar {...props} />
+          )
+        }
         items={tabs.map((t) => ({
           key: t.key,
           label: t.label,
@@ -392,8 +435,8 @@ function NotesTab({
   meta: SettingsData["notes"];
   onSaved: (w: string[]) => void;
 }) {
-  const [form] = Form.useForm<NotesInput>();
-  const { save, bar, markDirty } = useSection<NotesInput>(
+  const [form] = Form.useForm<CopyInput>();
+  const { save, bar, markDirty } = useSection<CopyInput>(
     "COPY",
     live.tabs.notes,
     meta,
@@ -416,8 +459,14 @@ function NotesTab({
             heroPoints: v.heroPoints ?? [],
             terms: v.terms ?? [],
             services: (v.services ?? []).map((x) => ({ ...x, body: x.body ?? "" })),
+            heading: [v.heading?.[0] ?? "", v.heading?.[1] ?? ""],
+            steps: [0, 1, 2].map((i) => ({
+              title: v.steps?.[i]?.title ?? "",
+              body: v.steps?.[i]?.body ?? "",
+            })) as CopyInput["steps"],
+            footerLine: v.footerLine ?? "",
           },
-          saveNotesAction,
+          saveCopyAction,
         )
       }
     >
@@ -426,6 +475,21 @@ function NotesTab({
         <Form.Item label={n.eyebrow} name="eyebrow" extra={n.eyebrowHelp}>
           <Input maxLength={N.eyebrow} showCount style={{ maxInlineSize: 480 }} />
         </Form.Item>
+        <Card title={tx.heading} variant="outlined" size="small" styles={{ body: { padding: 16 } }}>
+          <Flex vertical gap={8}>
+            <Typography.Text type="secondary">{tx.headingHelp}</Typography.Text>
+            {[0, 1].map((i) => (
+              <Form.Item key={i} name={["heading", i]} label={tx.headingLine(i + 1)}>
+                <Input
+                  maxLength={T.headingLine}
+                  showCount
+                  placeholder={DEFAULT_TEXTS.heading[i] ?? ""}
+                  style={{ maxInlineSize: 480 }}
+                />
+              </Form.Item>
+            ))}
+          </Flex>
+        </Card>
         <ListEditor
           name="heroPoints"
           label={n.heroPoints}
@@ -438,6 +502,29 @@ function NotesTab({
             </Form.Item>
           )}
         />
+        <Card title={tx.steps} variant="outlined" size="small" styles={{ body: { padding: 16 } }}>
+          <Flex vertical gap={8}>
+            <Typography.Text type="secondary">{tx.stepsHelp}</Typography.Text>
+            {DEFAULT_TEXTS.steps.map((d, i) => (
+              <Flex key={i} gap={8} wrap>
+                <Form.Item
+                  name={["steps", i, "title"]}
+                  label={tx.stepTitle(i + 1)}
+                  style={{ flex: "1 1 140px" }}
+                >
+                  <Input maxLength={T.stepTitle} placeholder={d.title} />
+                </Form.Item>
+                <Form.Item
+                  name={["steps", i, "body"]}
+                  label={tx.stepBody(i + 1)}
+                  style={{ flex: "3 1 260px" }}
+                >
+                  <Input maxLength={T.stepBody} placeholder={d.body} />
+                </Form.Item>
+              </Flex>
+            ))}
+          </Flex>
+        </Card>
         <ListEditor
           name="terms"
           label={n.terms}
@@ -483,6 +570,67 @@ function NotesTab({
             </Flex>
           )}
         />
+        <Form.Item label={tx.footerLine} name="footerLine" extra={tx.footerLineHelp}>
+          <Input maxLength={T.footerLine} showCount style={{ maxInlineSize: 640 }} />
+        </Form.Item>
+        {bar}
+      </Flex>
+    </Form>
+  );
+}
+
+function FeaturesTab({
+  meta,
+  onSaved,
+}: {
+  meta: SettingsData["features"];
+  onSaved: (w: string[]) => void;
+}) {
+  const [form] = Form.useForm<SiteFeatures>();
+  const { save, bar, markDirty } = useSection<SiteFeatures>(
+    "FEATURES",
+    live.tabs.features,
+    meta,
+    form,
+    onSaved,
+  );
+  const visitOn = Form.useWatch("visit", form) ?? meta.value.visit;
+  const switchRow = (name: "showPrice" | "inquiryList" | "visit") => (
+    <Flex gap={12} align="start">
+      <Form.Item name={name} valuePropName="checked" noStyle>
+        <Switch aria-label={fs.items[name].name} />
+      </Form.Item>
+      <Flex vertical gap={2}>
+        <Typography.Text strong>{fs.items[name].name}</Typography.Text>
+        <Typography.Text type="secondary">
+          {fs.off}
+          {fs.items[name].off}
+        </Typography.Text>
+      </Flex>
+    </Flex>
+  );
+  return (
+    <Form
+      form={form}
+      layout="vertical"
+      initialValues={meta.value}
+      onValuesChange={markDirty}
+      onFinish={(v) => save({ ...v, visitLabel: v.visitLabel ?? "" }, saveFeaturesAction)}
+    >
+      <Flex vertical gap={16}>
+        <Typography.Text type="secondary">{fs.intro}</Typography.Text>
+        {switchRow("showPrice")}
+        {switchRow("inquiryList")}
+        {switchRow("visit")}
+        {visitOn && (
+          <Form.Item label={fs.visitLabel} name="visitLabel" extra={fs.visitLabelHelp}>
+            <Input
+              maxLength={VISIT_LABEL_MAX}
+              placeholder={DEFAULT_VISIT_LABEL}
+              style={{ maxInlineSize: 240 }}
+            />
+          </Form.Item>
+        )}
         {bar}
       </Flex>
     </Form>
