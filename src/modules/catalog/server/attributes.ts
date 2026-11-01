@@ -171,3 +171,46 @@ export async function saveCategoryConfig(input: ConfigInput, actor: string, clie
     return { categoryId: input.categoryId };
   });
 }
+
+// Every category's config in one query, for the product form (switching category swaps fields
+// without another round trip). Shape matches src/components/shop/attrs.ts CategoryAttr.
+export async function listCategoryConfigs(client: Db = db()) {
+  const rows = await client.categoryAttribute.findMany({
+    orderBy: [{ categoryId: "asc" }, { sortOrder: "asc" }],
+    include: { attribute: true },
+    take: 2000,
+  });
+  const out: Record<
+    string,
+    {
+      attributeId: string;
+      key: string;
+      label: string;
+      type: "TEXT" | "NUMBER" | "YEAR" | "SELECT";
+      options: string[];
+      unit: string | null;
+      maxLength: number | null;
+      required: boolean;
+      inTitle: boolean;
+      onCard: boolean;
+      inNameplate: boolean;
+      filterable: boolean;
+    }[]
+  > = {};
+  for (const r of rows)
+    (out[r.categoryId] ??= []).push({
+      attributeId: r.attributeId,
+      key: r.attribute.key,
+      label: r.attribute.label,
+      type: r.attribute.type,
+      options: r.attribute.options,
+      unit: r.attribute.unit,
+      maxLength: r.attribute.maxLength,
+      required: r.required,
+      inTitle: r.inTitle,
+      onCard: r.onCard,
+      inNameplate: r.inNameplate,
+      filterable: r.filterable,
+    });
+  return out;
+}
