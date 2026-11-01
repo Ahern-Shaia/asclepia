@@ -70,7 +70,7 @@
 | 14 mockup | 放 `docs/mockups/`，檔頭標身分（提案／待落地／已落地／棄用／競品）。2026-10-31 前台與後台 mockup：身分＝提案，用 antd 實際渲染 | ✅ 制度；⏳ 等用戶確認視覺 |
 | 15 / 22 | 沿用 `AGENTS.md` 通用鐵則 | ✅ |
 | 16 DoD | grep 呼叫端 ＋ FMEA（R17）＋ 使用手冊節（後台上架操作） | ✅ |
-| 17 CI | 「出貨前會跑的那一組」＝ `pnpm check`（lint、format、type-check、depcruise、guards 自我測試、guards、test、build）＋ `pnpm test:e2e`。CI 平台建議 GitHub Actions，跑同一組指令 | ✅ 清單；CI ⏳ 等 git remote |
+| 17 CI | 「出貨前會跑的那一組」＝ `pnpm check`（lint、format、type-check、depcruise、guards 自我測試、guards、test、build）＋ `pnpm test:e2e`。CI 平台建議 GitHub Actions，跑同一組指令 | ✅ 清單；✅ CI 2026-11-01 `.github/workflows/ci.yml` |
 | 18 錯誤訊息 | 給使用者的句子和 API `code` 分開；fallback 回通用句，不回原文 | ✅ |
 | 19 語言 | 回覆用繁體中文；程式碼、識別字、commit 用英文 | ✅ |
 | 20 授權邊界 | 改 code、commit、本地實驗自己做；**每次 `git push` 都問**；prod 由人手動（R10）；真的對外寄信／通知之前先問 | ✅ |
@@ -190,7 +190,7 @@
 | 部署平台（Vercel+Neon / Cloudflare / 自架） | 上線前一個 milestone |
 | 商品圖片儲存（object storage，與主網域分開） | 跟部署平台一起決定；開發期先放本機 |
 | 寄信服務（詢價通知） | MVP 先只寫進 DB、後台查看；要通知時再定 |
-| CI 平台 | remote 已建（GitHub private）；GitHub Actions 跑 `pnpm check` + `pnpm test:e2e` 待做（§0.2 #17） |
+| CI 平台 | ✅ 2026-11-01 `.github/workflows/ci.yml`：check（含兩道 audit）、e2e、gitleaks 全歷史；action 以 SHA 釘住。⏳ 第一次在 GitHub 上實際跑完前，e2e job 只在本機以同樣指令驗證過 |
 | mockup 分享站 | 用戶 2026-10-31 要部署到 Render 給別人看（`ENABLE_MOCKUPS=1`）；部署由用戶操作（R10） |
 
 ---
