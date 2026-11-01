@@ -1,5 +1,8 @@
 "use server";
 
+// Server Actions are public POST endpoints imported by client components (as references), so this
+// file lives outside server/ and holds no DB access itself: every export goes through adminAction.
+
 import { updateTag } from "next/cache";
 import { adminCopy } from "@/copy/admin";
 import { adminAction } from "@/server/action";
@@ -11,10 +14,10 @@ import {
   idSchema,
   reorderSchema,
   saveProductSchema,
-} from "../admin-input";
-import { deleteAttributeDef, saveAttributeDef, saveCategoryConfig } from "./attributes";
-import { deleteCategory, reorderCategories, saveCategory } from "./categories";
-import { changeStatus, deleteDraft, saveProduct } from "./products";
+} from "./admin-input";
+import { deleteAttributeDef, saveAttributeDef, saveCategoryConfig } from "./server/attributes";
+import { deleteCategory, reorderCategories, saveCategory } from "./server/categories";
+import { changeStatus, deleteDraft, saveProduct } from "./server/products";
 
 // Public catalog caches are tagged "catalog" and "product:<id>" (stack-rules P7-3). Attribute and
 // category changes alter cards and filters everywhere, so they drop the whole catalog tag.

@@ -19,6 +19,7 @@ fixture() { # name -> "relative/path<TAB>violating line"
     server-only-import) printf '%s\t%s' "server/secrets.ts" 'export const k = 1;' ;;
     db-transaction-timeout) printf '%s\t%s' "server/db.ts" 'import "server-only";\nexport const db = 1;' ;;
     admin-authz) printf '%s\t%s' "app/admin/inquiries/page.tsx" 'export default function P() { return null; }' ;;
+    server-actions-wrapped) printf '%s\t%s' "modules/x/actions.ts" '"use server";\nexport const ok = adminAction("a", s, f);\nexport async function leak() {}' ;;
     no-public-secret)  printf '%s\t%s' "lib/env.ts" 'process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET;' ;;
     *) return 1 ;;
   esac

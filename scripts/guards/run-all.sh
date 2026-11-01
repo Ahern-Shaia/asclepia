@@ -30,6 +30,14 @@ for rule in "${RULES[@]}"; do
       grep -qE -- "${pattern#__MISSING__}" "$f" || { hits+="$rel: missing ${pattern#__MISSING__}"$'\n'; rc=0; }
     done < <(find "$ROOT" -type f \( -name '*.ts' -o -name '*.tsx' \) -not -path '*/generated/*')
     hits="${hits%$'\n'}"
+  elif [[ "$pattern" == __ACTIONS__* ]]; then
+    # "use server" files: every export must be `export const x = adminAction(…)` / publicAction(…)
+    hits=""; rc=1
+    while IFS= read -r f; do
+      head -3 "$f" | grep -qE "^[\"']use server[\"'];?[[:space:]]*$" || continue
+      m=$(grep -nE '^export ' "$f" | grep -vE "^[0-9]+:export const [A-Za-z0-9_]+[[:space:]]*=[[:space:]]*(adminAction|publicAction)[(]") && { hits+="$f:$m"$'\n'; rc=0; }
+    done < <(find "$ROOT" -type f \( -name '*.ts' -o -name '*.tsx' \) -not -path '*/generated/*')
+    hits="${hits%$'\n'}"
   elif [[ "$pattern" == __SERVER__* ]]; then
     # only files that are Server Components (no "use client" directive) and import antd
     hits=""; rc=1
