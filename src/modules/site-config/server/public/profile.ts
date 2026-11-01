@@ -12,7 +12,7 @@ export async function siteProfile(): Promise<SiteProfile> {
   cacheLife("hours");
   cacheTag("site-config");
   if (!hasDatabase()) return profileSchema.parse({});
-  const raw = (await siteConfigValues()).PROFILE;
+  const raw = (await siteConfigValues()).values.PROFILE;
   const value = raw && typeof raw === "object" ? raw : {};
   return profileSchema.parse({ ...profileSchema.parse({}), ...value });
 }

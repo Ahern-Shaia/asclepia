@@ -4,6 +4,7 @@
 // file holds no DB access itself: every export goes through adminAction.
 
 import { updateTag } from "next/cache";
+import { z } from "zod";
 import { adminCopy } from "@/copy/admin";
 import { findEfficacyWords } from "@/modules/catalog";
 import { adminAction } from "@/server/action";
@@ -14,7 +15,9 @@ import {
   saveProfileSchema,
   saveThemeSchema,
 } from "./admin-input";
+import { siteImageKindSchema } from "./images";
 import { restoreSection, saveSection } from "./server/admin";
+import { removeSiteImage } from "./server/images";
 
 // Public reads of settings are tagged "site-config" (server/public/*.ts).
 const invalidate = () => updateTag("site-config");
@@ -82,6 +85,16 @@ export const restoreSettingsAction = adminAction(
   restoreSettingsSchema,
   async ({ section, expectedVersion }, admin) => {
     const r = await restoreSection(section, expectedVersion, admin.email);
+    invalidate();
+    return { data: r };
+  },
+);
+
+export const removeSiteImageAction = adminAction(
+  "site-config.image.remove",
+  z.object({ kind: siteImageKindSchema }),
+  async ({ kind }, admin) => {
+    const r = await removeSiteImage(kind, admin.email);
     invalidate();
     return { data: r };
   },

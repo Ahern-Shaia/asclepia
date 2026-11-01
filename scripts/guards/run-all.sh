@@ -61,7 +61,9 @@ for rule in "${RULES[@]}"; do
       hits=$(grep -vE '/modules/(catalog|site-config)/server/public/' <<<"$hits"); [[ -n "$hits" ]] && rc=0 || rc=1
     fi
     if [[ "$name" == sharp-only-in-images && $rc -eq 0 ]]; then
-      hits=$(grep -v '/modules/catalog/server/images/' <<<"$hits"); [[ -n "$hits" ]] && rc=0 || rc=1
+      # allowed: the pipeline itself (src/server/images/*.ts, nothing deeper) and tests, which only
+      # draw fixtures. A substring match ('/server/images/') also let modules/*/server/images/ in.
+      hits=$(grep -vE "^${ROOT}/server/images/[^/]+:|[.]test[.]ts:" <<<"$hits"); [[ -n "$hits" ]] && rc=0 || rc=1
     fi
     if [[ $rc -le 1 && "$name" == no-public-secret && "$ROOT" == src && -f .env.example ]]; then
       extra=$(grep -nE -- "$pattern" .env.example) && { hits+=$'\n'".env.example:$extra"; rc=0; }

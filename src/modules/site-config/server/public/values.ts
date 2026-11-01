@@ -3,15 +3,41 @@ import { cacheLife, cacheTag } from "next/cache";
 import type { ConfigSection } from "@/generated/prisma/client";
 import { db } from "@/server/db";
 import { hasDatabase } from "@/server/env";
+import { fileName, KEY } from "@/server/images/storage";
+import type { SiteImageKind, SiteImages } from "../../images";
 
-// Every SiteConfig section in one query and one cache entry: the public readers (profile, notes,
-// theme, home) each take their part, so a page cold after a settings save costs one query, not four
-// (performance-baseline §0 #3).
-export async function siteConfigValues(): Promise<Partial<Record<ConfigSection, unknown>>> {
+type Row = { t: "C" | "A"; k: string; value: unknown };
+export type SiteConfigValues = {
+  values: Partial<Record<ConfigSection, unknown>>;
+  images: SiteImages;
+};
+
+// Every SiteConfig section and the store images in one query and one cache entry: the public
+// readers (profile, notes, theme, home, images) each take their part, so a page cold after a
+// settings save costs one query, not five (performance-baseline §0 #3).
+export async function siteConfigValues(): Promise<SiteConfigValues> {
   "use cache";
   cacheLife("hours");
   cacheTag("site-config");
-  if (!hasDatabase()) return {};
-  const rows = await db().siteConfig.findMany({ select: { section: true, value: true } });
-  return Object.fromEntries(rows.map((r) => [r.section, r.value]));
+  if (!hasDatabase()) return { values: {}, images: {} };
+  const rows = await db().$queryRaw<Row[]>`
+    select 'C' as t, "section"::text as k, "value" from "SiteConfig"
+    union all
+    select 'A', "kind"::text,
+      jsonb_build_object('key', "storageKey", 'width', "width", 'height', "height")
+    from "SiteAsset" where "kind" in ('LOGO', 'HERO')`;
+  const out: SiteConfigValues = { values: {}, images: {} };
+  for (const r of rows) {
+    if (r.t === "C") out.values[r.k as ConfigSection] = r.value;
+    else {
+      const a = r.value as { key: string; width: number; height: number };
+      if (KEY.test(a.key))
+        out.images[r.k as SiteImageKind] = {
+          src: `/media/${fileName(a.key, 1600)}`,
+          width: a.width,
+          height: a.height,
+        };
+    }
+  }
+  return out;
 }

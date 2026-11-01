@@ -1,4 +1,4 @@
-import { FILE, readMedia } from "@/modules/catalog/server/images/storage";
+import { FILE, readMedia } from "@/server/images/storage";
 
 // Serves re-encoded product images (development storage). Names are random and immutable, so they
 // cache forever. nosniff + a sandboxing CSP keep a file from ever running as a page

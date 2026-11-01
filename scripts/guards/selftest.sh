@@ -21,8 +21,8 @@ fixture() { # name -> "relative/path<TAB>violating line"
     admin-authz) printf '%s\t%s' "app/admin/inquiries/page.tsx" 'export default function P() { return null; }' ;;
     server-actions-wrapped) printf '%s\t%s' "modules/x/actions.ts" '"use server";\nexport const ok = adminAction("a", s, f);\nexport async function leak() {}' ;;
     sharp-only-in-images) printf '%s\t%s' "modules/catalog/server/products.ts" 'import sharp from "sharp";' ;;
-    sharp-pixel-limit) printf '%s\t%s' "modules/catalog/server/images/process.ts" 'import "server-only";\nsharp(b).timeout({ seconds: 30 });' ;;
-    sharp-timeout) printf '%s\t%s' "modules/catalog/server/images/process.ts" 'import "server-only";\nsharp(b, { limitInputPixels: 1 });' ;;
+    sharp-pixel-limit) printf '%s\t%s' "server/images/process.ts" 'import "server-only";\nsharp(b).timeout({ seconds: 30 });' ;;
+    sharp-timeout) printf '%s\t%s' "server/images/process.ts" 'import "server-only";\nsharp(b, { limitInputPixels: 1 });' ;;
     use-cache-public-only) printf '%s\t%s' "modules/inquiry/server/list.ts" 'export async function f() {\n  "use cache";\n}' ;;
     no-private-cache) printf '%s\t%s' "modules/x/server/public/a.ts" '"use cache: private";' ;;
     cache-life) printf '%s\t%s' "modules/catalog/server/public/a.ts" 'import "server-only";\ncacheTag("catalog");' ;;

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { addImage } from "@/modules/catalog/server/images";
-import { MAX_UPLOAD_BYTES } from "@/modules/catalog/server/images/process";
+import { MAX_UPLOAD_BYTES } from "@/server/images/process";
 import { DomainError } from "@/server/errors";
 import { adminRoute, readCapped } from "@/server/route";
 

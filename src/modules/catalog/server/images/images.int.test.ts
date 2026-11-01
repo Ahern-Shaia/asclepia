@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, inject, it, vi } from "vitest";
 import { createDb } from "@/server/db";
 import { DomainError } from "@/server/errors";
 import { addImage, deleteImage, MAX_IMAGES, reorderImages } from ".";
-import { _slotsInUse, processImage } from "./process";
+import { _slotsInUse, processImage } from "@/server/images/process";
 import { changeStatus } from "../products";
 
 const db = createDb(inject("appDatabaseUrl"), 3);

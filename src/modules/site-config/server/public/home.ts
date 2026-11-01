@@ -10,6 +10,6 @@ export async function siteHome(): Promise<HomeLayout> {
   cacheLife("hours");
   cacheTag("site-config");
   if (!hasDatabase()) return DEFAULT_HOME;
-  const raw = (await siteConfigValues()).HOME;
+  const raw = (await siteConfigValues()).values.HOME;
   return readHome(raw);
 }

@@ -2,8 +2,8 @@ import "server-only";
 import { audit } from "@/server/audit";
 import { type Db, db } from "@/server/db";
 import { DomainError } from "@/server/errors";
-import { processImage } from "./process";
-import { newKey, putImage, removeImage } from "./storage";
+import { processImage } from "@/server/images/process";
+import { newKey, putImage, removeImage } from "@/server/images/storage";
 
 export const MAX_IMAGES = 20; // catalog.md §4.2
 

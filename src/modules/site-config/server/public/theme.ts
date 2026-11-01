@@ -11,6 +11,6 @@ export async function siteTheme(): Promise<ThemeInput> {
   cacheLife("hours");
   cacheTag("site-config");
   if (!hasDatabase()) return DEFAULT_THEME;
-  const raw = (await siteConfigValues()).THEME;
+  const raw = (await siteConfigValues()).values.THEME;
   return readTheme(raw);
 }

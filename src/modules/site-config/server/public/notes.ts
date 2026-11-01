@@ -10,7 +10,7 @@ export async function siteNotes(): Promise<SiteNotes> {
   cacheLife("hours");
   cacheTag("site-config");
   if (!hasDatabase()) return noNotes;
-  const raw = (await siteConfigValues()).COPY;
+  const raw = (await siteConfigValues()).values.COPY;
   const value = raw && typeof raw === "object" ? raw : {};
   return siteNotesSchema.parse(value);
 }
