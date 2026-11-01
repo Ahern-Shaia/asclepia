@@ -4,9 +4,11 @@ import { audit } from "@/server/audit";
 import { type Db, db } from "@/server/db";
 import { DomainError } from "@/server/errors";
 import type { SettingsSection } from "../admin-input";
+import { readFeatures } from "../features";
 import { readHome } from "../home";
 import { siteNotesSchema } from "../notes";
 import { profileSchema } from "../profile";
+import { rawTexts } from "../texts";
 import { readTheme } from "../theme";
 
 // 站台設定 writes (site-config.md §4.2, OQ-CFG-6). Each section is one JSON document with a version
@@ -19,7 +21,13 @@ type Json = Prisma.InputJsonValue;
 const asObject = (v: unknown): Record<string, unknown> =>
   v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
 
-const SECTIONS = ["PROFILE", "COPY", "THEME", "HOME"] as const satisfies readonly SettingsSection[];
+const SECTIONS = [
+  "PROFILE",
+  "COPY",
+  "THEME",
+  "HOME",
+  "FEATURES",
+] as const satisfies readonly SettingsSection[];
 
 export async function getSettings(client: Db = db()) {
   // two queries for every tab: the rows, and which sections have a write to restore from
@@ -46,9 +54,10 @@ export async function getSettings(client: Db = db()) {
   };
   return {
     profile: section("PROFILE", (v) => profileSchema.parse({ ...profileSchema.parse({}), ...v })),
-    notes: section("COPY", (v) => siteNotesSchema.parse(v)),
+    notes: section("COPY", (v) => ({ ...siteNotesSchema.parse(v), ...rawTexts(v) })),
     theme: section("THEME", readTheme),
     home: section("HOME", readHome),
+    features: section("FEATURES", readFeatures),
   };
 }
 

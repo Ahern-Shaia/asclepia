@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { adminCopy } from "@/copy/admin";
 import { checkTheme, isHex } from "@/theme/derive";
+import { featuresInputSchema } from "./features";
 import { homeInputSchema } from "./home";
 import { NOTE_LIMITS as N, SERVICE_KINDS } from "./notes";
 import { PROFILE_LIMITS as P } from "./profile";
+import { textsInputSchema } from "./texts";
 import { RADIUS_STEPS } from "./theme";
 
 // Back-office input for 站台設定 (site-config.md §4.2, §4.5-bis). Strict, unlike the public
@@ -63,13 +65,19 @@ export const themeInputSchema = z
 // Optimistic lock: the version the editor was opened with (0 = never saved).
 const version = z.number().int().min(0);
 export const saveProfileSchema = z.object({ value: profileInputSchema, expectedVersion: version });
-export const saveNotesSchema = z.object({ value: notesInputSchema, expectedVersion: version });
+// The 文案 tab saves the whole COPY section: store statements (notes) and editable texts.
+export const copyInputSchema = notesInputSchema.extend(textsInputSchema.shape);
+export const saveCopySchema = z.object({ value: copyInputSchema, expectedVersion: version });
+export const saveFeaturesSchema = z.object({
+  value: featuresInputSchema,
+  expectedVersion: version,
+});
 export const saveThemeSchema = z.object({ value: themeInputSchema, expectedVersion: version });
 export const saveHomeSchema = z.object({
   value: z.object({ blocks: homeInputSchema }),
   expectedVersion: version,
 });
-export const SETTINGS_SECTIONS = ["PROFILE", "COPY", "THEME", "HOME"] as const;
+export const SETTINGS_SECTIONS = ["PROFILE", "COPY", "THEME", "HOME", "FEATURES"] as const;
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
 export const restoreSettingsSchema = z.object({
   section: z.enum(SETTINGS_SECTIONS),
@@ -77,4 +85,5 @@ export const restoreSettingsSchema = z.object({
 });
 export type ProfileInput = z.output<typeof profileInputSchema>;
 export type NotesInput = z.output<typeof notesInputSchema>;
+export type CopyInput = z.output<typeof copyInputSchema>;
 export type ThemeValue = z.output<typeof themeInputSchema>;

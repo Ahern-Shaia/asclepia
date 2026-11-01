@@ -6,6 +6,17 @@ import { palette, themePresets } from "@/theme/tokens";
 import { notesInputSchema, profileInputSchema, saveThemeSchema } from "../admin-input";
 
 const forest = themePresets[1];
+// the 文案 tab's starting point: no statements, and every editable text empty (defaults apply)
+const blank = { title: "", body: "" };
+const EMPTY_COPY = {
+  eyebrow: "",
+  heroPoints: [],
+  terms: [],
+  services: [],
+  heading: ["", ""],
+  steps: [blank, blank, blank],
+  footerLine: "",
+};
 import { getSettings, restoreSection, saveSection } from "./admin";
 
 // 站台設定 on the low-privilege app role (site-config.md §4.2, OQ-CFG-6). SiteConfig is one row per
@@ -48,7 +59,7 @@ describe("site settings", () => {
     expect(queries).toBeLessThanOrEqual(2); // performance-baseline §0 #3: the page adds 1 more
     expect(s.profile).toMatchObject({ version: 0, canRestore: false, savedBy: null });
     expect(s.profile.value.name).toBe("Asclepia");
-    expect(s.notes.value).toEqual({ eyebrow: "", heroPoints: [], terms: [], services: [] });
+    expect(s.notes.value).toEqual(EMPTY_COPY);
   });
 
   it("saves, refuses a stale version, and audits the whole value before and after", async () => {
@@ -97,12 +108,7 @@ describe("site settings", () => {
     expect(audit).toMatchObject({ result: "warn", diff: { efficacyWords: ["治療"], from: {} } });
     expect((await getSettings(db)).notes.value.heroPoints).toEqual(["可開立發票"]);
     await restoreSection("COPY", 1, actor, db);
-    expect((await getSettings(db)).notes.value).toEqual({
-      eyebrow: "",
-      heroPoints: [],
-      terms: [],
-      services: [],
-    });
+    expect((await getSettings(db)).notes.value).toEqual(EMPTY_COPY);
   });
 
   it("refuses a theme that fails the contrast gate, naming the pair", () => {

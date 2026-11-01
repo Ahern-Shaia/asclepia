@@ -10,8 +10,9 @@ import { findEfficacyWords } from "@/modules/catalog";
 import { adminAction } from "@/server/action";
 import {
   restoreSettingsSchema,
+  saveCopySchema,
+  saveFeaturesSchema,
   saveHomeSchema,
-  saveNotesSchema,
   saveProfileSchema,
   saveThemeSchema,
 } from "./admin-input";
@@ -33,15 +34,18 @@ export const saveProfileAction = adminAction(
 );
 
 // Same efficacy-word check as product copy (R11②): warn and record, don't block.
-export const saveNotesAction = adminAction(
-  "site-config.notes",
-  saveNotesSchema,
+export const saveCopyAction = adminAction(
+  "site-config.copy",
+  saveCopySchema,
   async ({ value, expectedVersion }, admin) => {
     const text = [
       value.eyebrow,
       ...value.heroPoints,
+      ...value.heading,
+      ...value.steps.flatMap((x) => [x.title, x.body]),
       ...value.terms,
       ...value.services.flatMap((x) => [x.title, x.body]),
+      value.footerLine,
     ].join("\n");
     const words = findEfficacyWords(text);
     const r = await saveSection(
@@ -56,6 +60,16 @@ export const saveNotesAction = adminAction(
       data: r,
       warnings: words.length ? [adminCopy.settings.notes.efficacyWarning(words.join("、"))] : [],
     };
+  },
+);
+
+export const saveFeaturesAction = adminAction(
+  "site-config.features",
+  saveFeaturesSchema,
+  async ({ value, expectedVersion }, admin) => {
+    const r = await saveSection("FEATURES", value, expectedVersion, admin.email);
+    invalidate();
+    return { data: r };
   },
 );
 
