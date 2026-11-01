@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_HOME, homeInputSchema, readHome } from "./home";
+import { palette, themePresets } from "@/theme/tokens";
 import { readTheme } from "./theme";
 
 describe("home layout", () => {
@@ -35,14 +36,15 @@ describe("home layout", () => {
 
 describe("theme read", () => {
   it("falls back to the default for malformed values and for a pair that fails contrast", () => {
-    expect(readTheme({ primary: "#1F5F4A", accent: "#9A3412", radius: "large" })).toEqual({
-      primary: "#1F5F4A",
-      accent: "#9A3412",
+    const forest = themePresets[1];
+    expect(readTheme({ primary: forest.primary, accent: forest.accent, radius: "large" })).toEqual({
+      primary: forest.primary,
+      accent: forest.accent,
       radius: "large",
     });
     expect(readTheme({ primary: "blue", radius: 3 })).toMatchObject({ radius: "medium" });
-    expect(readTheme({ primary: "#FFF59D", accent: "#9A3412", radius: "small" }).primary).not.toBe(
-      "#FFF59D",
-    );
+    // the yellow tag colour under white text is far below 4.5:1
+    const yellow = { primary: palette.tag, accent: palette.accent, radius: "small" };
+    expect(readTheme(yellow).primary).not.toBe(palette.tag);
   });
 });

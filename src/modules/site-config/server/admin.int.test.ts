@@ -2,7 +2,10 @@ import { randomUUID } from "node:crypto";
 import { afterAll, describe, expect, inject, it } from "vitest";
 import { createDb } from "@/server/db";
 import { DomainError } from "@/server/errors";
+import { palette, themePresets } from "@/theme/tokens";
 import { notesInputSchema, profileInputSchema, saveThemeSchema } from "../admin-input";
+
+const forest = themePresets[1];
 import { getSettings, restoreSection, saveSection } from "./admin";
 
 // 站台設定 on the low-privilege app role (site-config.md §4.2, OQ-CFG-6). SiteConfig is one row per
@@ -104,16 +107,16 @@ describe("site settings", () => {
 
   it("refuses a theme that fails the contrast gate, naming the pair", () => {
     const bad = saveThemeSchema.safeParse({
-      value: { primary: "#FFF59D", accent: "#C2410C", radius: "medium" },
+      value: { primary: palette.tag, accent: palette.accent, radius: "medium" }, // yellow
       expectedVersion: 0,
     });
     expect(bad.success).toBe(false);
     expect(bad.error?.issues[0].message).toContain("主色上的白字");
     const ok = saveThemeSchema.parse({
-      value: { primary: "#1f5f4a", accent: "#9a3412", radius: "large" },
+      value: { primary: forest.primary.toLowerCase(), accent: forest.accent, radius: "large" },
       expectedVersion: 0,
     });
-    expect(ok.value.primary).toBe("#1F5F4A");
+    expect(ok.value.primary).toBe(forest.primary);
   });
 
   it("refuses input the public side would cut or drop", () => {

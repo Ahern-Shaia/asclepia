@@ -1,7 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
-import { db } from "@/server/db";
 import { hasDatabase } from "@/server/env";
+import { siteConfigValues } from "./values";
 import { DEFAULT_THEME, type ThemeInput } from "@/theme/derive";
 import { readTheme } from "../../theme";
 
@@ -11,9 +11,6 @@ export async function siteTheme(): Promise<ThemeInput> {
   cacheLife("hours");
   cacheTag("site-config");
   if (!hasDatabase()) return DEFAULT_THEME;
-  const row = await db().siteConfig.findUnique({
-    where: { section: "THEME" },
-    select: { value: true },
-  });
-  return readTheme(row?.value);
+  const raw = (await siteConfigValues()).THEME;
+  return readTheme(raw);
 }
