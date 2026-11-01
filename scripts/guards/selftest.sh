@@ -16,6 +16,8 @@ fixture() { # name -> "relative/path<TAB>violating line"
     no-dangerous-html) printf '%s\t%s' "components/c.tsx" 'const d = <div dangerouslySetInnerHTML={{ __html: x }} />;' ;;
     no-raw-unsafe-sql) printf '%s\t%s' "modules/x/repo.ts" 'await db.$queryRawUnsafe(sql);' ;;
     no-antd-compound-in-server) printf '%s\t%s' "app/page.tsx" 'import { Typography } from "antd"; export default function P() { return <Typography.Title>x</Typography.Title>; }' ;;
+    server-only-import) printf '%s\t%s' "server/secrets.ts" 'export const k = 1;' ;;
+    db-transaction-timeout) printf '%s\t%s' "server/db.ts" 'import "server-only";\nexport const db = 1;' ;;
     no-public-secret)  printf '%s\t%s' "lib/env.ts" 'process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET;' ;;
     *) return 1 ;;
   esac

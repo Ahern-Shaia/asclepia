@@ -1,7 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Asclepia schema. Design: docs/modules/catalog.md §4.1 (v0.4), site-config.md §4.1–4.2,
+// inquiry.md §4.1 (all APPROVED 2026-11-01). Hand-written SQL (CHECKs, GIN index, audit trigger)
+// lives in the migration files; read them before changing a model.
 
 generator client {
   provider = "prisma-client"
@@ -10,4 +9,224 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// ── catalog ──────────────────────────────────────────────────────────────────
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+  SOLD
+}
+
+model Category {
+  id          String              @id @default(cuid())
+  name        String              @unique // ≤ 30
+  sortOrder   Int
+  iconKey     String? // built-in icon set (site-config.md §1.2: no SVG uploads)
+  iconAssetId String? // or an uploaded PNG/WebP
+  iconAsset   SiteAsset?          @relation(fields: [iconAssetId], references: [id], onDelete: SetNull)
+  products    Product[]
+  attributes  CategoryAttribute[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model Product {
+  id            String         @id @default(cuid())
+  categoryId    String
+  category      Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  status        ProductStatus  @default(DRAFT)
+  name          String // ≤ 160
+  // Admin-defined attributes (brand, model, year, condition…), validated against the category's
+  // AttributeDef set on every write (site-config.md §4.1).
+  attributes    Json           @default("{}")
+  priceTwd      Decimal?       @db.Decimal(12, 0) // null = 歡迎詢價; CHECK >= 0
+  highlights    String[] // ≤ 30 items
+  features      String[] // ≤ 50 items
+  specNote      String? // plain text ≤ 5000
+  sourceName    String? // acquisition source, back office only
+  sourceContact String?
+  publishedAt   DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  specs         ProductSpec[]
+  images        ProductImage[]
+  inquiryItems  InquiryItem[]
+
+  @@index([status, categoryId, publishedAt])
+  @@index([attributes(ops: JsonbPathOps)], type: Gin) // attribute filters (site-config.md §4.1)
+}
+
+model ProductSpec {
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sortOrder Int
+  label     String // ≤ 80
+  value     String // ≤ 500
+
+  @@id([productId, sortOrder])
+}
+
+model ProductImage {
+  id         String  @id @default(cuid())
+  productId  String
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sortOrder  Int // 0 = main photo
+  storageKey String  @unique
+  width      Int
+  height     Int
+  alt        String?
+
+  @@index([productId, sortOrder])
+}
+
+// ── admin-defined product attributes (site-config.md §4.1) ─────────────────
+
+enum AttributeType {
+  TEXT
+  NUMBER
+  YEAR
+  SELECT
+}
+
+model AttributeDef {
+  id         String              @id @default(cuid())
+  key        String              @unique // immutable; CHECK ^[a-z][a-z0-9_]{0,31}$
+  label      String // ≤ 30, editable
+  type       AttributeType // immutable while any product uses the key
+  options    String[] // SELECT only, ≤ 50 × ≤ 30 chars
+  unit       String?
+  maxLength  Int? // TEXT only, default 80 in the app
+  categories CategoryAttribute[]
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+}
+
+model CategoryAttribute {
+  categoryId  String
+  category    Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  attributeId String
+  attribute   AttributeDef @relation(fields: [attributeId], references: [id], onDelete: Restrict)
+  sortOrder   Int
+  required    Boolean      @default(false) // checked on publish, not on draft save
+  inTitle     Boolean      @default(false)
+  onCard      Boolean      @default(false)
+  inNameplate Boolean      @default(true)
+  filterable  Boolean      @default(false) // SELECT / YEAR / NUMBER only (app-level check)
+
+  @@id([categoryId, attributeId])
+  @@index([attributeId])
+}
+
+// ── site configuration (site-config.md §4.2) ────────────────────────────────
+
+enum ConfigSection {
+  PROFILE
+  THEME
+  HOME
+  COPY
+  FEATURES
+}
+
+model SiteConfig {
+  section   ConfigSection @id
+  value     Json // zod schema per section; missing keys fall back to defaults on read
+  version   Int           @default(1) // optimistic lock
+  updatedAt DateTime      @updatedAt
+  updatedBy String
+}
+
+enum AssetKind {
+  LOGO
+  FAVICON
+  HERO
+  VISIT
+  BRAND_LOGO
+  CATEGORY_ICON
+}
+
+model SiteAsset {
+  id         String     @id @default(cuid())
+  kind       AssetKind
+  storageKey String     @unique
+  width      Int
+  height     Int
+  alt        String?
+  sortOrder  Int        @default(0)
+  categories Category[]
+  createdAt  DateTime   @default(now())
+
+  @@index([kind, sortOrder])
+}
+
+// ── inquiry (inquiry.md §4.1) ───────────────────────────────────────────────
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+model Inquiry {
+  id          String        @id @default(cuid())
+  status      InquiryStatus @default(NEW)
+  name        String // PII ≤ 50
+  phone       String // PII ≤ 30
+  email       String? // PII ≤ 254
+  org         String? // PII ≤ 100
+  message     String? // ≤ 2000
+  consentText String // the consent sentence shown at submit time
+  note        String? // back office only ≤ 2000
+  createdAt   DateTime      @default(now())
+  purgeAfter  DateTime // createdAt + 1 year; the whole row is deleted after this
+  items       InquiryItem[]
+
+  @@index([status, createdAt])
+  @@index([purgeAfter])
+}
+
+model InquiryItem {
+  inquiryId String
+  inquiry   Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  sortOrder Int
+  // What the buyer saw when sending; later edits to the product don't change these.
+  titleSnap String
+  priceSnap Decimal? @db.Decimal(12, 0)
+
+  @@id([inquiryId, productId])
+  @@index([productId])
+}
+
+// Fixed-window counter for public write endpoints (stack-rules S4-6; user 2026-11-01: Postgres).
+// `key` is an HMAC of the client address, never the raw IP.
+model RateLimitHit {
+  key         String
+  windowStart DateTime
+  count       Int      @default(1)
+
+  @@id([key, windowStart])
+  @@index([windowStart])
+}
+
+// ── audit (R5) ──────────────────────────────────────────────────────────────
+
+// Append-only: the migration adds a trigger that rejects UPDATE/DELETE/TRUNCATE for every role,
+// and the app role has INSERT/SELECT only (prisma/sql/roles.sql).
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  actorId    String // admin email, or "system"
+  action     String
+  targetType String
+  targetId   String
+  result     String // ok | denied | error | warn
+  diff       Json? // never PII
+  at         DateTime @default(now())
+
+  @@index([targetType, targetId, at])
+  @@index([at])
 }

@@ -15,7 +15,10 @@
     "depcruise": "depcruise src --config .dependency-cruiser.cjs",
     "guards": "bash scripts/guards/run-all.sh",
     "guards:selftest": "bash scripts/guards/selftest.sh",
-    "check": "pnpm lint && pnpm format:check && pnpm type-check && pnpm depcruise && pnpm guards:selftest && pnpm guards && pnpm test && pnpm build"
+    "check": "pnpm lint && pnpm format:check && pnpm type-check && pnpm depcruise && pnpm guards:selftest && pnpm guards && pnpm test && pnpm build",
+    "postinstall": "prisma generate",
+    "db:setup": "bash scripts/db/setup.sh",
+    "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "@ant-design/icons": "^6.3.4",

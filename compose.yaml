@@ -1,0 +1,22 @@
+# Local development database (CLAUDE.md §2.1). Not used in production; production is set up by a
+# human (R10). Passwords come from .env (never committed): DB_OWNER_PASSWORD, DB_APP_PASSWORD.
+services:
+  db:
+    image: postgres:16.13-alpine # same image as the integration tests (src/test/global-setup.ts)
+    ports:
+      - "127.0.0.1:54329:5432"
+    environment:
+      POSTGRES_USER: asclepia_owner # owns the schema; used only by `prisma migrate`
+      POSTGRES_PASSWORD: ${DB_OWNER_PASSWORD:?set DB_OWNER_PASSWORD in .env}
+      POSTGRES_DB: asclepia
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD:?set DB_APP_PASSWORD in .env}
+    volumes:
+      - asclepia-db:/var/lib/postgresql/data
+      - ./prisma/sql/roles.sql:/sql/roles.sql:ro
+      - ./prisma/sql/init-roles.sh:/docker-entrypoint-initdb.d/10-roles.sh:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "asclepia_owner", "-d", "asclepia"]
+      interval: 2s
+      retries: 30
+volumes:
+  asclepia-db:

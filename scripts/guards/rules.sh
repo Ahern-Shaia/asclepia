@@ -10,5 +10,7 @@ RULES=(
   'no-dangerous-html ⟂ catalog.md §1.2: no raw HTML rendering ⟂ dangerouslySetInnerHTML ⟂ *.tsx'
   'no-raw-unsafe-sql ⟂ R4: parameterised SQL only ⟂ [$](query|execute)RawUnsafe ⟂ *.ts'
   'no-antd-compound-in-server ⟂ RSC: antd X.Y components are undefined in Server Components (React #130); use src/components/ui ⟂ __SERVER__<[A-Z][A-Za-z]*[.][A-Z] ⟂ *.tsx'
+  'server-only-import ⟂ S5-4: server code starts with import "server-only" (client import = build error) ⟂ __MISSING__^import ["'"'"']server-only["'"'"'] ⟂ ^(server|modules/[^/]+/server)/[^/]+[.]ts$'
+  'db-transaction-timeout ⟂ P3-2: interactive transactions need explicit maxWait/timeout ⟂ __MISSING__transactionOptions ⟂ ^server/db[.]ts$'
   'no-public-secret ⟂ R3: NEXT_PUBLIC_ vars ship to the browser ⟂ NEXT_PUBLIC_[A-Z0-9_]*(SECRET|TOKEN|PASSWORD|PRIVATE|KEY) ⟂ *.ts *.tsx .env.example'
 )

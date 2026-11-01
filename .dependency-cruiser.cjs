@@ -16,10 +16,17 @@ module.exports = {
     {
       name: "no-dev-deps-in-src",
       severity: "error",
-      from: { path: "^src/", pathNot: "\\.(int\\.)?test\\.ts$" },
+      // Tests and the integration-test harness (src/test/) may use dev dependencies.
+      from: { path: "^src/", pathNot: ["\\.(int\\.)?test\\.ts$", "^src/test/"] },
       to: { dependencyTypes: ["npm-dev"], pathNot: ["node_modules/@types/"] },
     },
-    { name: "not-to-unresolvable", severity: "error", from: {}, to: { couldNotResolve: true } },
+    {
+      name: "not-to-unresolvable",
+      severity: "error",
+      from: {},
+      // `server-only` is resolved by Next's bundler, not from node_modules (stack-rules S5-4).
+      to: { couldNotResolve: true, pathNot: "^server-only$" },
+    },
   ],
   options: {
     doNotFollow: { path: "node_modules" },

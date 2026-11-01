@@ -9,6 +9,7 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Owner role: migrations only. The app uses DATABASE_URL (low-privilege role), stack-rules S5-5.
+    url: process.env["MIGRATE_DATABASE_URL"],
   },
 });
