@@ -44,7 +44,7 @@
 |---|---|---|
 | 詢價資料模型 | **還沒有 schema**，只有 mockup 型別：`MockInquiry` 帶單一 `productId` | `ls prisma/migrations` 無 migration；`src/app/mockup/_data.ts` L210–222 |
 | 詢價狀態 | 未處理／已聯絡／已成交／未成交（`NEW`／`CONTACTED`／`CLOSED_WON`／`CLOSED_LOST`） | `src/copy/admin.ts` `inquiries.status` |
-| 詢價表單欄位 | 姓名、電話（必填）、Email、單位（選填）、想了解什麼、同意聯絡（必填，告知保留 1 年） | `src/copy/catalog.ts` `inquiry` |
+| 詢價表單欄位 | 姓名、電話（必填）、Email、單位（選填）、想了解什麼、同意聯絡（必填；用戶 2026-11-01：前台不放保留期限、資料用途這類標語，同意句只寫「我同意貴公司以上述資料聯絡我。」，`src/copy/public-copy.test.ts` 擋） | `src/copy/catalog.ts` `inquiry` |
 | 威脅模型 | 詢價表單是公開寫入端點：spam、個資外洩、log 印個資 | `docs/security-baseline.md` §0 #3 |
 | 效能預算 | 詢價送出 ≤ 3 次 DB query | `docs/performance-baseline.md` §0 #3 |
 | rate limit | 登入與詢價都要有，儲存位置待裁定 | `docs/stack-rules/nextjs-prisma-antd.md` S4-6 |
@@ -208,7 +208,7 @@ query 預算：rate limit 1＋查商品 1＋transaction 內 insert 2＝4 次，*
 | M0-ui | 列表頁、商品頁、清單頁 mockup（依 §B0 `inspect-catalog`） | ⏳ |
 | M1 | B1＋B3（跟 catalog M1 同一批 migration） | ✅ B1 `9a37612`；B3 `d1d4073`（限流＋快照＋一條 SQL 寫入，3 query） |
 | M2 | B2 前台清單 | ✅ `64e93af`。已知：`/inquiry/items`（依 id 取卡片）沒有限流，讀的是快取、id 上限 10 |
-| M3 | B4 後台 | ✅ 2026-11-01：`/admin/inquiries` 列表（狀態篩選＋各狀態件數、第一件＋「等 N 件」、keyset 分頁 48 筆）、`/admin/inquiries/[id]` 詳情（聯絡資料、同意文字、保留期限；每件「買家當時看到的」對「現在」，品名或價格不同標「已變更」）、改狀態／內部備註（只在狀態與備註都沒被別人改過時才寫入，否則 CONFLICT；audit 記狀態前後與 `noteChanged`，不記備註內容）、刪除（買家要求時；確認窗講會刪什麼、不能復原、商品與抄到別處的資料不受影響；audit 只記 id 與件數）。後台每頁選單顯示未處理件數。詳情原設計是抽屜，改成獨立頁（可直接連結、伺服器讀取，不必把每筆留言先送到列表頁）。已知殘留：①**到期清除排程還沒做**（§7-bis.5；表單已告知保留 1 年，最早一筆 2027-11-01 到期，上線前必補）；②選單件數讓每個後台頁多 1 次 query，`/admin/attributes` 未量測，可能超過 ≤ 5；③mockup `/mockup/admin/inquiries` 仍是單件版（§7-bis.6 未改，正式頁已不共用它） |
+| M3 | B4 後台 | ✅ 2026-11-01：`/admin/inquiries` 列表（狀態篩選＋各狀態件數、第一件＋「等 N 件」、keyset 分頁 48 筆）、`/admin/inquiries/[id]` 詳情（聯絡資料、同意文字、保留期限；每件「買家當時看到的」對「現在」，品名或價格不同標「已變更」）、改狀態／內部備註（只在狀態與備註都沒被別人改過時才寫入，否則 CONFLICT；audit 記狀態前後與 `noteChanged`，不記備註內容）、刪除（買家要求時；確認窗講會刪什麼、不能復原、商品與抄到別處的資料不受影響；audit 只記 id 與件數）。後台每頁選單顯示未處理件數。詳情原設計是抽屜，改成獨立頁（可直接連結、伺服器讀取，不必把每筆留言先送到列表頁）。已知殘留：①**到期清除排程還沒做**（§7-bis.5；保留 1 年是內部規則，前台已不再告知（2026-11-01 用戶裁定）；後台詳情仍顯示「個資保留到」，沒有排程就只是一個日期，最早一筆 2027-11-01 到期）；②選單件數讓每個後台頁多 1 次 query，`/admin/attributes` 未量測，可能超過 ≤ 5；③mockup `/mockup/admin/inquiries` 仍是單件版（§7-bis.6 未改，正式頁已不共用它） |
 | M4 | §12 FMEA、SOP | ⏳ |
 
 ---

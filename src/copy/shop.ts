@@ -79,7 +79,7 @@ export const shopCopy = {
     org: "單位／公司（選填）",
     message: "想了解什麼（選填）",
     messagePlaceholder: "例如：含稅價、可看機時間、運送安裝",
-    consent: "我同意貴公司以上述資料聯絡我，資料只用於這次詢價，保留 1 年後刪除。",
+    consent: "我同意貴公司以上述資料聯絡我。",
     submit: (n: number) => `送出詢價（${n} 件）`,
     submitting: "送出中…",
     required: {
