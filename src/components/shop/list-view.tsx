@@ -4,79 +4,81 @@ import { FilterOutlined, PhoneOutlined } from "@ant-design/icons";
 import { Drawer } from "antd";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import s from "@/components/home-v5/home-v5.module.css";
 import { shopCopy } from "@/copy/shop";
-import { type Attrs, type CategoryAttr, filtersFor, formatValue, titleOf } from "./attrs";
+import { type CategoryAttr, filtersFor, formatValue } from "./attrs";
 import { ShopCard, type ShopCardProduct } from "./product-card";
-import type { ShopCategory } from "./shop-shell";
+import { homeOf, type ShopCategory } from "./shop-shell";
 import l from "./shop.module.css";
 
 const c = shopCopy.list;
-const YEAR_STEPS = [2020, 2015, 2010];
+export const YEAR_STEPS = [2020, 2015, 2010];
 
 export type ListProduct = ShopCardProduct & { categoryId: string };
-type Sort = keyof typeof c.sortOptions;
+export type ListSort = keyof typeof c.sortOptions;
 
-// Filter state lives in the URL (CLAUDE.md §2.2): cat, q, sort, and one `f.<key>` param per
-// selected attribute value (YEAR filters hold a single "from" year).
-function matches(p: ListProduct, filters: CategoryAttr[], params: URLSearchParams) {
-  return filters.every((f) => {
-    const picked = params.getAll(`f.${f.key}`);
-    if (!picked.length) return true;
-    const v = p.attrs[f.key];
-    if (v === undefined) return false;
-    return f.type === "YEAR" || f.type === "NUMBER"
-      ? Number(v) >= Number(picked[0])
-      : picked.includes(String(v));
-  });
-}
+// Counts next to each filter. `categories` follow the keyword only, `values` the keyword and the
+// category (the same scopes the panel offers). null = not known: the panel shows no numbers.
+export type ListFacets = {
+  all: number | null;
+  categories: Record<string, number> | null;
+  values: Record<string, Record<string, number>> | null;
+};
 
+// Filter state lives in the URL (CLAUDE.md §2.2): cat, q, sort, cursor and one `f.<key>` param per
+// selected attribute value (YEAR filters hold a single "from" year). The page decides what
+// `products` holds for those params; this view only renders them and edits the URL.
 export function ShopListView({
   base,
   phone,
   categories,
   products,
+  total,
+  facets,
+  nextCursor,
   configs,
 }: {
   base: string;
   phone: string;
   categories: ShopCategory[];
   products: ListProduct[];
+  total: number;
+  facets: ListFacets;
+  nextCursor: string | null;
   configs: Record<string, CategoryAttr[]>;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const [drawer, setDrawer] = useState(false);
+  const [pending, startTransition] = useTransition();
+  // The URL is the state, but the next URL only lands when the server has answered; the controls
+  // show the requested state meanwhile.
+  const [query, setQuery] = useOptimistic(params.toString());
+  const view = new URLSearchParams(query);
   const cat = params.get("cat") ?? "";
   const q = (params.get("q") ?? "").trim();
-  const sort = (params.get("sort") as Sort) || "new";
+  const sort = (view.get("sort") as ListSort) || "new";
   const current = categories.find((x) => x.id === cat);
-
-  const configOf = (p: { categoryId: string }) => configs[p.categoryId] ?? [];
-  const searchable = (p: ListProduct) =>
-    [titleOf(configOf(p), p.attrs), p.name, ...Object.values(p.attrs as Attrs)]
-      .join(" ")
-      .toLowerCase();
-  const inQuery = products.filter((p) => !q || searchable(p).includes(q.toLowerCase()));
-  const inCat = inQuery.filter((p) => !cat || p.categoryId === cat);
   const filters = filtersFor(cat ? [configs[cat] ?? []] : Object.values(configs));
-  const shown = inCat
-    .filter((p) => matches(p, filters, params))
-    .sort((a, b) => {
-      if (sort === "new") return 0;
-      if (a.priceTwd === undefined || b.priceTwd === undefined)
-        return (a.priceTwd === undefined ? 1 : 0) - (b.priceTwd === undefined ? 1 : 0); // 歡迎詢價 last
-      return (sort === "priceAsc" ? 1 : -1) * (a.priceTwd - b.priceTwd);
-    });
-  const active = filters.reduce((n, f) => n + params.getAll(`f.${f.key}`).length, 0);
+  const active = filters.reduce((n, f) => n + view.getAll(`f.${f.key}`).length, 0);
 
-  const go = (mutate: (sp: URLSearchParams) => void) => {
-    const sp = new URLSearchParams(params.toString());
+  const hrefWith = (mutate: (sp: URLSearchParams) => void, from = params.toString()) => {
+    const sp = new URLSearchParams(from);
     mutate(sp);
-    router.replace(`${pathname}${sp.size ? `?${sp}` : ""}`, { scroll: false });
+    return `${pathname}${sp.size ? `?${sp}` : ""}`;
   };
+  // Any change to what is listed starts again from the first page.
+  const go = (mutate: (sp: URLSearchParams) => void) =>
+    startTransition(() => {
+      const href = hrefWith((sp) => {
+        sp.delete("cursor");
+        mutate(sp);
+      }, query);
+      setQuery(href.split("?")[1] ?? "");
+      router.replace(href, { scroll: false });
+    });
   const toggleValue = (key: string, value: string) =>
     go((sp) => {
       const all = sp.getAll(`f.${key}`);
@@ -93,9 +95,7 @@ export function ShopListView({
     if (q) sp.set("q", q);
     return `${pathname}${sp.size ? `?${sp}` : ""}`;
   };
-
-  const count = (key: string, value: string) =>
-    inCat.filter((p) => String(p.attrs[key] ?? "") === value).length;
+  const countOf = (key: string, value: string) => facets.values?.[key]?.[value];
 
   const panel = (
     <div className={l.filters}>
@@ -105,21 +105,21 @@ export function ShopListView({
           <li>
             <Link href={catHref("")} aria-current={!cat ? "page" : undefined}>
               {c.allCategories}
-              <span>{inQuery.length}</span>
+              {facets.all !== null && <span>{facets.all}</span>}
             </Link>
           </li>
           {categories.map((x) => (
             <li key={x.id}>
               <Link href={catHref(x.id)} aria-current={cat === x.id ? "page" : undefined}>
                 {x.name}
-                <span>{inQuery.filter((p) => p.categoryId === x.id).length}</span>
+                {facets.categories && <span>{facets.categories[x.id] ?? 0}</span>}
               </Link>
             </li>
           ))}
         </ul>
       </fieldset>
       {filters.map((f) => {
-        const picked = params.getAll(`f.${f.key}`);
+        const picked = view.getAll(`f.${f.key}`);
         if (f.type === "YEAR" || f.type === "NUMBER")
           return (
             <fieldset key={f.key}>
@@ -137,7 +137,9 @@ export function ShopListView({
               ))}
             </fieldset>
           );
-        const options = (f.options ?? []).filter((o) => count(f.key, o) > 0 || picked.includes(o));
+        const options = (f.options ?? []).filter(
+          (o) => !facets.values || (countOf(f.key, o) ?? 0) > 0 || picked.includes(o),
+        );
         if (!options.length) return null;
         return (
           <fieldset key={f.key}>
@@ -150,7 +152,7 @@ export function ShopListView({
                   onChange={() => toggleValue(f.key, o)}
                 />
                 {formatValue(f, o)}
-                <span className={l.optionCount}>{count(f.key, o)}</span>
+                {facets.values && <span className={l.optionCount}>{countOf(f.key, o) ?? 0}</span>}
               </label>
             ))}
           </fieldset>
@@ -165,11 +167,12 @@ export function ShopListView({
   );
 
   const heading = q ? c.keyword(q) : (current?.name ?? c.title);
+  const paged = params.has("cursor");
 
   return (
     <main className={`${s.container} ${l.listPage}`}>
       <nav aria-label="麵包屑" className={l.crumbs}>
-        <Link href={base}>{shopCopy.crumbs.home}</Link>
+        <Link href={homeOf(base)}>{shopCopy.crumbs.home}</Link>
         <span aria-hidden>/</span>
         {current ? (
           <>
@@ -185,7 +188,7 @@ export function ShopListView({
       <div className={l.listHead}>
         <h1>
           {heading}
-          <span className={l.resultCount}>{c.resultCount(shown.length)}</span>
+          <span className={l.resultCount}>{c.resultCount(total)}</span>
         </h1>
         <div className={l.listTools}>
           <button
@@ -219,28 +222,66 @@ export function ShopListView({
         <aside className={l.wideOnly} aria-label={c.filters}>
           {panel}
         </aside>
-        {shown.length ? (
-          <ul className={`${s.cards} ${l.listCards}`}>
-            {shown.map((p) => (
-              <ShopCard key={p.id} base={base} product={p} config={configOf(p)} />
-            ))}
-          </ul>
-        ) : (
-          <div className={l.empty} role="status">
-            <h2>{c.emptyTitle}</h2>
-            <p>{c.emptyBody}</p>
-            <div className={l.emptyActions}>
-              {active > 0 && (
-                <button type="button" className={l.clearBtn} onClick={clear}>
-                  {c.clear}
-                </button>
+        <div className={`${l.results} ${pending ? l.pending : ""}`} aria-busy={pending}>
+          {pending && (
+            <span className={l.srOnly} role="status">
+              {c.loading}
+            </span>
+          )}
+          {products.length ? (
+            <>
+              <ul className={`${s.cards} ${l.listCards}`}>
+                {products.map((p) => (
+                  <ShopCard
+                    key={p.id}
+                    base={base}
+                    product={p}
+                    config={configs[p.categoryId] ?? []}
+                  />
+                ))}
+              </ul>
+              {(paged || nextCursor) && (
+                <nav aria-label={c.pager} className={l.pager}>
+                  {paged && (
+                    <Link href={hrefWith((sp) => sp.delete("cursor"))} className={l.secondaryBtn}>
+                      {c.first}
+                    </Link>
+                  )}
+                  {nextCursor && (
+                    <Link
+                      href={hrefWith((sp) => sp.set("cursor", nextCursor))}
+                      className={l.secondaryBtn}
+                    >
+                      {c.next}
+                    </Link>
+                  )}
+                </nav>
               )}
-              <a href={`tel:${phone}`} className={l.callBtn}>
-                <PhoneOutlined aria-hidden /> {c.emptyCall(phone)}
-              </a>
+            </>
+          ) : (
+            <div className={l.empty} role="status">
+              <h2>{c.emptyTitle}</h2>
+              <p>{phone ? c.emptyBody : c.emptyBodyNoPhone}</p>
+              <div className={l.emptyActions}>
+                {active > 0 && (
+                  <button type="button" className={l.clearBtn} onClick={clear}>
+                    {c.clear}
+                  </button>
+                )}
+                {(q || cat || paged) && active === 0 && (
+                  <Link href={`${base}/products`} className={l.secondaryBtn}>
+                    {c.viewAll}
+                  </Link>
+                )}
+                {phone && (
+                  <a href={`tel:${phone}`} className={l.callBtn}>
+                    <PhoneOutlined aria-hidden /> {c.emptyCall(phone)}
+                  </a>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <Drawer
@@ -251,7 +292,7 @@ export function ShopListView({
         size="large"
         footer={
           <button type="button" className={l.applyBtn} onClick={() => setDrawer(false)}>
-            {c.apply(shown.length)}
+            {c.apply(total)}
           </button>
         }
       >

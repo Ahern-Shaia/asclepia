@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { formatTwd } from "@/components/catalog/format";
 import s from "@/components/home-v5/home-v5.module.css";
@@ -9,50 +8,63 @@ import { PhotoSlot } from "@/components/home-v5/photo-slot";
 import { shopCopy } from "@/copy/shop";
 import { type CategoryAttr, titleOf } from "./attrs";
 import { InquiryForm } from "./inquiry-form";
-import { INQUIRY_MAX, useInquiryList, useStorageAvailable } from "./inquiry-store";
+import { refusal, type SendInquiry } from "./inquiry-send";
+import { INQUIRY_MAX, useStorageAvailable } from "./inquiry-store";
+import { MediaImg } from "./media-img";
 import type { ShopCardProduct } from "./product-card";
+import { homeOf, useShopMock } from "./shop-shell";
 import l from "./shop.module.css";
 
 const c = shopCopy.inquiry;
 
-type Item = ShopCardProduct & { categoryId: string };
+export type InquiryItem = ShopCardProduct & { categoryId: string };
 
-// Review states without touching the visitor's real list (docs/mockups): ?demo=empty|sold|success.
-const DEMO: Record<string, string[]> = { sold: ["p1", "p3", "p4"], success: ["p1", "p3"] };
-
+// The inquiry list page (inquiry.md §4.3). Where the items come from is the caller's business
+// (the browser list + a lookup on the real site, sample data on the mockup). Four states are kept
+// apart: loading, failed to load, empty, and the list; "loading" never looks like "empty".
 export function ShopInquiryView({
   base,
-  products,
+  phone,
+  items,
+  loadFailed = false,
+  onRetry,
+  dropped = 0,
   configs,
+  onRemove,
+  onSent,
+  send,
+  initialSent = null,
 }: {
   base: string;
-  products: Item[];
+  phone: string;
+  items: InquiryItem[] | null; // null while loading
+  loadFailed?: boolean;
+  onRetry?: () => void;
+  dropped?: number; // ids that no longer resolve (hidden items) and were taken off the list
   configs: Record<string, CategoryAttr[]>;
+  onRemove: (id: string) => void;
+  onSent: () => void;
+  send: SendInquiry;
+  initialSent?: string[] | null;
 }) {
-  const params = useSearchParams();
-  const demo = params.get("demo") ?? "";
-  const list = useInquiryList();
-  const [sentNames, setSentNames] = useState<string[] | null>(null);
+  const mock = useShopMock();
   const storageOk = useStorageAvailable();
+  const [sentNames, setSentNames] = useState<string[] | null>(initialSent);
+  const [refused, setRefused] = useState<string[]>([]); // ids the endpoint said can't be asked about
 
-  const ids = demo === "empty" ? [] : (DEMO[demo] ?? list.ids);
-  const items = ids.map((id) => products.find((p) => p.id === id)).filter((p): p is Item => !!p);
-  const fullName = (p: Item) =>
+  const fullName = (p: InquiryItem) =>
     [titleOf(configs[p.categoryId] ?? [], p.attrs), p.name].filter(Boolean).join(" ");
-  const sold = items.filter((p) => p.sold);
-  const remove = (id: string) => (DEMO[demo] ? undefined : list.remove(id));
-  const done = sentNames ?? (demo === "success" ? items.map(fullName) : null);
 
-  if (done)
+  if (sentNames)
     return (
       <main className={`${s.container} ${l.inquiryPage}`}>
         <div className={l.inquiryHead}>
           <h1>{c.title}</h1>
         </div>
         <section className={l.success} role="status" aria-labelledby="sent-title">
-          <h2 id="sent-title">{c.successTitle(done.length)}</h2>
+          <h2 id="sent-title">{c.successTitle(sentNames.length)}</h2>
           <ul>
-            {done.map((n) => (
+            {sentNames.map((n) => (
               <li key={n}>{n}</li>
             ))}
           </ul>
@@ -66,16 +78,22 @@ export function ShopInquiryView({
       </main>
     );
 
+  const list = items ?? [];
+  const blocked = list.filter((p) => p.sold || refused.includes(p.id));
+  const blockedReason = blocked.length
+    ? (blocked.every((p) => p.sold) ? c.blocked : c.blockedAny)(blocked.map(fullName).join("、"))
+    : undefined;
+
   return (
     <main className={`${s.container} ${l.inquiryPage}`}>
       <nav aria-label="麵包屑" className={l.crumbs}>
-        <Link href={base}>{shopCopy.crumbs.home}</Link>
+        <Link href={homeOf(base)}>{shopCopy.crumbs.home}</Link>
         <span aria-hidden>/</span>
         <span aria-current="page">{c.title}</span>
       </nav>
       <div className={l.inquiryHead}>
         <h1>{c.title}</h1>
-        <p>{items.length ? `${c.lead} ${c.count(items.length, INQUIRY_MAX)}` : null}</p>
+        <p>{list.length ? `${c.lead} ${c.count(list.length, INQUIRY_MAX)}` : null}</p>
       </div>
 
       {!storageOk && (
@@ -83,8 +101,26 @@ export function ShopInquiryView({
           {c.storageNote}
         </p>
       )}
+      {dropped > 0 && (
+        <p className={l.alert} role="status">
+          {c.dropped(dropped)}
+        </p>
+      )}
 
-      {items.length === 0 ? (
+      {loadFailed ? (
+        <div className={l.empty} role="alert">
+          <p>{c.loadFailed}</p>
+          {onRetry && (
+            <button type="button" className={l.secondaryBtn} onClick={onRetry}>
+              {c.retry}
+            </button>
+          )}
+        </div>
+      ) : items === null ? (
+        <div className={l.empty} role="status" aria-busy="true">
+          <p>{c.loading}</p>
+        </div>
+      ) : list.length === 0 ? (
         <div className={l.empty} role="status">
           <h2>{c.emptyTitle}</h2>
           <p>{c.emptyBody}</p>
@@ -95,37 +131,60 @@ export function ShopInquiryView({
       ) : (
         <div className={l.inquiryBody}>
           <ul className={l.items} aria-label={c.title}>
-            {items.map((p) => (
-              <li key={p.id} className={`${l.item} ${p.sold ? l.itemSold : ""}`}>
-                <PhotoSlot className={l.itemPhoto} label="" spec="" />
-                <span className={l.itemText}>
-                  <Link href={`${base}/products/${p.id}`}>{fullName(p)}</Link>
-                  <span>{p.categoryName}</span>
-                  {p.sold ? (
-                    <span className={l.itemWarn}>{c.soldRow}</span>
-                  ) : (
-                    <span className={l.itemPrice}>
-                      {p.priceTwd ? formatTwd(p.priceTwd) : shopCopy.card.askPrice}
+            {list.map((p) => {
+              const off = p.sold || refused.includes(p.id);
+              return (
+                <li key={p.id} className={`${l.item} ${off ? l.itemSold : ""}`}>
+                  {p.image ? (
+                    <span className={l.itemFrame}>
+                      <MediaImg storageKey={p.image} size={400} alt="" className={l.mainImg} />
                     </span>
+                  ) : mock ? (
+                    <PhotoSlot className={l.itemPhoto} label="" spec="" />
+                  ) : (
+                    <span className={l.itemFrame} />
                   )}
-                </span>
-                <button
-                  type="button"
-                  className={l.removeBtn}
-                  onClick={() => remove(p.id)}
-                  aria-label={`${c.remove} ${fullName(p)}`}
-                >
-                  {c.remove}
-                </button>
-              </li>
-            ))}
+                  <span className={l.itemText}>
+                    <Link href={`${base}/products/${p.id}`}>{fullName(p)}</Link>
+                    <span>{p.categoryName}</span>
+                    {off ? (
+                      <span className={l.itemWarn}>{p.sold ? c.soldRow : c.unavailableRow}</span>
+                    ) : (
+                      <span className={l.itemPrice}>
+                        {p.priceTwd ? formatTwd(p.priceTwd) : shopCopy.card.askPrice}
+                      </span>
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    className={l.removeBtn}
+                    onClick={() => onRemove(p.id)}
+                    aria-label={`${c.remove} ${fullName(p)}`}
+                  >
+                    {c.remove}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
           <InquiryForm
-            count={items.length - sold.length}
-            blockedReason={sold.length ? c.blocked(sold.map(fullName).join("、")) : undefined}
-            onSent={() => {
-              setSentNames(items.map(fullName));
-              if (!DEMO[demo]) list.clear();
+            count={list.length - blocked.length}
+            blockedReason={blockedReason}
+            phone={phone}
+            onSubmit={async (values) => {
+              const r = await send({ ...values, productIds: list.map((p) => p.id) });
+              if (r.ok) {
+                setSentNames(r.data.titles);
+                onSent();
+                return { ok: true };
+              }
+              const ids = r.code === "INQUIRY_UNAVAILABLE" ? (r.detail ?? []) : [];
+              if (list.some((p) => ids.includes(p.id))) {
+                setRefused(ids); // the rows say which; blockedReason names them
+                return { ok: false, message: "" };
+              }
+              if (r.code === "INQUIRY_UNAVAILABLE") return { ok: false, message: r.message };
+              return refusal(r, phone);
             }}
           />
         </div>

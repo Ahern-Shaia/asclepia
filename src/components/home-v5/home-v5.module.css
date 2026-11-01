@@ -207,13 +207,18 @@
 .catNav {
   border-top: 1px solid var(--line);
 }
+/* more categories than fit: the row scrolls sideways, 「全部分類」 stays pinned at the end */
 .catNavRow {
   display: flex;
   gap: 4px;
   height: 46px;
   align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 .catNavRow a {
+  flex-shrink: 0;
+  white-space: nowrap;
   display: flex;
   align-items: center;
   padding-inline: 14px;
@@ -230,6 +235,9 @@
 }
 .catNavAll {
   margin-inline-start: auto;
+  position: sticky;
+  right: 0;
+  background: var(--white);
   color: var(--navy) !important;
   font-weight: 700 !important;
 }

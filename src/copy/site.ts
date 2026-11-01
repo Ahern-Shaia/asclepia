@@ -3,7 +3,5 @@ export const siteCopy = {
   name: "Asclepia",
   tagline: "中古設備買賣",
   description: "中古院所與檢驗設備型錄，線上詢價，看機後成交。",
-  homeHeading: "中古院所與檢驗設備",
-  homeIntro: "商品型錄建置中。可線上詢價，看機後成交。",
   copyright: "© Asclepia",
 } as const;

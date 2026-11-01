@@ -10,6 +10,8 @@ import { homeV5Copy as c5 } from "@/copy/home-v5";
 import { shopCopy } from "@/copy/shop";
 import { type Attrs, type CategoryAttr, cardMeta, titleOf } from "./attrs";
 import { INQUIRY_MAX, useInquiryList } from "./inquiry-store";
+import { MediaImg } from "./media-img";
+import { useShopMock } from "./shop-shell";
 import l from "./shop.module.css";
 
 const c = shopCopy.card;
@@ -22,6 +24,7 @@ export type ShopCardProduct = {
   priceTwd?: number;
   sold: boolean;
   isNew: boolean;
+  image?: string | null; // storage key of the main photo
 };
 
 // Fixed field order (§B0 商品卡): photo → category → title attributes → name → card attributes →
@@ -36,6 +39,7 @@ export function ShopCard({
   config: CategoryAttr[];
 }) {
   const list = useInquiryList();
+  const mock = useShopMock();
   const added = list.has(p.id);
   const title = titleOf(config, p.attrs);
   const blocked = !added && list.full;
@@ -55,11 +59,22 @@ export function ShopCard({
     <li className={`${s.card} ${p.sold ? s.cardSold : ""}`}>
       <Link href={`${base}/products/${p.id}`} className={s.cardLink}>
         <span className={s.photo}>
-          <PhotoSlot
-            className={s.photoSlot}
-            label={c5.photo.card.label}
-            spec={c5.photo.card.spec}
-          />
+          {p.image ? (
+            <MediaImg
+              storageKey={p.image}
+              size={400}
+              alt={[title, p.name].filter(Boolean).join(" ")}
+              className={`${l.photoImg} ${p.sold ? l.imgSold : ""}`}
+            />
+          ) : (
+            mock && (
+              <PhotoSlot
+                className={s.photoSlot}
+                label={c5.photo.card.label}
+                spec={c5.photo.card.spec}
+              />
+            )
+          )}
           {p.sold ? (
             <span className={`${s.tag} ${s.tagSold}`}>{c.sold}</span>
           ) : (
@@ -71,7 +86,9 @@ export function ShopCard({
           {title && <span className={s.cardTitle}>{title}</span>}
           <span className={s.cardName}>{p.name}</span>
           <span className={s.cardMeta}>{cardMeta(config, p.attrs)}</span>
-          <span className={s.price}>{p.priceTwd ? formatTwd(p.priceTwd) : c.askPrice}</span>
+          <span className={s.price}>
+            {p.priceTwd ? formatTwd(p.priceTwd) : p.sold ? null : c.askPrice}
+          </span>
         </span>
       </Link>
       {!p.sold && (blocked ? <Tooltip title={c.full(INQUIRY_MAX)}>{addBtn}</Tooltip> : addBtn)}

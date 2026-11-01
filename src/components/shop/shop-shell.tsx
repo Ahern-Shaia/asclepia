@@ -10,7 +10,15 @@ import {
 import { Drawer } from "antd";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { type CSSProperties, type FormEvent, type ReactNode, useState } from "react";
+import {
+  createContext,
+  type CSSProperties,
+  type FormEvent,
+  type ReactNode,
+  Suspense,
+  useContext,
+  useState,
+} from "react";
 import { MockBanner } from "@/components/catalog/mock-banner";
 import type { CompanyInfo } from "@/components/catalog/site-footer";
 import s from "@/components/home-v5/home-v5.module.css";
@@ -21,6 +29,15 @@ import { palette } from "@/theme/tokens";
 import { useInquiryList } from "./inquiry-store";
 
 export type ShopCategory = { id: string; name: string; count: number };
+export type ShopBrand = { name: string; tagline: string };
+
+// Mockups render the same views with sample data; only they show the MOCKUP banner and photo
+// placeholders. Real pages never set it.
+const MockContext = createContext(false);
+export const useShopMock = () => useContext(MockContext);
+
+// `base` is "" on the real site and "/mockup/site-v5-1" on the mockup.
+export const homeOf = (base: string) => base || "/";
 
 const vars = {
   "--navy": palette.primary,
@@ -53,9 +70,24 @@ export function useShopSearch(base: string) {
   };
 }
 
+// The search boxes show the current cat/q, which only exist per request. They sit in their own
+// Suspense boundary so the rest of the header stays in the prerendered shell; the fallback is the
+// same form, empty.
+const NO_PARAMS = new URLSearchParams();
+function WithParams({ children }: { children: (params: URLSearchParams) => ReactNode }) {
+  return children(useSearchParams());
+}
+
 // Header search lives on inner pages only; the home page has its single search in the hero (§B0).
-function HeaderSearch({ base, categories }: { base: string; categories: ShopCategory[] }) {
-  const params = useSearchParams();
+function HeaderSearch({
+  base,
+  categories,
+  params,
+}: {
+  base: string;
+  categories: ShopCategory[];
+  params: URLSearchParams;
+}) {
   const search = useShopSearch(base);
   const key = params.toString();
   return (
@@ -92,8 +124,7 @@ function HeaderSearch({ base, categories }: { base: string; categories: ShopCate
   );
 }
 
-function MobileSearch({ base }: { base: string }) {
-  const params = useSearchParams();
+function MobileSearch({ base, params }: { base: string; params: URLSearchParams }) {
   const search = useShopSearch(base);
   return (
     <form
@@ -117,136 +148,177 @@ function MobileSearch({ base }: { base: string }) {
   );
 }
 
+// Store details may be empty until the settings editor exists (site-config.md G1): anything
+// without a value is left out, never shown as an empty row or a `tel:` link to nowhere.
 export function ShopShell({
   base,
   company,
   categories,
+  brand = { name: siteCopy.name, tagline: siteCopy.tagline },
   search = true,
+  mock = false,
   children,
 }: {
   base: string;
   company: CompanyInfo;
   categories: ShopCategory[];
+  brand?: ShopBrand;
   search?: boolean;
+  mock?: boolean;
   children: ReactNode;
 }) {
   const [menu, setMenu] = useState(false);
   const { ids } = useInquiryList();
   const listHref = `${base}/inquiry`;
+  const { phone, email, address, hours } = company;
 
   return (
-    <div className={s.page} style={vars}>
-      <MockBanner />
+    <MockContext.Provider value={mock}>
+      <div className={s.page} style={vars}>
+        {mock && <MockBanner />}
 
-      <div className={s.util}>
-        <div className={`${s.container} ${s.utilRow}`}>
-          <span>
-            <ClockCircleOutlined aria-hidden /> {c.util.hours(company.hours)}
-          </span>
-          <span className={s.desktopOnly}>{c.util.visit}</span>
-          <a href={`tel:${company.phone}`} className={s.utilPhone}>
-            <PhoneOutlined aria-hidden /> {company.phone}
-          </a>
-        </div>
-      </div>
+        {(hours || phone) && (
+          <div className={s.util}>
+            <div className={`${s.container} ${s.utilRow}`}>
+              {hours && (
+                <span>
+                  <ClockCircleOutlined aria-hidden /> {c.util.hours(hours)}
+                </span>
+              )}
+              {phone && <span className={s.desktopOnly}>{c.util.visit}</span>}
+              {phone && (
+                <a href={`tel:${phone}`} className={s.utilPhone}>
+                  <PhoneOutlined aria-hidden /> {phone}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
 
-      <header className={s.header}>
-        <div className={`${s.container} ${s.headerRow}`}>
-          <Link href={base} className={s.brand} aria-label={`${siteCopy.name} 首頁`}>
-            <span className={s.mark} aria-hidden>
-              A
-            </span>
-            <span className={s.brandText}>
-              <strong>{siteCopy.name}</strong>
-              <span>{siteCopy.tagline}</span>
-            </span>
-          </Link>
-          {search && <HeaderSearch base={base} categories={categories} />}
-          <div className={`${s.headerActions} ${search ? "" : t.pushEnd}`}>
-            <Link
-              href={listHref}
-              className={s.listBtn}
-              aria-label={`${c.header.inquiryList} ${ids.length} 件`}
-            >
-              <ProfileOutlined aria-hidden />
-              <span className={s.desktopOnly}>{c.header.inquiryList}</span>
-              <span className={`${s.badge} ${ids.length ? s.badgeOn : ""}`} key={ids.length}>
-                {ids.length}
+        <header className={s.header}>
+          <div className={`${s.container} ${s.headerRow}`}>
+            <Link href={homeOf(base)} className={s.brand} aria-label={`${brand.name} 首頁`}>
+              <span className={s.mark} aria-hidden>
+                {[...brand.name][0]}
+              </span>
+              <span className={s.brandText}>
+                <strong>{brand.name}</strong>
+                {brand.tagline && <span>{brand.tagline}</span>}
               </span>
             </Link>
-            <a href={`tel:${company.phone}`} className={`${s.bookBtn} ${s.desktopOnly}`}>
-              {c.header.book}
-            </a>
-            <button
-              type="button"
-              className={`${s.iconBtn} ${s.mobileOnly}`}
-              aria-label="開啟選單"
-              onClick={() => setMenu(true)}
-            >
-              <MenuOutlined aria-hidden />
-            </button>
-          </div>
-        </div>
-        {search && <MobileSearch base={base} />}
-        <nav className={`${s.catNav} ${s.desktopOnly}`} aria-label="商品分類">
-          <div className={`${s.container} ${s.catNavRow}`}>
-            {categories.map((x) => (
-              <Link key={x.id} href={`${base}/products?cat=${x.id}`}>
-                {x.name}
+            {search && (
+              <Suspense
+                fallback={<HeaderSearch base={base} categories={categories} params={NO_PARAMS} />}
+              >
+                <WithParams>
+                  {(params) => <HeaderSearch base={base} categories={categories} params={params} />}
+                </WithParams>
+              </Suspense>
+            )}
+            <div className={`${s.headerActions} ${search ? "" : t.pushEnd}`}>
+              <Link
+                href={listHref}
+                className={s.listBtn}
+                aria-label={`${c.header.inquiryList} ${ids.length} 件`}
+              >
+                <ProfileOutlined aria-hidden />
+                <span className={s.desktopOnly}>{c.header.inquiryList}</span>
+                <span className={`${s.badge} ${ids.length ? s.badgeOn : ""}`} key={ids.length}>
+                  {ids.length}
+                </span>
               </Link>
-            ))}
-            <Link href={`${base}/products`} className={s.catNavAll}>
-              {c.categories.all}
-            </Link>
+              {phone && (
+                <a href={`tel:${phone}`} className={`${s.bookBtn} ${s.desktopOnly}`}>
+                  {c.header.book}
+                </a>
+              )}
+              <button
+                type="button"
+                className={`${s.iconBtn} ${s.mobileOnly}`}
+                aria-label="開啟選單"
+                onClick={() => setMenu(true)}
+              >
+                <MenuOutlined aria-hidden />
+              </button>
+            </div>
           </div>
-        </nav>
-        <Drawer open={menu} onClose={() => setMenu(false)} title={siteCopy.name} size="default">
-          <nav className={s.drawerNav} aria-label="主選單">
-            {categories.map((x) => (
-              <Link key={x.id} href={`${base}/products?cat=${x.id}`} onClick={() => setMenu(false)}>
-                {x.name}
-                <span>{x.count}</span>
+          {search && (
+            <Suspense fallback={<MobileSearch base={base} params={NO_PARAMS} />}>
+              <WithParams>{(params) => <MobileSearch base={base} params={params} />}</WithParams>
+            </Suspense>
+          )}
+          <nav className={`${s.catNav} ${s.desktopOnly}`} aria-label="商品分類">
+            <div className={`${s.container} ${s.catNavRow}`}>
+              {categories.map((x) => (
+                <Link key={x.id} href={`${base}/products?cat=${x.id}`}>
+                  {x.name}
+                </Link>
+              ))}
+              <Link href={`${base}/products`} className={s.catNavAll}>
+                {c.categories.all}
               </Link>
-            ))}
+            </div>
           </nav>
-        </Drawer>
-      </header>
+          <Drawer open={menu} onClose={() => setMenu(false)} title={brand.name} size="default">
+            <nav className={s.drawerNav} aria-label="主選單">
+              {categories.map((x) => (
+                <Link
+                  key={x.id}
+                  href={`${base}/products?cat=${x.id}`}
+                  onClick={() => setMenu(false)}
+                >
+                  {x.name}
+                  <span>{x.count}</span>
+                </Link>
+              ))}
+            </nav>
+          </Drawer>
+        </header>
 
-      {children}
+        {children}
 
-      <footer id="contact" className={s.footer}>
-        <div className={`${s.container} ${s.footerRow}`}>
-          <div className={s.brand}>
-            <span className={`${s.mark} ${s.markInv}`} aria-hidden>
-              A
-            </span>
-            <span className={s.brandText}>
-              <strong>{company.name}</strong>
-              <span>{siteCopy.tagline}</span>
-            </span>
+        <footer id="contact" className={s.footer}>
+          <div className={`${s.container} ${s.footerRow}`}>
+            <div className={s.brand}>
+              <span className={`${s.mark} ${s.markInv}`} aria-hidden>
+                {[...brand.name][0]}
+              </span>
+              <span className={s.brandText}>
+                <strong>{company.name}</strong>
+                {brand.tagline && <span>{brand.tagline}</span>}
+              </span>
+            </div>
+            {(phone || email || address || hours) && (
+              <ul className={s.footerContact}>
+                {phone && (
+                  <li>
+                    <PhoneOutlined aria-hidden /> <a href={`tel:${phone}`}>{phone}</a>
+                  </li>
+                )}
+                {email && (
+                  <li>
+                    <a href={`mailto:${email}`}>{email}</a>
+                  </li>
+                )}
+                {address && <li>{address}</li>}
+                {hours && <li>{hours}</li>}
+              </ul>
+            )}
+            <p className={s.copy}>{siteCopy.copyright}</p>
           </div>
-          <ul className={s.footerContact}>
-            <li>
-              <PhoneOutlined aria-hidden /> <a href={`tel:${company.phone}`}>{company.phone}</a>
-            </li>
-            <li>
-              <a href={`mailto:${company.email}`}>{company.email}</a>
-            </li>
-            <li>{company.address}</li>
-            <li>{company.hours}</li>
-          </ul>
-          <p className={s.copy}>{siteCopy.copyright}</p>
-        </div>
-      </footer>
+        </footer>
 
-      <div className={`${s.mobileBar} ${s.mobileOnlyFlex}`}>
-        <a href={`tel:${company.phone}`}>
-          <PhoneOutlined aria-hidden /> {c.mobileBar.call}
-        </a>
-        <Link href={listHref} className={s.mobileBarMain}>
-          <ProfileOutlined aria-hidden /> {c.mobileBar.inquiry}（{ids.length}）
-        </Link>
+        <div className={`${s.mobileBar} ${s.mobileOnlyFlex}`}>
+          {phone && (
+            <a href={`tel:${phone}`}>
+              <PhoneOutlined aria-hidden /> {c.mobileBar.call}
+            </a>
+          )}
+          <Link href={listHref} className={s.mobileBarMain}>
+            <ProfileOutlined aria-hidden /> {c.mobileBar.inquiry}（{ids.length}）
+          </Link>
+        </div>
       </div>
-    </div>
+    </MockContext.Provider>
   );
 }

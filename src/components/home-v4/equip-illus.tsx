@@ -187,6 +187,26 @@ export function EquipIllus({
   );
 }
 
+export const EQUIP_KINDS = Object.keys(drawings) as EquipKind[];
+export const isEquipKind = (v: string | null | undefined): v is EquipKind =>
+  !!v && (EQUIP_KINDS as string[]).includes(v);
+
+// Neutral stand-in for a category without a matching drawing: a plain benchtop unit.
+export function GenericEquipIllus({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 200 200" className={`${s.illus} ${className ?? ""}`} aria-hidden>
+      {shadow(62)}
+      <rect className={s.surface} x="42" y="76" width="116" height="104" rx="8" />
+      <rect className={s.screen} x="56" y="92" width="56" height="38" rx="4" />
+      <rect className={s.glow} x="62" y="98" width="30" height="5" rx="2" />
+      <circle className={s.white} cx="136" cy="102" r="9" />
+      <circle className={s.shade} cx="136" cy="128" r="6" />
+      <rect className={s.shade} x="56" y="146" width="88" height="10" rx="3" />
+      <rect className={s.accent} x="56" y="162" width="20" height="4" rx="2" />
+    </svg>
+  );
+}
+
 // Spot illustrations for the three buying steps (viewBox 0 0 64 64).
 export function StepIllus({ step }: { step: 0 | 1 | 2 }) {
   return (

@@ -6,6 +6,7 @@ const PORT = 3100;
 // e2e runs against its own database (scripts/db/e2e.sh) and its own auth settings: tests sign in by
 // minting a session with E2E_AUTH.secret (e2e/support/session.ts), never through Google.
 export const E2E_UPLOAD_DIR = ".uploads-e2e";
+export const E2E_CLIENT_HEADER = "x-e2e-client";
 export const E2E_AUTH = {
   secret: "e2e-only-secret-not-used-anywhere-else-0123456789",
   admin: "admin@example.com",
@@ -46,6 +47,9 @@ export default defineConfig({
       GOOGLE_CLIENT_SECRET: "e2e",
       ADMIN_EMAILS: E2E_AUTH.admin,
       UPLOAD_DIR: E2E_UPLOAD_DIR, // never the dev .uploads/
+      // Rate limiting is per client address; each spec sends its own value so specs don't share a
+      // bucket (e2e/support/shop.ts asClient).
+      CLIENT_IP_HEADER: E2E_CLIENT_HEADER,
     },
     port: PORT,
     reuseExistingServer: false,

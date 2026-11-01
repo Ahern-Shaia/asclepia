@@ -9,9 +9,10 @@ export default function Page() {
       base={SHOP}
       company={company}
       brands={brands}
-      categories={categories.map((c) => ({ ...c, id: c.id as EquipKind }))}
+      categories={categories.map((c) => ({ ...c, icon: c.id as EquipKind }))}
       latest={shopProducts.slice(0, 4)}
       configs={categoryAttributes}
+      mock
     />
   );
 }

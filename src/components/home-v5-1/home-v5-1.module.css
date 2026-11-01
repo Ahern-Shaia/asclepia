@@ -41,3 +41,8 @@
     padding: 12px;
   }
 }
+
+/* no store address / hours / phone yet: the buying steps take the full row */
+.buyRowSolo.buyRowSolo {
+  grid-template-columns: minmax(0, 1fr);
+}

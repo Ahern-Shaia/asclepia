@@ -13,18 +13,24 @@ import {
 } from "@ant-design/icons";
 import Link from "next/link";
 import type { CompanyInfo } from "@/components/catalog/site-footer";
-import { type EquipKind, EquipIllus, StepIllus } from "@/components/home-v4/equip-illus";
+import {
+  type EquipKind,
+  EquipIllus,
+  GenericEquipIllus,
+  StepIllus,
+} from "@/components/home-v4/equip-illus";
 import s from "@/components/home-v5/home-v5.module.css";
 import { PhotoSlot } from "@/components/home-v5/photo-slot";
 import type { CategoryAttr } from "@/components/shop/attrs";
 import { type ShopCardProduct, ShopCard } from "@/components/shop/product-card";
-import { ShopShell, useShopSearch } from "@/components/shop/shop-shell";
+import { type ShopBrand, ShopShell, useShopSearch } from "@/components/shop/shop-shell";
 import { homeV3Copy as c } from "@/copy/home-v3";
 import { homeV4Copy as c4 } from "@/copy/home-v4";
 import { homeV5Copy as c5 } from "@/copy/home-v5";
 import t from "./home-v5-1.module.css";
 
-export type V51Category = { id: EquipKind; name: string; count: number };
+// `icon` picks a drawing when the category's iconKey names a known kind; otherwise a neutral one.
+export type V51Category = { id: string; name: string; count: number; icon?: EquipKind | null };
 
 const serviceIcon = { buy: <SwapOutlined />, repair: <ToolOutlined />, rent: <CalendarOutlined /> };
 
@@ -35,6 +41,8 @@ export function HomeV51View({
   latest,
   configs,
   company,
+  brand,
+  mock = false,
 }: {
   base: string;
   categories: V51Category[];
@@ -42,21 +50,34 @@ export function HomeV51View({
   latest: (ShopCardProduct & { categoryId: string })[];
   configs: Record<string, CategoryAttr[]>;
   company: CompanyInfo;
+  brand?: ShopBrand;
+  mock?: boolean;
 }) {
   const search = useShopSearch(base);
   const total = categories.reduce((n, x) => n + x.count, 0);
+  const visit = !!(company.address || company.hours || company.phone);
 
   return (
-    <ShopShell base={base} company={company} categories={categories} search={false}>
+    <ShopShell
+      base={base}
+      company={company}
+      categories={categories}
+      brand={brand}
+      search={false}
+      mock={mock}
+    >
       <main>
         <section className={s.hero} aria-labelledby="hero-title">
-          <PhotoSlot
-            tone="dark"
-            corner
-            className={s.heroPhoto}
-            label={c5.photo.hero.label}
-            spec={c5.photo.hero.spec}
-          />
+          {/* real site: plain navy until the warehouse photo can be uploaded (OQ-CAT-10) */}
+          {mock && (
+            <PhotoSlot
+              tone="dark"
+              corner
+              className={s.heroPhoto}
+              label={c5.photo.hero.label}
+              spec={c5.photo.hero.spec}
+            />
+          )}
           <div className={`${s.container} ${s.heroRow}`}>
             <div className={s.heroText}>
               <span className={s.eyebrow}>{c4.eyebrow}</span>
@@ -99,63 +120,74 @@ export function HomeV51View({
           </div>
         </section>
 
-        <section className={s.section} aria-labelledby="h-cat">
-          <div className={s.container}>
-            <div className={s.head}>
-              <h2 id="h-cat">{c.categories.title}</h2>
+        {categories.length > 0 && (
+          <section className={s.section} aria-labelledby="h-cat">
+            <div className={s.container}>
+              <div className={s.head}>
+                <h2 id="h-cat">{c.categories.title}</h2>
+              </div>
+              <ul className={s.cats}>
+                {categories.map((x) => (
+                  <li key={x.id}>
+                    <Link href={`${base}/products?cat=${x.id}`} className={s.cat}>
+                      <span className={s.catArt}>
+                        {x.icon ? <EquipIllus kind={x.icon} /> : <GenericEquipIllus />}
+                      </span>
+                      <span className={s.catName}>{x.name}</span>
+                      <span className={s.catCount}>
+                        {x.count} {c.categories.unit}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className={s.cats}>
-              {categories.map((x) => (
-                <li key={x.id}>
-                  <Link href={`${base}/products?cat=${x.id}`} className={s.cat}>
-                    <span className={s.catArt}>
-                      <EquipIllus kind={x.id} />
-                    </span>
-                    <span className={s.catName}>{x.name}</span>
-                    <span className={s.catCount}>
-                      {x.count} {c.categories.unit}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+          </section>
+        )}
 
-        <section className={`${s.section} ${s.sectionTop0}`} aria-labelledby="h-latest">
-          <div className={s.container}>
-            <div className={s.head}>
-              <h2 id="h-latest">{c.latest.title}</h2>
-              <Link href={`${base}/products`} className={s.more}>
-                {c.latest.viewAll} <RightOutlined aria-hidden />
-              </Link>
+        {latest.length > 0 && (
+          <section className={`${s.section} ${s.sectionTop0}`} aria-labelledby="h-latest">
+            <div className={s.container}>
+              <div className={s.head}>
+                <h2 id="h-latest">{c.latest.title}</h2>
+                <Link href={`${base}/products`} className={s.more}>
+                  {c.latest.viewAll} <RightOutlined aria-hidden />
+                </Link>
+              </div>
+              <ul className={s.cards}>
+                {latest.map((p) => (
+                  <ShopCard
+                    key={p.id}
+                    base={base}
+                    product={p}
+                    config={configs[p.categoryId] ?? []}
+                  />
+                ))}
+              </ul>
             </div>
-            <ul className={s.cards}>
-              {latest.map((p) => (
-                <ShopCard key={p.id} base={base} product={p} config={configs[p.categoryId] ?? []} />
-              ))}
-            </ul>
-          </div>
-        </section>
+          </section>
+        )}
 
-        <section className={`${s.section} ${s.sectionTop0}`} aria-labelledby="h-brands">
-          <div className={s.container}>
-            <div className={s.head}>
-              <h2 id="h-brands">{c.brands.title}</h2>
-              <span className={s.headNote}>{c5.brandsNote}</span>
+        {brands.length > 0 && (
+          <section className={`${s.section} ${s.sectionTop0}`} aria-labelledby="h-brands">
+            <div className={s.container}>
+              <div className={s.head}>
+                <h2 id="h-brands">{c.brands.title}</h2>
+                {mock && <span className={s.headNote}>{c5.brandsNote}</span>}
+              </div>
+              <ul className={s.brands}>
+                {brands.map((b) => (
+                  <li key={b}>
+                    <Link href={`${base}/products?f.brand=${encodeURIComponent(b)}`}>{b}</Link>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className={s.brands}>
-              {brands.map((b) => (
-                <li key={b}>
-                  <Link href={`${base}/products?brand=${encodeURIComponent(b)}`}>{b}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+          </section>
+        )}
 
         <section className={`${s.section} ${s.paper}`} aria-labelledby="h-buy">
-          <div className={`${s.container} ${s.buyRow}`}>
+          <div className={`${s.container} ${s.buyRow} ${visit ? "" : t.buyRowSolo}`}>
             <div>
               <div className={s.head}>
                 <h2 id="h-buy">{c.buy.title}</h2>
@@ -177,32 +209,46 @@ export function HomeV51View({
                 ))}
               </ol>
             </div>
-            <aside className={s.visit} aria-labelledby="h-visit">
-              <PhotoSlot
-                label={c5.photo.visit.label}
-                spec={c5.photo.visit.spec}
-                className={s.visitPhoto}
-              />
-              <h2 id="h-visit">{c.visit.title}</h2>
-              <dl>
-                <div>
-                  <dt>
-                    <EnvironmentOutlined aria-hidden /> {c.visit.address}
-                  </dt>
-                  <dd>{company.address}</dd>
-                </div>
-                <div>
-                  <dt>
-                    <ClockCircleOutlined aria-hidden /> {c.visit.hours}
-                  </dt>
-                  <dd>{company.hours}</dd>
-                </div>
-              </dl>
-              <p>{c.visit.note}</p>
-              <a href={`tel:${company.phone}`} className={s.visitBtn}>
-                <PhoneOutlined aria-hidden /> {c.visit.call} {company.phone}
-              </a>
-            </aside>
+            {visit && (
+              <aside className={s.visit} aria-labelledby="h-visit">
+                {mock && (
+                  <PhotoSlot
+                    label={c5.photo.visit.label}
+                    spec={c5.photo.visit.spec}
+                    className={s.visitPhoto}
+                  />
+                )}
+                <h2 id="h-visit">{c.visit.title}</h2>
+                {(company.address || company.hours) && (
+                  <dl>
+                    {company.address && (
+                      <div>
+                        <dt>
+                          <EnvironmentOutlined aria-hidden /> {c.visit.address}
+                        </dt>
+                        <dd>{company.address}</dd>
+                      </div>
+                    )}
+                    {company.hours && (
+                      <div>
+                        <dt>
+                          <ClockCircleOutlined aria-hidden /> {c.visit.hours}
+                        </dt>
+                        <dd>{company.hours}</dd>
+                      </div>
+                    )}
+                  </dl>
+                )}
+                {company.phone && (
+                  <>
+                    <p>{c.visit.note}</p>
+                    <a href={`tel:${company.phone}`} className={s.visitBtn}>
+                      <PhoneOutlined aria-hidden /> {c.visit.call} {company.phone}
+                    </a>
+                  </>
+                )}
+              </aside>
+            )}
           </div>
         </section>
 
