@@ -10,10 +10,12 @@ vi.mock("@/server/db", () => ({
 vi.stubEnv("DATABASE_URL", "");
 
 const { siteProfile } = await import("./profile");
+const { siteNotes } = await import("./notes");
 afterAll(() => vi.unstubAllEnvs());
 
 describe("site profile without a configured database", () => {
   it("answers the defaults instead of throwing", async () => {
     expect(await siteProfile()).toMatchObject({ name: "Asclepia", phone: "" });
+    expect(await siteNotes()).toEqual({ eyebrow: "", heroPoints: [], terms: [], services: [] });
   });
 });
