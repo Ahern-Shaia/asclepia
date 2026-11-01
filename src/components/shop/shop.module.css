@@ -176,6 +176,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
+  gap: 4px; /* the hover and selected tints are close in hue: without a gap they read as one block */
 }
 .catList a {
   display: flex;

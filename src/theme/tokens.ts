@@ -14,6 +14,15 @@ export const palette = {
   success: "#2F7D32",
   warning: "#9A5B00",
   error: "#B42318",
+  // Status tints (tags, alerts). Set by hand: antd derives them from the seed colours, and from
+  // these darkened seeds it produced grey-green / grey-brown tints that failed AA (2.6:1 for 上架中).
+  successBg: "#EFF7EF",
+  successBorder: "#B9D9BB",
+  warningBg: "#FFF4E3",
+  warningBorder: "#EFD2A4",
+  errorBg: "#FDEDEB",
+  errorBorder: "#F2C3BD",
+  primaryBorder: "#B9CCE4",
   // home v2 only (drafting-sheet hero + yellow tag); not part of the profile
   navyInk: "#14365F",
   onNavyMuted: "#C9D6E6",
@@ -39,9 +48,14 @@ export const contrastPairs: ReadonlyArray<readonly [fg: string, bg: string, labe
   [palette.bg, palette.primary, "primary button label"],
   [palette.primary, palette.bg, "link on page"],
   [palette.primary, palette.primaryBg, "selected menu item"],
+  [palette.navyInk, palette.bgSection, "link hover on section (category list)"],
+  [palette.navyInk, palette.bg, "link hover on page"],
   [palette.success, palette.bg, "success text"],
   [palette.warning, palette.bg, "warning text"],
   [palette.error, palette.bg, "error text"],
+  [palette.success, palette.successBg, "success tag (上架中)"],
+  [palette.warning, palette.warningBg, "warning tag (已下架)"],
+  [palette.error, palette.errorBg, "error tag (未處理)"],
   [palette.bg, palette.navyInk, "text on navy band"],
   [palette.onNavyMuted, palette.navyInk, "secondary text on navy band"],
   [palette.text, palette.tag, "inspection tag label"],
@@ -73,6 +87,8 @@ export const theme: ThemeConfig = {
   token: {
     colorPrimary: palette.primary,
     colorLink: palette.primary,
+    // antd derives a lighter hover (#567EA3, 3.9:1 on the section tint); hover goes darker instead
+    colorLinkHover: palette.navyInk,
     colorText: palette.text,
     colorTextSecondary: palette.textSecondary,
     colorBgContainer: palette.bg,
@@ -82,6 +98,16 @@ export const theme: ThemeConfig = {
     colorSuccess: palette.success,
     colorWarning: palette.warning,
     colorError: palette.error,
+    colorSuccessBg: palette.successBg,
+    colorSuccessBorder: palette.successBorder,
+    colorWarningBg: palette.warningBg,
+    colorWarningBorder: palette.warningBorder,
+    colorErrorBg: palette.errorBg,
+    colorErrorBorder: palette.errorBorder,
+    // "processing" tags (已售出, 已聯絡) and info alerts use the brand blue, not antd's #1677ff
+    colorInfo: palette.primary,
+    colorInfoBg: palette.primaryBg,
+    colorInfoBorder: palette.primaryBorder,
     borderRadius: 6,
     borderRadiusSM: 4,
     fontFamily:
