@@ -214,6 +214,7 @@ pnpm guards               # grep 守衛（scripts/guards/rules.sh）；改守衛
 pnpm check                # 出貨前那一組（不含 e2e）
 pnpm db:setup            # 本機 Postgres（compose.yaml，54329）＋ migrate deploy ＋ 重套 app role 權限
 pnpm db:migrate          # 改 schema 後（= prisma migrate dev）；之後再跑一次 db:setup 重套權限
+                          # pnpm test:e2e 需要本機 DB 在跑：它用獨立的 asclepia_e2e（scripts/db/e2e.sh）
                           # generated client（src/generated/）不 commit，postinstall 會產生
 ```
 

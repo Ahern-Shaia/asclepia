@@ -167,7 +167,7 @@ model AuditLog     { id BigInt @id @default(autoincrement()); actorId String; ac
 | 里程碑 | 內容 | 狀態 |
 |---|---|---|
 | **M0** | 本檔 → APPROVED | ⏳ |
-| **M1** | A4 登入＋A1 資料模型與後台 CRUD | 🚧 M1a 資料表＋migration＋低權角色＋DB 測試 ✅ `9a37612`；登入、後台 CRUD ⏳ |
+| **M1** | A4 登入＋A1 資料模型與後台 CRUD | 🚧 M1a 資料表＋migration＋低權角色＋DB 測試 ✅ `9a37612`；M1b Google 登入＋白名單＋requireAdmin ✅ `1304891`；M1c 後台商品 CRUD ⏳ |
 | **M2** | A2 圖片管線 | ⏳ |
 | **M3** | A3 前台型錄（前提：前端 M0 profile 已寫定） | ⏳ |
 | **M4** | SOP（後台上架操作手冊）＋ smoke | ⏳ |
