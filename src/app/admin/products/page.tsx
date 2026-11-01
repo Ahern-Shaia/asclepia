@@ -12,6 +12,7 @@ import { titleOf } from "@/components/shop/attrs";
 import { listCategories } from "@/modules/catalog/server/categories";
 import { listCategoryConfigs } from "@/modules/catalog/server/attributes";
 import { LIST_MAX, listProducts } from "@/modules/catalog/server/products";
+import { countNewInquiries } from "@/modules/inquiry/server/admin";
 import { requireAdmin } from "@/server/auth";
 
 // Every back-office page reads the session, which can't be in the static shell; it blocks on the
@@ -32,10 +33,11 @@ export default async function Page({ searchParams }: PageProps<"/admin/products"
     q: param(sp.q, 100),
     cursor: param(sp.cursor, 40),
   };
-  const [list, categories, rawConfigs] = await Promise.all([
+  const [list, categories, rawConfigs, newCount] = await Promise.all([
     listProducts(filters),
     listCategories(),
     listCategoryConfigs(),
+    countNewInquiries(),
   ]);
   const configs = toFormConfigs(rawConfigs);
   const rows = list.rows.map((p) => ({
@@ -49,7 +51,7 @@ export default async function Page({ searchParams }: PageProps<"/admin/products"
     imageCount: p._count.images,
   }));
   return (
-    <AdminShell base="/admin" active="products" user={admin.email}>
+    <AdminShell base="/admin" active="products" user={admin.email} newInquiries={newCount}>
       <ProductList
         rows={rows}
         nextCursor={list.nextCursor}

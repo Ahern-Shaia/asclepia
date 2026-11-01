@@ -184,6 +184,7 @@ test("admin pages have no horizontal page scroll", async ({ page }) => {
     "/admin/products/new",
     "/admin/categories",
     "/admin/attributes",
+    "/admin/inquiries",
   ]) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -201,6 +202,9 @@ test("the real admin menu links only to built sections", async ({ page }) => {
   const menu = nav ?? page.getByRole("dialog");
   await expect(menu.getByRole("link", { name: "分類" })).toBeVisible();
   await expect(menu.getByRole("link", { name: "商品欄位" })).toBeVisible();
-  await expect(menu.getByText("詢價紀錄")).toHaveCount(0);
+  await expect(menu.getByRole("link", { name: /^詢價紀錄/ })).toHaveAttribute(
+    "href",
+    "/admin/inquiries",
+  );
   await expect(menu.getByText("站台設定")).toHaveCount(0);
 });

@@ -57,3 +57,23 @@
 .fileInput.fileInput.fileInput {
   display: none;
 }
+
+/* Inquiry items: one row per product that wraps to stacked blocks on a phone, so "now / changed"
+   is never hidden behind a horizontal table scroll. */
+.itemRows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.itemRows > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--ant-color-border-secondary, rgba(5, 5, 5, 0.06));
+}
+.itemRows > li > div {
+  flex: 1 1 220px;
+  min-width: 0;
+}

@@ -1,6 +1,7 @@
 import { AdminShell } from "@/components/admin/admin-shell";
 import { CategoriesView } from "@/components/admin/categories-view";
 import { listCategories } from "@/modules/catalog/server/categories";
+import { countNewInquiries } from "@/modules/inquiry/server/admin";
 import { requireAdmin } from "@/server/auth";
 
 // Every back-office page reads the session, which can't be in the static shell; it blocks on the
@@ -10,9 +11,9 @@ export const instant = false;
 
 export default async function Page() {
   const admin = await requireAdmin();
-  const categories = await listCategories();
+  const [categories, newCount] = await Promise.all([listCategories(), countNewInquiries()]);
   return (
-    <AdminShell base="/admin" active="categories" user={admin.email}>
+    <AdminShell base="/admin" active="categories" user={admin.email} newInquiries={newCount}>
       <CategoriesView
         categories={categories.map((c) => ({
           id: c.id,

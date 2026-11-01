@@ -32,11 +32,11 @@ import styles from "./admin.module.css";
 export type AdminSection = "products" | "categories" | "inquiries" | "attributes" | "settings";
 // Sections the real back office has built so far; the mockup shows every section. Add a section
 // here when its page exists, so the menu never links to a 404.
-const LIVE: AdminSection[] = ["products", "categories", "attributes"];
+const LIVE: AdminSection[] = ["products", "categories", "inquiries", "attributes"];
 type ShellProps = {
   base: string;
   active: AdminSection;
-  newInquiries?: number; // omitted until the count comes from the database
+  newInquiries?: number; // NEW inquiries, shown as the menu badge
   user: string;
   mock?: boolean;
   children: ReactNode;

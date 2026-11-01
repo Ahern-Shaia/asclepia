@@ -4,6 +4,7 @@ import { ProductEditor, ProductMissing } from "@/components/admin/product-editor
 import { listCategoryConfigs } from "@/modules/catalog/server/attributes";
 import { listCategories } from "@/modules/catalog/server/categories";
 import { getProductForEdit, TRANSITIONS } from "@/modules/catalog/server/products";
+import { countNewInquiries } from "@/modules/inquiry/server/admin";
 import { requireAdmin } from "@/server/auth";
 
 // Every back-office page reads the session, which can't be in the static shell; it blocks on the
@@ -14,13 +15,14 @@ export const instant = false;
 export default async function Page({ params }: PageProps<"/admin/products/[id]">) {
   const admin = await requireAdmin();
   const { id } = await params;
-  const [p, categories, configs] = await Promise.all([
+  const [p, categories, configs, newCount] = await Promise.all([
     id.length <= 40 ? getProductForEdit(id) : null,
     listCategories(),
     listCategoryConfigs(),
+    countNewInquiries(),
   ]);
   return (
-    <AdminShell base="/admin" active="products" user={admin.email}>
+    <AdminShell base="/admin" active="products" user={admin.email} newInquiries={newCount}>
       {p ? (
         <ProductEditor
           product={{

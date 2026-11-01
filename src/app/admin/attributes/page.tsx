@@ -4,6 +4,7 @@ import { attrValues, priceOf, toFormConfigs } from "@/components/admin/catalog-d
 import { listAttributeDefs, listCategoryConfigs } from "@/modules/catalog/server/attributes";
 import { listCategories } from "@/modules/catalog/server/categories";
 import { listProducts } from "@/modules/catalog/server/products";
+import { countNewInquiries } from "@/modules/inquiry/server/admin";
 import { requireAdmin } from "@/server/auth";
 
 // Every back-office page reads the session, which can't be in the static shell; it blocks on the
@@ -13,11 +14,12 @@ export const instant = false;
 
 export default async function Page() {
   const admin = await requireAdmin();
-  const [defs, categories, configs, recent] = await Promise.all([
+  const [defs, categories, configs, recent, newCount] = await Promise.all([
     listAttributeDefs(),
     listCategories(),
     listCategoryConfigs(),
     listProducts({}),
+    countNewInquiries(),
   ]);
   const library: LibraryDef[] = defs.map((d) => ({
     id: d.id,
@@ -41,7 +43,7 @@ export default async function Page() {
       priceTwd: priceOf(p.priceTwd) ?? undefined,
     };
   return (
-    <AdminShell base="/admin" active="attributes" user={admin.email}>
+    <AdminShell base="/admin" active="attributes" user={admin.email} newInquiries={newCount}>
       <AttributesView
         live
         defs={library}
