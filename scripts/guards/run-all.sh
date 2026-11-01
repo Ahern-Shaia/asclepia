@@ -19,13 +19,16 @@ for rule in "${RULES[@]}"; do
     rc=$?
   elif [[ "$pattern" == __MISSING__* ]]; then
     # files whose path (relative to ROOT) matches the globs field must contain the pattern
-    hits=""; rc=1
+    # globs field: "<path regex>" or "<path regex> !<excluded path regex>"
+    hits=""; rc=1; inc="${globs%% !*}"; exc=""
+    [[ "$globs" == *" !"* ]] && exc="${globs#* !}"
     while IFS= read -r f; do
       rel="${f#"$ROOT"/}"
-      [[ "$rel" =~ $globs ]] || continue
+      [[ "$rel" =~ $inc ]] || continue
+      [[ -n "$exc" && "$rel" =~ $exc ]] && continue
       [[ "$rel" == *.test.ts ]] && continue
       grep -qE -- "${pattern#__MISSING__}" "$f" || { hits+="$rel: missing ${pattern#__MISSING__}"$'\n'; rc=0; }
-    done < <(find "$ROOT" -type f -name '*.ts' -not -path '*/generated/*')
+    done < <(find "$ROOT" -type f \( -name '*.ts' -o -name '*.tsx' \) -not -path '*/generated/*')
     hits="${hits%$'\n'}"
   elif [[ "$pattern" == __SERVER__* ]]; then
     # only files that are Server Components (no "use client" directive) and import antd

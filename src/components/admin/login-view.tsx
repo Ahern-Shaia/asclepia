@@ -2,6 +2,7 @@
 
 import { GoogleOutlined } from "@ant-design/icons";
 import { Alert, Button, Card, ConfigProvider, Flex, theme, Typography } from "antd";
+import { signIn } from "next-auth/react";
 import { MockBanner } from "@/components/catalog/mock-banner";
 import { adminCopy } from "@/copy/admin";
 import { siteCopy } from "@/copy/site";
@@ -9,15 +10,31 @@ import { adminTheme } from "@/theme/tokens";
 
 const l = adminCopy.login;
 
-export function LoginView({ denied, mock }: { denied: boolean; mock?: boolean }) {
+export function LoginView({
+  denied,
+  mock,
+  callbackUrl = "/admin",
+}: {
+  denied: boolean;
+  mock?: boolean;
+  callbackUrl?: string;
+}) {
   return (
     <ConfigProvider theme={adminTheme}>
-      <Inner denied={denied} mock={mock} />
+      <Inner denied={denied} mock={mock} callbackUrl={callbackUrl} />
     </ConfigProvider>
   );
 }
 
-function Inner({ denied, mock }: { denied: boolean; mock?: boolean }) {
+function Inner({
+  denied,
+  mock,
+  callbackUrl,
+}: {
+  denied: boolean;
+  mock?: boolean;
+  callbackUrl: string;
+}) {
   const { token } = theme.useToken();
   return (
     <Flex vertical style={{ minHeight: "100vh", background: token.colorBgLayout }}>
@@ -36,7 +53,13 @@ function Inner({ denied, mock }: { denied: boolean; mock?: boolean }) {
               </Typography.Title>
             </Flex>
             {denied && <Alert type="error" showIcon title={l.denied} />}
-            <Button type="primary" size="large" icon={<GoogleOutlined />} block>
+            <Button
+              type="primary"
+              size="large"
+              icon={<GoogleOutlined />}
+              block
+              onClick={mock ? undefined : () => void signIn("google", { callbackUrl })}
+            >
               {l.google}
             </Button>
             <Typography.Text type="secondary" style={{ fontSize: token.fontSizeSM }}>

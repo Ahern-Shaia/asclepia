@@ -22,6 +22,7 @@ import {
   Typography,
 } from "antd";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import { type ReactNode, useState } from "react";
 import { MockBanner } from "@/components/catalog/mock-banner";
 import { adminCopy } from "@/copy/admin";
@@ -32,7 +33,7 @@ export type AdminSection = "products" | "categories" | "inquiries" | "attributes
 type ShellProps = {
   base: string;
   active: AdminSection;
-  newInquiries: number;
+  newInquiries?: number; // omitted until the count comes from the database
   user: string;
   mock?: boolean;
   children: ReactNode;
@@ -54,7 +55,7 @@ function AdminNav({
 }: {
   base: string;
   active: AdminSection;
-  newInquiries: number;
+  newInquiries?: number;
   onNavigate?: () => void;
 }) {
   const m = adminCopy.menu;
@@ -78,7 +79,7 @@ function AdminNav({
             <Link href={`${base}/inquiries`}>
               <Flex justify="space-between" align="center">
                 {m.inquiries}
-                {newInquiries > 0 && (
+                {!!newInquiries && (
                   <Badge count={newInquiries} title={`${newInquiries} 筆未處理`} />
                 )}
               </Flex>
@@ -148,7 +149,13 @@ function AdminShellInner({ base, active, newInquiries, user, mock, children }: S
                 {user.slice(0, 1).toUpperCase()}
               </Avatar>
               <Typography.Text className={styles.desktopOnly}>{user}</Typography.Text>
-              <Button type="text" icon={<LogoutOutlined />} href={`${base}/login`}>
+              <Button
+                type="text"
+                icon={<LogoutOutlined />}
+                {...(mock
+                  ? { href: `${base}/login` }
+                  : { onClick: () => void signOut({ callbackUrl: `${base}/login` }) })}
+              >
                 {adminCopy.logout}
               </Button>
             </Flex>

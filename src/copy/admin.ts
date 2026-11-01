@@ -9,6 +9,10 @@ export const adminCopy = {
     settings: "站台設定",
   },
   logout: "登出",
+  // Real back office before product CRUD lands (catalog M1c).
+  overview: {
+    productCount: (n: number) => (n ? `目前共 ${n} 件商品。` : "還沒有商品。"),
+  },
   login: {
     title: "登入後台",
     google: "使用 Google 帳號登入",
