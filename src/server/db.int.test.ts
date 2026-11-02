@@ -32,6 +32,17 @@ async function seedProduct(suffix: string) {
   });
 }
 
+// Production runs on Neon Postgres 18 (docs/deploy.md); tests and local dev must be the same major
+// version, or a green run says nothing about production.
+describe("server version", () => {
+  it("is Postgres 18, like production", async () => {
+    const [{ v }] = await db.$queryRaw<
+      { v: string }[]
+    >`select current_setting('server_version_num') as v`;
+    expect(Math.floor(Number(v) / 10000)).toBe(18);
+  });
+});
+
 describe("connection lane (S4-7)", () => {
   it("connects as the low-privilege app role", async () => {
     const [row] = await db.$queryRaw<{ user: string; super: boolean }[]>`

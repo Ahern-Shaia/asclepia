@@ -2,7 +2,10 @@
 # human (R10). Passwords come from .env (never committed): DB_OWNER_PASSWORD, DB_APP_PASSWORD.
 services:
   db:
-    image: postgres:16.13-alpine # same image as the integration tests (src/test/global-setup.ts)
+    # Same major version as production (Neon, Postgres 18) and the integration tests
+    # (src/test/global-setup.ts). The 18 image keeps its data under /var/lib/postgresql (16 used
+    # …/data); a mount at the old path would leave the real data in an anonymous volume.
+    image: postgres:18.4-alpine
     ports:
       - "127.0.0.1:54329:5432"
     environment:
@@ -11,7 +14,7 @@ services:
       POSTGRES_DB: asclepia
       DB_APP_PASSWORD: ${DB_APP_PASSWORD:?set DB_APP_PASSWORD in .env}
     volumes:
-      - asclepia-db:/var/lib/postgresql/data
+      - asclepia-db-18:/var/lib/postgresql
       - ./prisma/sql/roles.sql:/sql/roles.sql:ro
       - ./prisma/sql/init-roles.sh:/docker-entrypoint-initdb.d/10-roles.sh:ro
     healthcheck:
@@ -19,4 +22,6 @@ services:
       interval: 2s
       retries: 30
 volumes:
-  asclepia-db:
+  # a new name on purpose: the Postgres 16 volume (asclepia-db) is left untouched until the
+  # data has been moved over (docs/deploy.md §5 "本機升級")
+  asclepia-db-18:

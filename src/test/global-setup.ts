@@ -15,7 +15,7 @@ declare module "vitest" {
   }
 }
 
-const IMAGE = "postgres:16.13-alpine"; // same as compose.yaml
+const IMAGE = "postgres:18.4-alpine"; // same as compose.yaml and production (Neon, Postgres 18)
 const run = promisify(execFile);
 
 let container: StartedPostgreSqlContainer | undefined;
