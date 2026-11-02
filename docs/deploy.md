@@ -1,68 +1,102 @@
-# deploy.md — 正式環境部署設計（Vercel ＋ Neon ＋ Cloudflare R2）
+# deploy.md — 正式環境部署設計（Render ＋ Neon）
 
-> 📝 **狀態：DRAFT（2026-11-02）**。用戶 2026-11-02 選定：網站 Vercel、資料庫 Neon、圖片 Cloudflare R2。
-> §6 的開放問題由用戶裁定後改為 APPROVED，才開始改程式（R6）。部署動作一律由人執行（R10），本檔只寫步驟。
+> ✅ **狀態：APPROVED（2026-11-02）**。用戶裁定：網站放 Render Starter（新加坡）＋永久硬碟存照片，
+> 資料庫用 Neon Free（新加坡，Postgres 18）；開發與測試同步升到 Postgres 18。
+> 先前的 Vercel ＋ R2 草稿作廢：Vercel Hobby 條款不允許商業用途（本站為公司銷售設備而設，屬「為參與者帶來經濟利益」），
+> Pro 每月 20 美元；R2 正式使用需要自有網域，目前還沒有。
+> 部署動作一律由人執行（R10），本檔只寫步驟。
 
 ## 1. 架構
 
-| 角色 | 服務 | 方案 | 為什麼 |
+| 角色 | 服務 | 方案 | 說明 |
 |---|---|---|---|
-| 網站（Next.js） | Vercel | **Pro**（每月 20 美元） | Hobby 條款只限個人、非商業用途；本站是公司網站 |
-| 資料庫 | Neon Postgres | Free（每專案每月 100 CU-小時；閒置 5 分鐘暫停） | 量小時夠用；暫停後第一個請求會慢一點 |
-| 圖片 | Cloudflare R2 | Free（10 GB、流量不計費） | 與主網域分開（security-baseline §0 #2），流量免費 |
+| 網站（Next.js，`next start`） | Render Web Service | **Starter**（0.5 CPU／512 MB，約每月 7 美元），新加坡 | 常駐伺服器：沒有 serverless 的 4.5 MB 上傳上限，sharp 可直接執行 |
+| 照片 | Render Persistent Disk（掛在網站上） | 2–5 GB（每 GB 每月 0.25 美元） | 照片照舊寫本機硬碟（`UPLOAD_DIR` 指向掛載點），程式不用改 |
+| 資料庫 | Neon（專案 `Asclepia`、分支 `production`） | Free，新加坡，Postgres 18 | 閒置 5 分鐘暫停，下一個請求會慢一點；歷史還原只有 6 小時（§4） |
+| 每日清除排程 | GitHub Actions 定時工作 | 免費 | 每天呼叫 `/api/cron/daily`（`.github/workflows/daily.yml`） |
 
-查證日 2026-11-02，出處見 §7。價格與額度會變，上線前再看一次官方頁。
+網址先用 Render 提供的 `<服務名>.onrender.com`，之後有網域再綁。價格查證日 2026-11-02（第三方整理），下單前看 Render 官方價格頁。
 
-## 2. 平台限制對程式的影響
+## 2. 平台特性與對策
 
-| 限制 | 影響 | 做法 |
+| 特性 | 影響 | 對策 |
 |---|---|---|
-| Vercel Function 請求本體上限 **4.5 MB**（超過回 413，不能調） | 後台上傳目前收 15 MB 原圖；手機照片常 3–8 MB，會直接失敗 | **瀏覽器先縮圖**：上傳前在後台用 canvas 把長邊縮到 2400 px、轉成 JPEG（通常 1–2 MB）；伺服器照舊用 sharp 重新壓縮、去 EXIF（消毒仍在伺服器）。伺服器上限改成 4 MB，超過回清楚的句子 |
-| Vercel 沒有可長期保存的硬碟 | 照片目前寫在本機 `.uploads/` | 儲存改成可切換：開發與 e2e 用本機硬碟，正式環境用 R2（S3 相容 API）。由環境變數決定 |
-| R2 的 `r2.dev` 網址官方說**不可用於正式環境**（會限流） | 照片網址要用自己的網域 | R2 綁自訂網域，例如 `img.<你的網域>`；**需要網域由 Cloudflare 管 DNS**（§6 OQ-DEP-2） |
-| 照片改由 R2 網域直接提供 | `/media/[file]` 路由只剩開發用 | 照片網址改由一個函式產生（開發：`/media/…`；正式：`https://img.<網域>/…`）。現有程式組網址的地方都改用它 |
-| Neon 有直連與 pooler 兩種連線 | migration 需要直連；網站在 serverless 下要用 pooler | `MIGRATE_DATABASE_URL` 用直連（owner），`DATABASE_URL` 用 pooler（`asclepia_app`）。連線池上限 `DB_POOL_MAX` 設 1–2（每個函式實例一個小池） |
-| P5-2「池 × 實例數 + 保留 < 上限」在 serverless 實例數無上限 | 公式的「實例數」無法固定 | 改用 pooler 的連線上限當 `DB_MAX_CONNECTIONS`，`DEPLOY_MAX_INSTANCES` 設 Vercel 專案的並行上限。⏳ 數字上線前依 Neon 方案頁填 |
-| Vercel Cron 以 GET ＋ `Authorization: Bearer $CRON_SECRET` 呼叫 | 每日清除端點已支援 GET 與 Bearer | 加 `vercel.json` 的 `crons`（每日一次）。Vercel 不會重試失敗的排程，看 Cron Jobs 頁的紀錄 |
-| 用戶端 IP header | 限流以 IP 為鍵 | Vercel 會設定 `x-forwarded-for`；⏳ 上線前確認 Vercel 是否覆寫用戶自帶的值（若不覆寫改用 `x-real-ip`） |
-| sharp | Vercel 的 Node 函式可執行 sharp | 不需改。Cloudflare Workers 不能跑 sharp，所以網站不放 Workers |
+| 掛了硬碟的服務**只能跑一台**，部署時先停舊的再起新的 | 每次部署有幾秒連不上；不能水平擴充 | 量小可接受；部署挑離峰時間 |
+| 硬碟在 build 階段讀不到 | build 不能讀照片 | build 不需要照片；只有執行時寫入 |
+| 硬碟每 24 小時自動快照，至少保留 7 天，可整顆還原 | 照片有基本備份 | 還原會蓋掉快照之後的所有變更（例如之後上傳的照片） |
+| Render 只在 `X-Forwarded-For` **後面附加**，不清除用戶自帶的值 | 限流以 IP 為鍵，第一個值可被偽造 → 詢價防洗版可被繞過 | ⏳ 上線後用一次真實請求確認 header 結構，再決定讀哪一段（`CLIENT_IP_HEADER` 與讀取位置）；在那之前是已知缺口（`src/server/env.ts` 已註明） |
+| Neon 有直連與 pooler 兩種連線字串 | migration 需要直連 | 網站用 pooler（`asclepia_app`），migration 用直連（`neondb_owner`）。單一實例：`DEPLOY_MAX_INSTANCES=1`、`DB_POOL_MAX=5` |
+| Neon 預設擁有者是 `neondb_owner`，資料庫叫 `neondb` | `prisma/sql/roles.sql` 以 `current_database()` 授權，不寫死名稱 | 不用改；以擁有者身分執行即可建立 `asclepia_app` |
+| Postgres 18 | 本機與測試原本是 16 | 已升級：`compose.yaml`、`src/test/global-setup.ts` 都是 `postgres:18.4-alpine`；`src/server/db.int.test.ts` 斷言主版本是 18 |
 
-## 3. 程式要改的地方（APPROVED 後才做）
+## 3. 環境變數（填在 Render 服務的 Environment；不進 git、不貼到對話）
 
-1. `src/server/images/storage.ts`：介面不變（put／remove／url），實作分成本機與 R2 兩種，`STORAGE_DRIVER=local|r2` 選擇；R2 用 S3 API 上傳與刪除（需要簽章，見 OQ-DEP-3）。
-2. 照片網址集中由 `mediaUrl()` 產生（`MEDIA_BASE_URL`），取代散在各處的 `/media/${…}`。
-3. 後台三個上傳入口（商品照片、站台圖片、分類圖示）上傳前在瀏覽器縮圖；伺服器上限改 4 MB。
-4. `vercel.json`：每日排程。
-5. `src/server/env.ts`：新增 R2 與媒體網址的環境變數，缺漏時只回報 key 名。
-6. e2e 仍用本機儲存；R2 驅動用整合測試（假的 S3 伺服器或錄製請求）驗證簽章與網址。
+| 變數 | 值 |
+|---|---|
+| `DATABASE_URL` | Neon **pooler** 連線字串，帳號 `asclepia_app`（§5 步驟 2 設的密碼） |
+| `NEXTAUTH_URL` | `https://<服務名>.onrender.com` |
+| `NEXTAUTH_SECRET` | `openssl rand -base64 32` |
+| `GOOGLE_CLIENT_ID`／`GOOGLE_CLIENT_SECRET` | Google Cloud 主控台（同一組可沿用，但要加正式網址，§5 步驟 4） |
+| `ADMIN_EMAILS` | 可以進後台的 Google 帳號，逗號分隔 |
+| `RATE_LIMIT_SECRET` | `openssl rand -base64 32` |
+| `CRON_SECRET` | `openssl rand -base64 32`（GitHub 那邊要填同一個值） |
+| `UPLOAD_DIR` | 硬碟掛載點底下的資料夾，例如 `/var/data/uploads` |
+| `DB_POOL_MAX`／`DEPLOY_MAX_INSTANCES`／`DB_MAX_CONNECTIONS` | `5`／`1`／Neon pooler 的連線上限（⏳ 依 Neon 文件填） |
+| `NODE_VERSION` | `24` |
 
-## 4. 環境變數（正式環境，由人填在 Vercel）
+`MIGRATE_DATABASE_URL`（直連、擁有者）**不放 Render**，只在你自己的電腦執行 migration 時臨時設定。
 
-`DATABASE_URL`（Neon pooler、asclepia_app）· `MIGRATE_DATABASE_URL`（只在本機執行 migration 時用，不放 Vercel）· `NEXTAUTH_URL` · `NEXTAUTH_SECRET` · `GOOGLE_CLIENT_ID` · `GOOGLE_CLIENT_SECRET` · `ADMIN_EMAILS` · `RATE_LIMIT_SECRET` · `CRON_SECRET` · `STORAGE_DRIVER=r2` · `R2_ACCOUNT_ID` · `R2_ACCESS_KEY_ID` · `R2_SECRET_ACCESS_KEY` · `R2_BUCKET` · `MEDIA_BASE_URL` · `DB_POOL_MAX` · `DEPLOY_MAX_INSTANCES` · `DB_MAX_CONNECTIONS`
+## 4. 備份
 
-## 5. 上線步驟（人執行，R10）
+| 資料 | 現況 | 缺口 |
+|---|---|---|
+| 照片 | Render 硬碟每日快照，至少 7 天 | — |
+| 資料庫 | Neon Free 只能還原到 **6 小時內** | ⏳ **上線前要決定**：A. 每週手動 `pg_dump` 存到自己的電腦（免費，靠人記得）· B. 升級 Neon 付費方案取得較長的還原期 · C. 排程自動備份到另一個地方（要另選存放處；備份含詢價個資） |
 
-1. 網域：在 Cloudflare 管 DNS（OQ-DEP-2）。
-2. Neon：建專案 → 取得直連與 pooler 連線字串。本機執行 `prisma migrate deploy`（直連、owner）→ `psql -f prisma/sql/roles.sql`（建立 `asclepia_app`）。
-3. R2：建 bucket → 綁 `img.<網域>` → 建只限這個 bucket 的 API token。
-4. Google OAuth：新增正式網址的授權來源與 redirect URI。
-5. Vercel：匯入 GitHub repo、選 Pro、填 §4 環境變數、綁網域、部署。
-6. 部署後 smoke：首頁、商品頁、後台登入、上傳一張照片、送一筆測試詢價後刪除、手動呼叫一次 `/api/cron/daily` 確認 200。
+## 5. 步驟（人執行，R10）
 
-## 6. 開放問題（OQ-DEP-N）
+### 本機升級到 Postgres 18（只做一次）
+舊的 16 版資料留在原本的 `asclepia-db` 儲存區，不會被刪；確認新版正常後再自行刪除。
+```bash
+docker compose exec -T db pg_dump -U asclepia_owner -d asclepia -Fc > ~/asclepia-dev-pg16.dump  # 1. 先匯出（舊容器還在跑）
+docker compose up -d --wait                                                                    # 2. 換成 18、新儲存區
+docker compose exec -T db pg_restore -U asclepia_owner -d asclepia --no-owner < ~/asclepia-dev-pg16.dump  # 3. 匯入
+pnpm db:setup                                                                                  # 4. 補 migration 與權限
+```
+步驟 3 若出現 `schema "public" already exists` 之類的訊息可以忽略（新資料庫已經有這個 schema）；其他錯誤先停下來。
+之後重開 `pnpm dev`。e2e 用的 `asclepia_e2e` 會在下次跑 e2e 時自動重建。
 
-| # | 問題 | 選項 | 建議 |
-|---|---|---|---|
-| **OQ-DEP-1** | Vercel Pro 每月 20 美元 | 接受 · 改用允許商業用途的平台 | 接受（用戶已選 Vercel；Hobby 不能商用） |
-| **OQ-DEP-2** | 網域 | 已有、可交給 Cloudflare 管 DNS · 已有、不想搬 · 還沒有 | 由 Cloudflare 管 DNS：R2 自訂網域需要。不搬的話照片只能經過網站轉送，流量算在 Vercel |
-| **OQ-DEP-3** | R2 上傳要做 S3 簽章 | A. `aws4fetch`（小型、零相依）· B. 官方 `@aws-sdk/client-s3`（大）· C. 自己寫 SigV4 | A：一個小函式庫、容易審；B 體積大、相依多；C 自己寫簽章容易錯。新增相依前讀 LICENSE 本文、`pnpm audit`（CLAUDE.md §0.2 #7） |
+### 上線
+1. **Neon**（已建立）：Connect → 取得直連與 pooler 兩種字串。
+2. **資料表與權限**（在你的終端機，**不要用 `!`**，指令裡有密碼）：
+   ```bash
+   MIGRATE_DATABASE_URL='<直連字串>' pnpm exec prisma migrate deploy
+   psql '<直連字串>' -v app_password='<新的 app 密碼>' -f prisma/sql/roles.sql
+   ```
+   `DATABASE_URL` 就是 pooler 字串，帳號密碼換成 `asclepia_app` 與上面設的密碼。
+3. **Render**：New → Web Service → 連 GitHub repo `asclepia`、分支 `main`、Region Singapore、Instance Starter。
+   Build：`corepack enable && pnpm install --frozen-lockfile && pnpm build` · Start：`pnpm start`（Render 會給 `PORT`）。
+   Disks：新增，掛載點 `/var/data`，2–5 GB。Environment：§3。
+4. **Google OAuth**：授權的 JavaScript 來源加 `https://<服務名>.onrender.com`，重新導向 URI 加 `https://<服務名>.onrender.com/api/auth/callback/google`。
+5. **GitHub**：repo Settings → Secrets and variables → Actions：Secret `CRON_SECRET`（同 §3）、Variable `SITE_URL`（`https://<服務名>.onrender.com`）。設好後每日清除排程才會真的呼叫。
+6. **部署後 smoke**：首頁、商品頁、後台登入、站台設定填電話、上傳一張照片並在前台看到、送一筆測試詢價後在後台刪除、GitHub Actions 手動執行 daily 工作一次確認成功。
+
+## 6. 開放問題
+
+| # | 問題 | 狀態 |
+|---|---|---|
+| OQ-DEP-1 | 網站平台 | ✅ Render Starter ＋硬碟（用戶 2026-11-02） |
+| OQ-DEP-2 | 網域 | 還沒有；先用 `onrender.com`，之後再綁 |
+| OQ-DEP-3 | 資料庫備份（§4） | ⏳ 上線前決定 |
+| OQ-DEP-4 | 用戶端 IP 的讀法（§2） | ⏳ 上線後實測 |
 
 ## 7. 出處（查證日 2026-11-02）
 
-- Vercel Hobby 限非商業：https://vercel.com/docs/plans/hobby
-- Vercel Function 4.5 MB 上限：https://vercel.com/kb/guide/how-to-bypass-vercel-body-size-limit-serverless-functions
-- Vercel Cron 與 CRON_SECRET：https://vercel.com/docs/cron-jobs/manage-cron-jobs
+- Vercel 商業用途定義：https://vercel.com/docs/limits/fair-use-guidelines
+- Render 免費方案限制：https://render.com/docs/free
+- Render 永久硬碟（單一實例、部署停機、每日快照）：https://render.com/docs/disks
+- Render 價格（第三方整理）：https://temps.sh/blog/render-pricing-2026 · https://kuberns.com/blogs/render-pricing/
+- Render `X-Forwarded-For` 只附加不清除（社群回報）：https://feedback.render.com/features/p/send-the-correct-xforwardedfor · https://community.render.com/t/accessing-client-ips-in-a-node-express-app/36282
 - Neon Free 額度：https://neon.com/faqs/free-plan-limits-and-quotas
+- Neon 物件儲存僅限 us-east-2、Beta：https://neon.com/docs/storage/buckets
 - Neon 以 SQL 建立的角色需逐條授權：https://neon.com/docs/manage/roles/
-- R2 `r2.dev` 不可用於正式環境：https://developers.cloudflare.com/r2/platform/limits/
-- R2 免費額度（第三方整理，官方頁待覆核）：https://upstash.com/kb/cloudflare-r2-pricing-in-2026-storage-operations-and-real-monthly-bills

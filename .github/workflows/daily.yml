@@ -1,0 +1,32 @@
+# Daily maintenance for the production site (docs/deploy.md §1): calls /api/cron/daily, which deletes
+# inquiries past their retention date and old rate-limit rows. Render's own cron jobs are a separate
+# paid service; a scheduled workflow is free and only needs the site URL and the shared secret.
+# Until the repo has the SITE_URL variable and the CRON_SECRET secret, the job says so and stops.
+name: daily
+
+on:
+  schedule:
+    - cron: "0 19 * * *" # 03:00 Asia/Taipei
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Call the daily job
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$SITE_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "::notice::SITE_URL / CRON_SECRET not set yet (docs/deploy.md §5 step 5): nothing to call"
+            exit 0
+          fi
+          # the site may be cold: allow time; fail loudly on anything but 200
+          code=$(curl -sS -o body.json -w '%{http_code}' --max-time 120 -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" "$SITE_URL/api/cron/daily")
+          cat body.json; echo
+          [ "$code" = "200" ] || { echo "::error::daily job answered HTTP $code"; exit 1; }

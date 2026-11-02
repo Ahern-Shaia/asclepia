@@ -187,8 +187,8 @@
 ### 2.4 未決（何時回來）
 | 項目 | 何時回來 |
 |---|---|
-| 部署平台（Vercel+Neon / Cloudflare / 自架） | 上線前一個 milestone |
-| 商品圖片儲存（object storage，與主網域分開） | 跟部署平台一起決定；開發期先放本機 |
+| 部署平台 | ✅ 2026-11-02 用戶裁定：Render Starter（新加坡）＋永久硬碟存照片、Neon Free（新加坡，Postgres 18）。設計與上線步驟：`docs/deploy.md` |
+| 商品圖片儲存 | ✅ Render 永久硬碟（`UPLOAD_DIR`），每日快照；有自有網域後可再評估移到 object storage（與主網域分開） |
 | 寄信服務（詢價通知） | MVP 先只寫進 DB、後台查看；要通知時再定 |
 | CI 平台 | ✅ 2026-11-01 `.github/workflows/ci.yml`：check（含兩道 audit）、e2e、gitleaks 全歷史；action 以 SHA 釘住。⏳ 第一次在 GitHub 上實際跑完前，e2e job 只在本機以同樣指令驗證過 |
 | mockup 分享站 | 用戶 2026-10-31 要部署到 Render 給別人看（`ENABLE_MOCKUPS=1`）；部署由用戶操作（R10） |
